@@ -51,6 +51,15 @@ func processTableField(p []string) bool {
 	return ret
 }
 
+// Null process function
+func processPrimary(p []string) bool {
+	ret := false
+	for i, v := range p {
+		println(i, v)
+	}
+	theFSM.state = table
+	return ret
+}
 var theFSM fsm
 
 //var theRegs []*regexp.Regexp
@@ -63,8 +72,11 @@ func Setup() {
 	//var theRegs []*regexp.Regexp
 
 	theFSM.rows = map[string][]fsmRow {
-		start: []fsmRow{{`CREATE TABLE (\w+).(\w+)?`, processTable, tableField, 0, new(regexp.Regexp)}},
-		table: []fsmRow{{`\s*(\w+)\s+(\w+)<?(\w+)?,?\s?(\w+)?`, processTableField, tableField, 0, new(regexp.Regexp)}},
+		start: []fsmRow{{`CREATE TABLE (\w+).(\w+)?`, processTable, tableField, 0, new(regexp.Regexp)},},
+		table: []fsmRow{
+		                {`PRIMARY*`, processPrimary, tableField, 0, new(regexp.Regexp)},
+			            {`\s*(\w+)\s+(\w+)<?(\w+)?,?\s?(\w+)?`, processTableField, tableField, 0, new(regexp.Regexp)},
+			},
 	}
 	//theFSM.rows[start] = fsmRow{`CREATE TABLE (\w+).(\w+)?`, processTable, tableField, 0, new(regexp.Regexp)}
 	//theFSM.rows[table] = fsmRow{`\s*(\w+)\s+(\w+)<?(\w+)?,?\s?(\w+)?`, processTableField, tableField, 0, new(regexp.Regexp)}
@@ -95,13 +107,18 @@ func ParseLine(debug bool, text string) bool {
 	ret := false
 
 	// Find RegEx to use based upon FSM state
-	var row fsmRow = theFSM.rows[theFSM.state][0]
+	var rows [] fsmRow = theFSM.rows[theFSM.state]
+
+	for _, j := range rows {
+		result := j.reg.FindStringSubmatch(text)
+		if result != nil {
+			j.proc(result)
+			break
+		}
+	}
 	//println("FSM =", theFSM.rows[theFSM.state].reg )
 
-	result := row.reg.FindStringSubmatch(text)
-	if result != nil {
-		row.proc(result)
-	}
+
 	return ret
 }
 
@@ -109,6 +126,7 @@ func ParseText(debug bool, text string) {
 
 	lines := strings.SplitAfter(text, "\n")
 	for _, v := range lines {
+		println("Line:", v, "::")
 		if strings.Contains(v, theFSM.breakString) {
 			if debug {
 				println("I am out of here!")

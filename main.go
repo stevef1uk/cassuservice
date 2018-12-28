@@ -16,7 +16,7 @@ func main() {
 	flag.Parse()
 	debug = *debugPtr
 	parser.Setup()
-	parser.ParseLine( debug, `
+	parser.ParseText( debug, `
 		CREATE TABLE demo.accounts (
 		id int,
 		name text,
