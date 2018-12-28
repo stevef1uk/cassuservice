@@ -24,7 +24,7 @@ type fsmRow struct {
 }
 
 type fsm struct {
-	rows        map[string]fsmRow
+	rows        map[string][]fsmRow
 	state       string
 	breakString string
 }
@@ -62,9 +62,12 @@ func Setup() {
 	//theRegs := new( regexs )
 	//var theRegs []*regexp.Regexp
 
-	theFSM.rows = make(map[string]fsmRow)
-	theFSM.rows[start] = fsmRow{`CREATE TABLE (\w+).(\w+)?`, processTable, tableField, 0, new(regexp.Regexp)}
-	theFSM.rows[table] = fsmRow{`\s*(\w+)\s+(\w+)<?(\w+)?,?\s?(\w+)?`, processTableField, tableField, 0, new(regexp.Regexp)}
+	theFSM.rows = map[string][]fsmRow {
+		start: []fsmRow{{`CREATE TABLE (\w+).(\w+)?`, processTable, tableField, 0, new(regexp.Regexp)}},
+		table: []fsmRow{{`\s*(\w+)\s+(\w+)<?(\w+)?,?\s?(\w+)?`, processTableField, tableField, 0, new(regexp.Regexp)}},
+	}
+	//theFSM.rows[start] = fsmRow{`CREATE TABLE (\w+).(\w+)?`, processTable, tableField, 0, new(regexp.Regexp)}
+	//theFSM.rows[table] = fsmRow{`\s*(\w+)\s+(\w+)<?(\w+)?,?\s?(\w+)?`, processTableField, tableField, 0, new(regexp.Regexp)}
 	//theFSM.rows[table] = fsmRow{ `\s*(\w+)\s+(\w+)<?(\w+)?,?\s?(\w+)?`, processTableField, tableField, 0, new(regexp.Regexp ) }
 
 	theFSM.breakString = "WITH"
@@ -73,12 +76,15 @@ func Setup() {
 
 	index := 0
 	for i, v := range theFSM.rows {
-		println(i, v.expression)
-		tableRe, err := regexp.Compile(v.expression)
-		if err == nil {
-			*theFSM.rows[i].reg = *tableRe
-		} else {
-			println("Failed to compile expression %s", v.expression)
+		for j, k := range v {
+			println(i, k.expression)
+			tableRe, err := regexp.Compile(k.expression)
+			if err == nil {
+				*theFSM.rows[i][j].reg = *tableRe
+				_ = tableRe
+			} else {
+				println("Failed to compile expression %s", k.expression)
+			}
 		}
 		index++
 	}
@@ -89,7 +95,7 @@ func ParseLine(debug bool, text string) bool {
 	ret := false
 
 	// Find RegEx to use based upon FSM state
-	var row fsmRow = theFSM.rows[theFSM.state]
+	var row fsmRow = theFSM.rows[theFSM.state][0]
 	//println("FSM =", theFSM.rows[theFSM.state].reg )
 
 	result := row.reg.FindStringSubmatch(text)
