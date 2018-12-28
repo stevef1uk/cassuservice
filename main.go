@@ -16,4 +16,11 @@ func main() {
 	flag.Parse()
 	debug = *debugPtr
 	parser.Setup()
+	parser.ParseLine( debug, `
+		CREATE TABLE demo.accounts (
+		id int,
+		name text,
+		PRIMARY KEY (id, name)
+	) WITH CLUSTERING ORDER BY (name ASC)
+	` )
 }
