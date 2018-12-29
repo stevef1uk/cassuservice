@@ -91,9 +91,6 @@ func processPrimaryInLine(debug bool, p []string, regRow fsmRow) bool {
 
 func procNil(debug bool, p []string, regRow fsmRow) bool {
 	ret := false
-	for i, v := range p {
-		if debug { println(i, v) }
-	}
 	theFSM.state = regRow.nextState // Force searching for other fields
 	return ret
 }
