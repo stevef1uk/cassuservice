@@ -29,74 +29,6 @@ type fsm struct {
 	breakString string
 }
 
-// The following set of functions are called by the FSM processing logic when a regex match is made
-func processTable(debug bool, p []string, regRow fsmRow) bool {
-	ret := false
-	if debug { println( "Parsing new Table" ) }
-	for i, v := range p {
-		println(i, v)
-	}
-	theFSM.state = regRow.nextState
-	return ret
-}
-
-func processType(debug bool, p []string, regRow fsmRow) bool {
-	ret := false
-	if debug { println( "Parsing new Type" ) }
-	for i, v := range p {
-		if debug { println(i, v) }
-	}
-	theFSM.state = regRow.nextState
-	return ret
-}
-
-func processTableField(debug bool, p []string, regRow fsmRow ) bool {
-	ret := false
-	for i, v := range p {
-		if debug { println(i, v) }
-	}
-	theFSM.state = regRow.nextState
-	return ret
-}
-
-// As primary key string identified return true so that the real function to process a primary key will be called
-func notePrimary(debug bool, p []string, regRow fsmRow) bool {
-	ret := true
-	for i, v := range p {
-		if debug { println(i, v) }
-	}
-	if debug { println("Found Primary Key") }
-	theFSM.state = regRow.nextState
-	return ret
-}
-
-//
-func processPrimary(debug bool, p []string, regRow fsmRow) bool {
-	ret := false
-	for i, v := range p {
-		if debug { println(i, v) }
-	}
-	theFSM.state = regRow.nextState
-	return ret
-}
-
-func processPrimaryInLine(debug bool, p []string, regRow fsmRow) bool {
-	ret := false
-	for i, v := range p {
-		if debug { println(i, v) }
-	}
-	theFSM.state = tableField // Force searching for other fields
-	return ret
-}
-
-func procNil(debug bool, p []string, regRow fsmRow) bool {
-	ret := false
-	theFSM.state = regRow.nextState // Force searching for other fields
-	return ret
-}
-
-// End of processing logic & start of main FSM logic
-
 var theFSM fsm
 
 //var theRegs []*regexp.Regexp
@@ -110,7 +42,13 @@ func Setup() {
 			},
 		tableField: []fsmRow{
 		                {`\s*PRIMARY\s+`, notePrimary, primaryKey, 0, new(regexp.Regexp)},
+			            // To handle text like: address_set list<frozen<city>>,
+			            {`\s*(\w+)\s+(\w+)\s*<\s*(\w+)\s*<\s*(\w+)\s*>>,?`, processSimpleFrozenField, tableField, 0, new(regexp.Regexp)},
+			            // To handle text like: address_set map<text, frozen <city>>,
+			            {`\s*(\w+)\s+(\w+)\s*<\s*(\w+),\s*\w+\s*\w+\s*<\s*(\w+)\s*>>,?`, processMapFrozenField, tableField, 0, new(regexp.Regexp)},
+			            // To handle normal table / type fields
 			            {`\s*(\w+)\s+(\w+)<?(\w+)?,?\s?(\w+)?`, processTableField, tableField, 0, new(regexp.Regexp)},
+			            // To terminate a Type definition
 			            {`\s*\)\s*;`, procNil, start, 0, new(regexp.Regexp)},
 			},
 		primaryKey: {{`\s*PRIMARY\s+KEY\s*\(?\s*(\w+)\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*\)x`, processPrimary, primaryKey, 0, new(regexp.Regexp)},
@@ -147,8 +85,8 @@ func parseLine(debug bool, text string) bool {
 	for _, j := range rows {
 		result := j.reg.FindStringSubmatch(text)
 		if result != nil {
-			if j.proc != nil && j.proc(debug, result, j) { parseLine( debug, text ) }
-			break
+			if j.proc != nil && j.proc(debug, result, j) { parseLine( debug, text ) } // Recurse if proc returns true
+			break // Only allow one RegEx match within an FSM state
 		}
 	}
 
