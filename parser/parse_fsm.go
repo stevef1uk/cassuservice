@@ -34,7 +34,7 @@ var theFSM fsm
 //var theRegs []*regexp.Regexp
 
 // Setup This function needs to be called first to initialise the FSM
-func Setup() {
+func setup() {
 	theFSM.rows = map[string][]fsmRow {
 		start: []fsmRow{
 						{`\s*CREATE TABLE\s*(\w+).(\w+)?`, processTable, tableField, 0, new(regexp.Regexp)},
@@ -96,6 +96,9 @@ func parseLine(debug bool, text string) bool {
 // ParseText needs to be called after FMS has been initialised
 func ParseText(debug bool, text string) {
 
+	if theFSM.state == "" {
+		setup()
+	}
 	lines := strings.SplitAfter(text, "\n")
 	for _, v := range lines {
 		println("Line:", v, "::")

@@ -1,5 +1,56 @@
 package parser
 
+const (
+	// Assume no more than 20 fields in a table
+	MAXFIELDS = 20
+)
+/*
+type ParseOutput struc {
+	TableSpace   string
+
+}
+
+type FieldDetails struct {
+	DbFieldNames [MAXFIELDS] string
+	DbFieldTypes [MAXFIELDS] string
+	DbPKFields   [MAXFIELDS] string
+}
+
+
+type TableDetails struct {
+	TableName    string
+	TableFields  FieldDetails[MAXFIELDS]
+
+
+	DbFieldNames [ALEN] string
+	DbFieldTypes [ALEN] string
+	DbPKFields   [ALEN] string
+	DbFieldArrayType[ALEN] string
+	DbFieldMapType[ALEN] string
+	FieldIndex	int
+	ExportPath string
+}
+
+type TableDetails struct {
+	TableSpace   string
+	TableName    string
+	DbFieldNames [ALEN] string
+	DbFieldTypes [ALEN] string
+	DbPKFields   [ALEN] string
+	DbFieldArrayType[ALEN] string
+	DbFieldMapType[ALEN] string
+	FieldIndex	int
+	ExportPath string
+}
+
+type pkFields struct {
+	PKField   string
+	FieldFormat string
+	FieldType string
+}
+
+*/
+
 // The following set of functions are called by the FSM processing logic when a regex match is made
 func processTable(debug bool, p []string, regRow fsmRow) bool {
 	ret := false
