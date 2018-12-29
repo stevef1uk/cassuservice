@@ -28,7 +28,7 @@ type fsm struct {
 	breakString string
 }
 
-// Null process function
+// The following set of functions are called by the FSM processing logic when a regex match is made
 func processTable(debug bool, p []string, regRow fsmRow) bool {
 	ret := false
 	for i, v := range p {
@@ -79,18 +79,14 @@ func processPrimaryInLine(debug bool, p []string, regRow fsmRow) bool {
 	return ret
 }
 
+// End of processing logic & start of main FSM logic
 
 var theFSM fsm
 
 //var theRegs []*regexp.Regexp
 
-// Setup THis function needs to be called first
+// Setup This function needs to be called first to initialise the FSM
 func Setup() {
-
-	//theFSM  := new(  fsm  )
-	//theRegs := new( regexs )
-	//var theRegs []*regexp.Regexp
-
 	theFSM.rows = map[string][]fsmRow {
 		start: []fsmRow{{`CREATE TABLE (\w+).(\w+)?`, processTable, tableField, 0, new(regexp.Regexp)},},
 		tableField: []fsmRow{
@@ -101,12 +97,8 @@ func Setup() {
 			         {`\s*(\w+)\s+(\w+)\s+PRIMARY`, processPrimaryInLine, primaryKey, 0, new(regexp.Regexp)},
 			},
 	}
-	//theFSM.rows[start] = fsmRow{`CREATE TABLE (\w+).(\w+)?`, processTable, tableField, 0, new(regexp.Regexp)}
-	//theFSM.rows[table] = fsmRow{`\s*(\w+)\s+(\w+)<?(\w+)?,?\s?(\w+)?`, processTableField, tableField, 0, new(regexp.Regexp)}
-	//theFSM.rows[table] = fsmRow{ `\s*(\w+)\s+(\w+)<?(\w+)?,?\s?(\w+)?`, processTableField, tableField, 0, new(regexp.Regexp ) }
 
 	theFSM.breakString = "WITH"
-
 	theFSM.state = start
 
 	index := 0
@@ -125,7 +117,7 @@ func Setup() {
 	}
 }
 
-func ParseLine(debug bool, text string) bool {
+func parseLine(debug bool, text string) bool {
 
 	ret := false
 
@@ -135,16 +127,15 @@ func ParseLine(debug bool, text string) bool {
 	for _, j := range rows {
 		result := j.reg.FindStringSubmatch(text)
 		if result != nil {
-			if j.proc(debug, result, j) { ParseLine( debug, text ) }
+			if j.proc(debug, result, j) { parseLine( debug, text ) }
 			break
 		}
 	}
-	//println("FSM =", theFSM.rows[theFSM.state].reg )
-
 
 	return ret
 }
 
+// ParseText needs to be called after FMS has been initialised
 func ParseText(debug bool, text string) {
 
 	lines := strings.SplitAfter(text, "\n")
@@ -156,7 +147,7 @@ func ParseText(debug bool, text string) {
 			}
 			break
 		}
-		ParseLine(debug, v)
+		parseLine(debug, v)
 	}
 	if debug {
 		println("Finished ParseText")
