@@ -10,6 +10,7 @@ const (
 	tableField = "tableField"
 	primaryKey = "primaryKey"
 
+
 	primaryString = "PRIMARY"
 )
 
@@ -31,8 +32,19 @@ type fsm struct {
 // The following set of functions are called by the FSM processing logic when a regex match is made
 func processTable(debug bool, p []string, regRow fsmRow) bool {
 	ret := false
+	if debug { println( "Parsing new Table" ) }
 	for i, v := range p {
 		println(i, v)
+	}
+	theFSM.state = regRow.nextState
+	return ret
+}
+
+func processType(debug bool, p []string, regRow fsmRow) bool {
+	ret := false
+	if debug { println( "Parsing new Type" ) }
+	for i, v := range p {
+		if debug { println(i, v) }
 	}
 	theFSM.state = regRow.nextState
 	return ret
@@ -41,9 +53,7 @@ func processTable(debug bool, p []string, regRow fsmRow) bool {
 func processTableField(debug bool, p []string, regRow fsmRow ) bool {
 	ret := false
 	for i, v := range p {
-		if debug {
-			println(i, v)
-		}
+		if debug { println(i, v) }
 	}
 	theFSM.state = regRow.nextState
 	return ret
@@ -53,7 +63,7 @@ func processTableField(debug bool, p []string, regRow fsmRow ) bool {
 func notePrimary(debug bool, p []string, regRow fsmRow) bool {
 	ret := true
 	for i, v := range p {
-		println(i, v)
+		if debug { println(i, v) }
 	}
 	if debug { println("Found Primary Key") }
 	theFSM.state = regRow.nextState
@@ -79,6 +89,15 @@ func processPrimaryInLine(debug bool, p []string, regRow fsmRow) bool {
 	return ret
 }
 
+func procNil(debug bool, p []string, regRow fsmRow) bool {
+	ret := false
+	for i, v := range p {
+		if debug { println(i, v) }
+	}
+	theFSM.state = regRow.nextState // Force searching for other fields
+	return ret
+}
+
 // End of processing logic & start of main FSM logic
 
 var theFSM fsm
@@ -88,10 +107,14 @@ var theFSM fsm
 // Setup This function needs to be called first to initialise the FSM
 func Setup() {
 	theFSM.rows = map[string][]fsmRow {
-		start: []fsmRow{{`CREATE TABLE (\w+).(\w+)?`, processTable, tableField, 0, new(regexp.Regexp)},},
+		start: []fsmRow{
+						{`\s*CREATE TABLE\s*(\w+).(\w+)?`, processTable, tableField, 0, new(regexp.Regexp)},
+						{`\s*CREATE TYPE\s*(\w+).(\w+)?`, processType, tableField, 0, new(regexp.Regexp)},
+			},
 		tableField: []fsmRow{
 		                {`\s*PRIMARY\s+`, notePrimary, primaryKey, 0, new(regexp.Regexp)},
 			            {`\s*(\w+)\s+(\w+)<?(\w+)?,?\s?(\w+)?`, processTableField, tableField, 0, new(regexp.Regexp)},
+			            {`\s*\)\s*;`, procNil, start, 0, new(regexp.Regexp)},
 			},
 		primaryKey: {{`\s*PRIMARY\s+KEY\s*\(?\s*(\w+)\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*\)x`, processPrimary, primaryKey, 0, new(regexp.Regexp)},
 			         {`\s*(\w+)\s+(\w+)\s+PRIMARY`, processPrimaryInLine, primaryKey, 0, new(regexp.Regexp)},
@@ -127,7 +150,7 @@ func parseLine(debug bool, text string) bool {
 	for _, j := range rows {
 		result := j.reg.FindStringSubmatch(text)
 		if result != nil {
-			if j.proc(debug, result, j) { parseLine( debug, text ) }
+			if j.proc != nil && j.proc(debug, result, j) { parseLine( debug, text ) }
 			break
 		}
 	}

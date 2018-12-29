@@ -16,6 +16,7 @@ func main() {
 	flag.Parse()
 	debug = *debugPtr
 	parser.Setup()
+
 /*
 	parser.ParseText( debug, `
 		CREATE TABLE demo.accounts (
@@ -26,6 +27,12 @@ func main() {
 	` )
 */
 	parser.ParseText( debug, `
+CREATE TYPE demo.city (
+    id int,
+    citycode text,
+    cityname text
+);
+
 		CREATE TABLE demo.employee (
     id int PRIMARY KEY,
     address_map map<text, frozen <city>>,
@@ -34,5 +41,7 @@ func main() {
     name text
 ) WITH CLUSTERING ORDER BY (name DESC);
 	` )
+
+// */
 
 }
