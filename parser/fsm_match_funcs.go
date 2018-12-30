@@ -1,7 +1,6 @@
 package parser
 
-
-
+import "strings"
 
 // The following set of functions are called by the FSM processing logic when a regex match is made
 func processTable(debug bool, p []string, regRow fsmRow) bool {
@@ -64,28 +63,35 @@ func processTableField(debug bool, p []string, regRow fsmRow ) bool {
 // As primary key string identified return true so that the real function to process a primary key will be called
 func notePrimary(debug bool, p []string, regRow fsmRow) bool {
 	ret := true
-	for i, v := range p {
-		if debug { println(i, v) }
-	}
 	if debug { println("Found Primary Key") }
 	theFSM.state = regRow.nextState
 	return ret
 }
 
-//
+// This function handles the PRIMARY KEY (id, name) form
 func processPrimary(debug bool, p []string, regRow fsmRow) bool {
 	ret := false
-	for i, v := range p {
+	if debug { println("Parsing normal PRIMARY KEY line") }
+
+	for i, v := range p[1:] { // Element 0 contains the matched line
 		if debug { println(i, v) }
+		if v == "" { break }
+		parseOutput.TableDetails.DbPKFields[parseOutput.TableDetails.PkIndex] = v
+		parseOutput.TableDetails.PkIndex = parseOutput.TableDetails.PkIndex + 1
 	}
+
 	theFSM.state = regRow.nextState
 	return ret
 }
 
+// This function processes the id int PRIMARY KEY form
 func processPrimaryInLine(debug bool, p []string, regRow fsmRow) bool {
 	ret := false
-	for i, v := range p {
+	if debug { println("Parsing field PRIMARY KEY annotation") }
+	for i, v := range p[1:] {
 		if debug { println(i, v) }
+		parseOutput.TableDetails.DbPKFields[parseOutput.TableDetails.PkIndex] = v
+		parseOutput.TableDetails.PkIndex = parseOutput.TableDetails.PkIndex + 1
 	}
 	theFSM.state = tableField // Force searching for other fields
 	return ret
@@ -100,10 +106,20 @@ func procNil(debug bool, p []string, regRow fsmRow) bool {
 
 func processSimpleFrozenField(debug bool, p []string, regRow fsmRow) bool {
 	ret := false
+	var j int = 0
 	if debug { println("Processing Simple Frozen Field") }
+	fields := make( []string, len(p) + 4 )
 	for i, v := range p {
-		if debug { println(i, v) }
+		if debug {
+			println(i, v)
+		}
+		if strings.ToUpper(strings.TrimSpace(v)) == FROZEN {
+			continue
+		}
+		fields[j] = v
+		j = j + 1
 	}
+	processTableField( debug, fields, regRow)
 	theFSM.state = tableField // Force searching for other fields
 	return ret
 }
@@ -111,9 +127,8 @@ func processSimpleFrozenField(debug bool, p []string, regRow fsmRow) bool {
 func processMapFrozenField(debug bool, p []string, regRow fsmRow) bool {
 	ret := false
 	if debug { println("Processing Map Frozen Field") }
-	for i, v := range p {
-		if debug { println(i, v) }
-	}
+
+	processSimpleFrozenField( debug, p, regRow)
 	theFSM.state = tableField // Force searching for other fields
 	return ret
 }

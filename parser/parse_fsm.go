@@ -12,6 +12,7 @@ const (
 
 
 	primaryString = "PRIMARY"
+	FROZEN = "FROZEN"
 )
 
 // State, Parser String, Next State
@@ -54,7 +55,7 @@ func setup() {
 			            // To terminate a Type definition
 			            {`\s*\)\s*;`, procNil, start, 0, new(regexp.Regexp)},
 			},
-		primaryKey: {{`\s*PRIMARY\s+KEY\s*\(?\s*(\w+)\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*\)x`, processPrimary, primaryKey, 0, new(regexp.Regexp)},
+		primaryKey: {{`\s*PRIMARY\s+KEY\s*\(?\s*(\w+)\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*\)`, processPrimary, primaryKey, 0, new(regexp.Regexp)},
 			         {`\s*(\w+)\s+(\w+)\s+PRIMARY`, processPrimaryInLine, primaryKey, 0, new(regexp.Regexp)},
 			},
 	}

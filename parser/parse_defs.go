@@ -27,6 +27,7 @@ type TableDetails struct {
 	TableFields  AllFieldDetails
 	DbPKFields   [MAXFIELDS] string
 	FieldIndex	int
+	PkIndex	int
 }
 
 type TypeDetails struct {
