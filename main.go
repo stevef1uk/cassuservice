@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-
 	"github.com/stevef1uk/cassuservice/parser"
 )
 
@@ -27,8 +26,8 @@ func main() {
 		` )
 	*/
 
-	/*
-	   	parser.ParseText( debug, `
+
+	 parser.ParseText( debug, `
 	   CREATE TYPE demo.city (
 	       id int,
 	       citycode text,
@@ -44,8 +43,8 @@ func main() {
 	   ) WITH CLUSTERING ORDER BY (name DESC);
 	   	` )
 
-	*/
 
+/*
 	parser.ParseText(debug, `
 CREATE TABLE demo.accounts4 (
     id int,
@@ -71,5 +70,7 @@ CREATE TABLE demo.accounts4 (
     mymap  map<int, text>,
     PRIMARY KEY (id, name, time1)
 ) WITH CLUSTERING ORDER BY (name ASC)`)
+
+*/
 
 }

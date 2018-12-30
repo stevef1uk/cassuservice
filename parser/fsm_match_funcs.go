@@ -1,63 +1,15 @@
 package parser
 
-const (
-	// Assume no more than 20 fields in a table
-	MAXFIELDS = 20
-)
-/*
-type ParseOutput struc {
-	TableSpace   string
-
-}
-
-type FieldDetails struct {
-	DbFieldNames [MAXFIELDS] string
-	DbFieldTypes [MAXFIELDS] string
-	DbPKFields   [MAXFIELDS] string
-}
 
 
-type TableDetails struct {
-	TableName    string
-	TableFields  FieldDetails[MAXFIELDS]
-
-
-	DbFieldNames [ALEN] string
-	DbFieldTypes [ALEN] string
-	DbPKFields   [ALEN] string
-	DbFieldArrayType[ALEN] string
-	DbFieldMapType[ALEN] string
-	FieldIndex	int
-	ExportPath string
-}
-
-type TableDetails struct {
-	TableSpace   string
-	TableName    string
-	DbFieldNames [ALEN] string
-	DbFieldTypes [ALEN] string
-	DbPKFields   [ALEN] string
-	DbFieldArrayType[ALEN] string
-	DbFieldMapType[ALEN] string
-	FieldIndex	int
-	ExportPath string
-}
-
-type pkFields struct {
-	PKField   string
-	FieldFormat string
-	FieldType string
-}
-
-*/
 
 // The following set of functions are called by the FSM processing logic when a regex match is made
 func processTable(debug bool, p []string, regRow fsmRow) bool {
 	ret := false
 	if debug { println( "Parsing new Table" ) }
-	for i, v := range p {
-		println(i, v)
-	}
+	parseOutput.TableSpace = p[1]
+	parseOutput.TableDetails.TableName = p[2]
+	parseOutput.inTable = true
 	theFSM.state = regRow.nextState
 	return ret
 }
@@ -68,16 +20,43 @@ func processType(debug bool, p []string, regRow fsmRow) bool {
 	for i, v := range p {
 		if debug { println(i, v) }
 	}
+	parseOutput.inTable = false
+	parseOutput.typeIndex = parseOutput.typeIndex + 1
+	parseOutput.TypeDetails[parseOutput.typeIndex].TypeName = p[2]
 	theFSM.state = regRow.nextState
 	return ret
 }
 
 func processTableField(debug bool, p []string, regRow fsmRow ) bool {
 	ret := false
-	if debug { println("Processing Table Field") }
-	for i, v := range p {
-		if debug { println(i, v) }
+	var fieldDetails *FieldDetails
+	var index int
+	if debug {
+		println("Processing Table Field")
+		for i, v := range p {
+			println(i, v)
+		}
 	}
+
+	if ( parseOutput.inTable ) {
+		index = parseOutput.TableDetails.FieldIndex
+		parseOutput.TableDetails.FieldIndex = parseOutput.TableDetails.FieldIndex + 1
+		fieldDetails = &parseOutput.TableDetails.TableFields.DbFieldDetails[index]
+	} else {
+		index = parseOutput.TypeDetails[parseOutput.typeIndex].FieldIndex
+		parseOutput.TypeDetails[parseOutput.typeIndex].FieldIndex = parseOutput.TypeDetails[parseOutput.typeIndex].FieldIndex + 1
+		fieldDetails = &parseOutput.TypeDetails[parseOutput.typeIndex].TypeFields.DbFieldDetails[index]
+	}
+
+	fieldDetails.DbFieldName = p[1]
+	fieldDetails.DbFieldType = p[2]
+	if p[3] != "" {
+		fieldDetails.DbFieldCollectionType = p[3]
+	}
+	if p[4] != "" {
+		fieldDetails.DbFieldMapType = p[4]
+	}
+
 	theFSM.state = regRow.nextState
 	return ret
 }

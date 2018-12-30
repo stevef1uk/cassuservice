@@ -35,6 +35,9 @@ var theFSM fsm
 
 // Setup This function needs to be called first to initialise the FSM
 func setup() {
+	parseOutput.TableDetails = TableDetails{}
+	parseOutput.typeIndex = -1 // Set to -1 as always incrememeted when Type found
+
 	theFSM.rows = map[string][]fsmRow {
 		start: []fsmRow{
 						{`\s*CREATE TABLE\s*(\w+).(\w+)?`, processTable, tableField, 0, new(regexp.Regexp)},
