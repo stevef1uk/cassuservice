@@ -35,7 +35,7 @@ var theFSM fsm
 //var theRegs []*regexp.Regexp
 
 // Setup This function needs to be called first to initialise the FSM
-func setup() {
+func setup( debug bool ) {
 	parseOutput.TableDetails = TableDetails{}
 	//parseOutput.typeIndex = -1 // Set to -1 as always incrememeted when Type found
 
@@ -67,7 +67,7 @@ func setup() {
 	index := 0
 	for i, v := range theFSM.rows {
 		for j, k := range v {
-			println(i, k.expression)
+			if debug { println(i, k.expression)  }
 			tableRe, err := regexp.Compile(k.expression)
 			if err == nil {
 				*theFSM.rows[i][j].reg = *tableRe
@@ -99,21 +99,20 @@ func parseLine(debug bool, text string) bool {
 }
 
 // ParseText is called to process the Cassandra CQL definitions
-func ParseText(debug bool, text string) {
+func ParseText(debug bool, text string) ParseOutput {
 
 	if theFSM.state == "" {
-		setup()
+		setup( debug )
 	}
 	lines := strings.SplitAfter(text, "\n")
 	for _, v := range lines {
-		println("Line:", v, "::")
+		if debug { println("Line:", v, "::") }
 		if strings.Contains(v, theFSM.breakString) {
 			if debug { println("I am out of here!") }
 			break
 		}
 		parseLine(debug, strings.ToUpper(v))
 	}
-	if debug {
-		println("Finished ParseText")
-	}
+	if debug { println("Finished ParseText") }
+	return parseOutput
 }
