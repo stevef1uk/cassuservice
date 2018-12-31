@@ -97,7 +97,7 @@ func parseLine(debug bool, text string) bool {
 	return ret
 }
 
-// ParseText needs to be called after FMS has been initialised
+// ParseText is called to process the Cassandra CQL definitions
 func ParseText(debug bool, text string) {
 
 	if theFSM.state == "" {
@@ -107,12 +107,10 @@ func ParseText(debug bool, text string) {
 	for _, v := range lines {
 		println("Line:", v, "::")
 		if strings.Contains(v, theFSM.breakString) {
-			if debug {
-				println("I am out of here!")
-			}
+			if debug { println("I am out of here!") }
 			break
 		}
-		parseLine(debug, v)
+		parseLine(debug, strings.ToUpper(v))
 	}
 	if debug {
 		println("Finished ParseText")

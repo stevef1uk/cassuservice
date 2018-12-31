@@ -3,6 +3,8 @@ package parser
 import "strings"
 
 // The following set of functions are called by the FSM processing logic when a regex match is made
+
+
 func processTable(debug bool, p []string, regRow fsmRow) bool {
 	ret := false
 	if debug { println( "Parsing new Table" ) }
@@ -108,7 +110,6 @@ func processPrimaryInLine(debug bool, p []string, regRow fsmRow) bool {
 	parseOutput.TableDetails.PkIndex = parseOutput.TableDetails.PkIndex + 1
 
 	processTableField( debug, copyStringArrayToSubSstring(debug,p,PRIMARY_STRING), regRow)
-	// @TODO ensure PK stored as a field!
 	theFSM.state = tableField // Force searching for other fields
 	return ret
 }
