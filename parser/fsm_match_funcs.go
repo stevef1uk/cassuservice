@@ -20,7 +20,7 @@ func processType(debug bool, p []string, regRow fsmRow) bool {
 		if debug { println(i, v) }
 	}
 	parseOutput.inTable = false
-	parseOutput.typeIndex = parseOutput.typeIndex + 1
+	//parseOutput.typeIndex = parseOutput.typeIndex + 1
 	parseOutput.TypeDetails[parseOutput.typeIndex].TypeName = p[2]
 	theFSM.state = regRow.nextState
 	return ret
@@ -99,6 +99,7 @@ func processPrimaryInLine(debug bool, p []string, regRow fsmRow) bool {
 
 func procNil(debug bool, p []string, regRow fsmRow) bool {
 	ret := false
+	parseOutput.typeIndex = parseOutput.typeIndex + 1
 	theFSM.state = regRow.nextState // Force searching for other fields
 	return ret
 }
