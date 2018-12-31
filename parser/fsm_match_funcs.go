@@ -91,6 +91,7 @@ func processPrimaryInLine(debug bool, p []string, regRow fsmRow) bool {
 	if debug { println(p[0], " - Storing", p[1]) }
 	parseOutput.TableDetails.DbPKFields[parseOutput.TableDetails.PkIndex] = p[1]
 	parseOutput.TableDetails.PkIndex = parseOutput.TableDetails.PkIndex + 1
+	// @TODO ensure PK stored as a field!
 	theFSM.state = tableField // Force searching for other fields
 	return ret
 }
