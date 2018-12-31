@@ -88,11 +88,9 @@ func processPrimary(debug bool, p []string, regRow fsmRow) bool {
 func processPrimaryInLine(debug bool, p []string, regRow fsmRow) bool {
 	ret := false
 	if debug { println("Parsing field PRIMARY KEY annotation") }
-	for i, v := range p[1:] {
-		if debug { println(i, v) }
-		parseOutput.TableDetails.DbPKFields[parseOutput.TableDetails.PkIndex] = v
-		parseOutput.TableDetails.PkIndex = parseOutput.TableDetails.PkIndex + 1
-	}
+	if debug { println(p[0], " - Storing", p[1]) }
+	parseOutput.TableDetails.DbPKFields[parseOutput.TableDetails.PkIndex] = p[1]
+	parseOutput.TableDetails.PkIndex = parseOutput.TableDetails.PkIndex + 1
 	theFSM.state = tableField // Force searching for other fields
 	return ret
 }
