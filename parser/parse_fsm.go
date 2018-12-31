@@ -41,23 +41,24 @@ func setup() {
 
 	theFSM.rows = map[string][]fsmRow {
 		start: []fsmRow{
-						{`\s*CREATE TABLE\s*(\w+).(\w+)?`, processTable, tableField, 0, new(regexp.Regexp)},
-						{`\s*CREATE TYPE\s*(\w+).(\w+)?`, processType, tableField, 0, new(regexp.Regexp)},
+		    {`\s*CREATE TABLE\s*(\w+).(\w+)?`, processTable, tableField, 0, new(regexp.Regexp)},
+		    {`\s*CREATE TYPE\s*(\w+).(\w+)?`, processType, tableField, 0, new(regexp.Regexp)},
 			},
 		tableField: []fsmRow{
-		                {`\s*PRIMARY\s+`, notePrimary, primaryKey, 0, new(regexp.Regexp)},
-			            // To handle text like: address_set list<frozen<city>>,
-			            {`\s*(\w+)\s+(\w+)\s*<\s*(\w+)\s*<\s*(\w+)\s*>>,?`, processSimpleFrozenField, tableField, 0, new(regexp.Regexp)},
-			            // To handle text like: address_set map<text, frozen <city>>,
-			            {`\s*(\w+)\s+(\w+)\s*<\s*(\w+),\s*\w+\s*\w+\s*<\s*(\w+)\s*>>,?`, processMapFrozenField, tableField, 0, new(regexp.Regexp)},
-			            // To handle normal table / type fields
-			            {`\s*(\w+)\s+(\w+)<?(\w+)?,?\s?(\w+)?`, processTableField, tableField, 0, new(regexp.Regexp)},
-			            // To terminate a Type definition
-			            {`\s*\)\s*;`, procNil, start, 0, new(regexp.Regexp)},
-			},
-		primaryKey: {{`\s*PRIMARY\s+KEY\s*\(?\s*(\w+)\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*\)`, processPrimary, primaryKey, 0, new(regexp.Regexp)},
-			         {`\s*(\w+)\s+(\w+)\s+PRIMARY`, processPrimaryInLine, primaryKey, 0, new(regexp.Regexp)},
-			},
+		    {`\s*PRIMARY\s+`, notePrimary, primaryKey, 0, new(regexp.Regexp)},
+		    // To handle text like: address_set list<frozen<city>>,
+		    {`\s*(\w+)\s+(\w+)\s*<\s*(\w+)\s*<\s*(\w+)\s*>>,?`, processSimpleFrozenField, tableField, 0, new(regexp.Regexp)},
+	            // To handle text like: address_set map<text, frozen <city>>,
+	            {`\s*(\w+)\s+(\w+)\s*<\s*(\w+),\s*\w+\s*\w+\s*<\s*(\w+)\s*>>,?`, processMapFrozenField, tableField, 0, new(regexp.Regexp)},
+	            // To handle normal table / type fields
+	            {`\s*(\w+)\s+(\w+)<?(\w+)?,?\s?(\w+)?`, processTableField, tableField, 0, new(regexp.Regexp)},
+		    // To terminate a Type definition
+		    {`\s*\)\s*;`, procNil, start, 0, new(regexp.Regexp)},
+		    },
+		primaryKey: {
+		    {`\s*PRIMARY\s+KEY\s*\(?\s*(\w+)\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*,?\s*(\w+)*\s*\)`, processPrimary, primaryKey, 0, new(regexp.Regexp)},
+	            {`\s*(\w+)\s+(\w+)\s+PRIMARY`, processPrimaryInLine, primaryKey, 0, new(regexp.Regexp)},
+		    },
 	}
 
 	theFSM.breakString = "WITH"
@@ -70,7 +71,6 @@ func setup() {
 			tableRe, err := regexp.Compile(k.expression)
 			if err == nil {
 				*theFSM.rows[i][j].reg = *tableRe
-				_ = tableRe
 			} else {
 				println("Failed to compile expression %s", k.expression)
 			}
