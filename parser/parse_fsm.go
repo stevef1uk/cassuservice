@@ -11,8 +11,8 @@ const (
 	primaryKey = "primaryKey"
 
 
-	primaryString = "PRIMARY"
-	FROZEN = "FROZEN"
+	PRIMARY_STRING = "PRIMARY"
+	FROZEN         = "FROZEN"
 )
 
 // State, Parser String, Next State
