@@ -93,7 +93,7 @@ func copyStringArrayToSubSstring (debug bool, p []string, pattern string ) [] st
 	for i, v := range p {
 		if debug { println(i, v) }
 		if strings.ToUpper(strings.TrimSpace(v)) == pattern {
-			break
+			continue
 		}
 		ret[j] = v
 		j = j + 1

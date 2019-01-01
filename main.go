@@ -27,7 +27,7 @@ func main() {
 
 */
 
-	 parser.ParseText( debug, `
+	 parser.ParseText( debug, parser.Setup, parser.Reset, `
 	   CREATE TYPE demo.city (
 	       id int,
 	       citycode text,
