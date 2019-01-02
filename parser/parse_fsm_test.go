@@ -179,7 +179,7 @@ func TestTypeandTable(t *testing.T) {
 		t.Errorf("TypeIndex incorrect, got: %d, want: %d.", expected.typeIndex, 1)
 	}
 	if expected.TypeDetails[0].FieldIndex != 3 {
-		t.Errorf("FieldIndex incorrect, got: %d, want: %d.", expected.typeIndex, 3)
+		t.Errorf("FieldIndex incorrect, got: %d, want: %d.", expected.TypeDetails[0].FieldIndex, 3)
 	}
 	if expected.TypeDetails[0].TypeName != "CITY" {
 		t.Errorf("TypeName incorrect, got: %s, want: %s.", expected.TypeDetails[0].TypeName, "CITY")
@@ -274,3 +274,76 @@ func TestTypeandTable(t *testing.T) {
 		t.Errorf("TypeIndex incorrect, got: %s, want: %s.", expected.TableDetails.TableFields.DbFieldDetails[4].DbFieldType, "TEXT")
 	}
 }
+
+func TestMultipleTypes(t *testing.T) {
+
+	expected := ParseText(false, Setup, Reset, `
+CREATE TYPE demo.debtor_agent (
+  schemeName text,
+  identification text
+);
+
+
+CREATE TYPE demo.debtor_account (
+  schemeName text,
+  identification text,
+  name text,
+  secondaryIdentification text
+);
+
+
+CREATE TYPE demo.creditor_agent (
+  schemeName text,
+  identification text
+);
+
+CREATE TABLE demo.pisp_submissions_per_id (
+	submissionId uuid,
+	timeBucket text,
+	debtorAgent debtor_agent,
+	debtorAccount debtor_account,
+	creditorAgent creditor_agent,
+	lastUpdatedAt timestamp,
+	PRIMARY KEY (submissionId, lastUpdatedAt)
+) WITH CLUSTERING ORDER BY (lastUpdatedAt DESC)
+	`)
+
+	if expected.TableSpace != "DEMO" {
+		t.Errorf("Tablespace incorrect, got: %s, want: %s.", expected.TableSpace, "TEST")
+	}
+	if expected.typeIndex != 3 {
+		t.Errorf("TypeIndex incorrect, got: %d, want: %d.", expected.typeIndex, 3)
+	}
+	if expected.TypeDetails[0].TypeName != "DEBTOR_AGENT" {
+		t.Errorf("TypeName incorrect, got: %s, want: %s.", expected.TypeDetails[0].TypeName, "DEBTOR_AGENT")
+	}
+	if expected.TypeDetails[0].FieldIndex != 2 {
+		t.Errorf("FieldIndex incorrect, got: %d, want: %d.", expected.TypeDetails[0].FieldIndex, 2)
+	}
+	if expected.TypeDetails[1].TypeName != "DEBTOR_ACCOUNT" {
+		t.Errorf("TypeName incorrect, got: %s, want: %s.", expected.TypeDetails[1].TypeName, "DEBTOR_ACCOUNT")
+	}
+	if expected.TypeDetails[1].FieldIndex != 4 {
+		t.Errorf("FieldIndex incorrect, got: %d, want: %d.", expected.TypeDetails[1].FieldIndex, 4)
+	}
+	if expected.TypeDetails[2].TypeName != "CREDITOR_AGENT" {
+		t.Errorf("TypeName incorrect, got: %s, want: %s.", expected.TypeDetails[2].TypeName, "CREDITOR_AGENT")
+	}
+	if expected.TypeDetails[2].FieldIndex != 2 {
+		t.Errorf("FieldIndex incorrect, got: %d, want: %d.", expected.TypeDetails[2].FieldIndex, 2)
+	}
+	if expected.TableDetails.TableName != "PISP_SUBMISSIONS_PER_ID" {
+		t.Errorf("TableName incorrect, got: %s, want: %s.", expected.TableDetails.TableName, "PISP_SUBMISSIONS_PER_ID")
+	}
+	if expected.TableDetails.PkIndex != 2 {
+		t.Errorf("PkIndex incorrect, got: %d, want: %d.", expected.TableDetails.PkIndex, 2)
+	}
+
+	if expected.TableDetails.FieldIndex != 6 {
+		t.Errorf("PkIndex incorrect, got: %d, want: %d.", expected.TableDetails.FieldIndex, 6)
+	}
+	if expected.TableDetails.PkIndex != 2 {
+		t.Errorf("PkIndex incorrect, got: %d, want: %d.", expected.TableDetails.PkIndex, 2)
+	}
+}
+

@@ -36,6 +36,7 @@ var theFSM fsm
 
 // Setup This function needs to be called first to initialise the FSM
 func Setup( debug bool ) {
+	parseOutput = ParseOutput{}
 	parseOutput.TableDetails = TableDetails{}
 	//parseOutput.typeIndex = -1 // Set to -1 as always incrememeted when Type found
 
