@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"github.com/stevef1uk/cassuservice/parser"
+	"github.com/stevef1uk/cassuservice/swagger"
 )
 
 // Set debug flag to true to output logging information to stdout
@@ -26,9 +27,9 @@ func main() {
 		` )
 
 */
-
-	 parser.ParseText( debug, parser.Setup, parser.Reset, `
-	   CREATE TYPE demo.city (
+/*
+	 ret := parser.ParseText( debug, parser.Setup, parser.Reset, `
+       CREATE TYPE demo.city (
 	       id int,
 	       citycode text,
 	       cityname text
@@ -43,9 +44,11 @@ func main() {
 	   ) WITH CLUSTERING ORDER BY (name DESC);
 	   	` )
 
-
-/*
-	parser.ParseText(debug, `
+	ret1 := swagger.CreateSwagger( true, ret )
+	println("Swagger=\n")
+	println(ret1)
+*/
+	ret :=  parser.ParseText(debug, parser.Setup, parser.Reset,`
 CREATE TABLE demo.accounts4 (
     id int,
     name text,
@@ -71,6 +74,9 @@ CREATE TABLE demo.accounts4 (
     PRIMARY KEY (id, name, time1)
 ) WITH CLUSTERING ORDER BY (name ASC)`)
 
-*/
+	ret1 := swagger.CreateSwagger( true, ret )
+	println("Swagger=\n")
+	println(ret1)
+
 
 }
