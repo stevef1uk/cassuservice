@@ -6,8 +6,9 @@ import (
 )
 
 
-func addParametersAndResponses( debug bool, output string, tableDetails parser.TableDetails) string {
+func addParametersAndResponses( debug bool, output string, parseOutput  parser.ParseOutput) string {
 	ret := output
+	tableDetails := parseOutput.TableDetails
 
 	for i :=0;  i < tableDetails.PkIndex; i++ {
 		fieldDetails := findFieldByname( tableDetails.DbPKFields[i], tableDetails.FieldIndex, tableDetails.TableFields)
@@ -40,7 +41,8 @@ func addParametersAndResponses( debug bool, output string, tableDetails parser.T
 	for i :=0;  i < tableDetails.FieldIndex; i++ {
 		ret = ret + `
 ` + "                 " + strings.ToLower( tableDetails.TableFields.DbFieldDetails[i].DbFieldName) + ":"
-		if  tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType != "" {
+		if  tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType != "" ||
+			IsFieldTypeUDT( parseOutput, tableDetails.TableFields.DbFieldDetails[i].DbFieldType ) {
 			ret = ret + `
 ` + "                   $ref: " + `"#/definitions/` + strings.ToLower( tableDetails.TableFields.DbFieldDetails[i].DbFieldName) + `"`
 		} else {
@@ -84,7 +86,7 @@ func CreateSwagger( debug bool, parseOutput parser.ParseOutput ) string {
       parameters:`
 
 	// Add the parameters
-	retSwagger = addParametersAndResponses( debug, retSwagger, parseOutput.TableDetails )
+	retSwagger = addParametersAndResponses( debug, retSwagger, parseOutput )
 
 	return retSwagger
 }
