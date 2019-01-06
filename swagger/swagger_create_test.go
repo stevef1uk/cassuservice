@@ -402,3 +402,73 @@ CREATE TABLE demo.accounts4 (
 	}
 }
 
+func TestSimple1(t *testing.T) {
+
+	expectedOutput := `swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Simple API
+  description: A generated file representing a Cassandra Table definition
+schemes:
+  - http
+host: localhost
+basePath: /v1
+paths:
+  /accounts:
+    get: 
+      summary: Retrieve some records from the Cassandra table 
+      description: Returns rows from the Cassandra table
+      parameters:
+        - name: id
+          in: query
+          description: Primary Key field in Table
+          required: true
+          type: integer
+          format: int32
+        - name: name
+          in: query
+          description: Primary Key field in Table
+          required: true
+          type: string
+          format: string
+      responses:
+        200:
+          description: A list of records
+          schema:
+            type: array
+            items:
+              required:
+                - id
+                - name
+              properties:
+                 id:
+                   type: integer
+                 name:
+                   type: string
+        400: 
+          description: Record not found
+        default:
+          description: Sorry unexpected error`
+
+	ret := parser.ParseText( false, parser.Setup, parser.Reset, `
+CREATE TABLE demo.accounts (
+    id int,
+    name text,
+    PRIMARY KEY (id, name)
+) WITH CLUSTERING ORDER BY (name ASC)
+` )
+
+	ret1 := CreateSwagger( true, ret )
+	if expectedOutput != ret1 {
+
+		if len(expectedOutput) != len(ret1) {
+			t.Errorf("Expected length %d, actual, %d", len(expectedOutput), len(ret1) )
+		}
+		for i, _ := range expectedOutput {
+			if (expectedOutput[i] != ret1[i] ) {
+				t.Errorf("Difference at %d, got %c expected %c", i, expectedOutput[i], ret1[i] )
+			}
+		}
+		t.Errorf("Swagger output wrong got:%s: want:%s:", ret1, expectedOutput )
+	}
+}

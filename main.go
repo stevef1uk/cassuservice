@@ -17,8 +17,8 @@ func main() {
 	debug = *debugPtr
 	//parser.Setup()
 
-/*
-		parser.ParseText( debug, `
+
+		ret := parser.ParseText( debug, parser.Setup, parser.Reset,`
 			CREATE TABLE demo.accounts (
 			id int,
 			name text,
@@ -26,7 +26,10 @@ func main() {
 		) WITH CLUSTERING ORDER BY (name ASC)
 		` )
 
-*/
+	ret1 := swagger.CreateSwagger( true, ret )
+	println("Swagger=\n")
+	println(ret1)
+
 /*
 	 ret := parser.ParseText( debug, parser.Setup, parser.Reset, `
        CREATE TYPE demo.city (
@@ -87,6 +90,7 @@ CREATE TABLE demo.pisp_submissions_per_id (
 
 */
 
+/*
 	ret :=  parser.ParseText(debug, parser.Setup, parser.Reset,`
 CREATE TABLE demo.accounts4 (
     id int,
@@ -117,5 +121,6 @@ CREATE TABLE demo.accounts4 (
 	println("Swagger=\n")
 	println(ret1)
 
+*/
 
 }
