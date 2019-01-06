@@ -27,7 +27,7 @@ func main() {
 		` )
 
 */
-/*
+
 	 ret := parser.ParseText( debug, parser.Setup, parser.Reset, `
        CREATE TYPE demo.city (
 	       id int,
@@ -48,7 +48,8 @@ func main() {
 	println("Swagger=\n")
 	println(ret1)
 
-*/
+/*
+
 	ret :=  parser.ParseText(debug, parser.Setup, parser.Reset,`
 CREATE TABLE demo.accounts4 (
     id int,
@@ -79,6 +80,6 @@ CREATE TABLE demo.accounts4 (
 	println("Swagger=\n")
 	println(ret1)
 
-
+*/
 
 }

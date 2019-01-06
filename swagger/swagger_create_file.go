@@ -34,10 +34,39 @@ func addMaps( debug bool, output string, parseOutput  parser.ParseOutput ) strin
 	for i :=0;  i < tableDetails.TableFields.FieldIndex; i++ {
 		if  tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType != "" {
 			ret = ret + `
-` + "  " +  strings.ToLower( tableDetails.TableFields.DbFieldDetails[i].DbFieldName) + ":" + `
-` + "    additionalProperties:" + `
-` + "      type: " +  mapCassandraTypeToSwaggerType(true, tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType)
+` + "  " + strings.ToLower(tableDetails.TableFields.DbFieldDetails[i].DbFieldName) + ":" + `
+` + "      additionalProperties:" + `
+`
 
+
+			if IsFieldTypeUDT(parseOutput, tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType) {
+				ret = ret + "         $ref: " +  `"#/definitions/` + strings.ToLower(tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType ) + `"`
+			} else {
+				ret = ret + "  type: " + mapCassandraTypeToSwaggerType(true, tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType)
+			}
+		}
+	}
+
+	return ret
+}
+
+// Add the definition details for list & set types
+func addCollectionTypes( debug bool, output string, parseOutput  parser.ParseOutput ) string {
+	ret := output
+	tableDetails := parseOutput.TableDetails
+
+	for i :=0;  i < tableDetails.TableFields.FieldIndex; i++ {
+		if  tableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType != "" && tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType == "" {
+			ret = ret + `
+` + "  " + strings.ToLower(tableDetails.TableFields.DbFieldDetails[i].DbFieldName) + ":" + `
+` + "      type: array" + `
+` + "      items:" + `
+`
+			if IsFieldTypeUDT(parseOutput, tableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType) {
+				ret = ret + "         $ref: " +  `"#/definitions/` + strings.ToLower(tableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType ) + `"`
+			} else {
+				ret = ret + "         type: " + mapCassandraTypeToSwaggerType(true, tableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType)
+			}
 		}
 	}
 
@@ -97,9 +126,7 @@ func addUDTs( debug bool, output string, parseOutput  parser.ParseOutput ) strin
 ` + "  " +  strings.ToLower( tableDetails.TypeName) + ":" + `
 `
 		ret = ret + "    properties:"
-
 		ret = ret + addFieldDetails( debug, "       " , ret, tableDetails.TypeFields, parseOutput  )
-
 	}
 
 	return ret
@@ -170,6 +197,7 @@ func CreateSwagger( debug bool, parseOutput parser.ParseOutput ) string {
 	if haveDefs {
 		retSwagger = addUDTs( debug, retSwagger, parseOutput )
 		retSwagger = addMaps( debug, retSwagger, parseOutput )
+		retSwagger = addCollectionTypes( debug, retSwagger, parseOutput )
 	}
 
 	return retSwagger
