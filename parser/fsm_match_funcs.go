@@ -40,12 +40,12 @@ func processTableField(debug bool, p []string, regRow fsmRow ) bool {
 	}
 
 	if ( parseOutput.inTable ) {
-		index = parseOutput.TableDetails.FieldIndex
-		parseOutput.TableDetails.FieldIndex = parseOutput.TableDetails.FieldIndex + 1
+		index = parseOutput.TableDetails.TableFields.FieldIndex
+		parseOutput.TableDetails.TableFields.FieldIndex = parseOutput.TableDetails.TableFields.FieldIndex + 1
 		fieldDetails = &parseOutput.TableDetails.TableFields.DbFieldDetails[index]
 	} else {
-		index = parseOutput.TypeDetails[parseOutput.TypeIndex].FieldIndex
-		parseOutput.TypeDetails[parseOutput.TypeIndex].FieldIndex = parseOutput.TypeDetails[parseOutput.TypeIndex].FieldIndex + 1
+		index = parseOutput.TypeDetails[parseOutput.TypeIndex].TypeFields.FieldIndex
+		parseOutput.TypeDetails[parseOutput.TypeIndex].TypeFields.FieldIndex = parseOutput.TypeDetails[parseOutput.TypeIndex].TypeFields.FieldIndex + 1
 		fieldDetails = &parseOutput.TypeDetails[parseOutput.TypeIndex].TypeFields.DbFieldDetails[index]
 	}
 

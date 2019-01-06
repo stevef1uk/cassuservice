@@ -11,7 +11,7 @@ func addDefinitions( debug bool, output string, parseOutput  parser.ParseOutput 
 	defsRequired := false;
 	tableDetails := parseOutput.TableDetails
 
-	for i :=0;  i < tableDetails.FieldIndex; i++ {
+	for i :=0;  i < tableDetails.TableFields.FieldIndex; i++ {
 		if  tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType != "" ||
 			IsFieldTypeUDT( parseOutput, tableDetails.TableFields.DbFieldDetails[i].DbFieldType ) {
 			defsRequired = true
@@ -31,7 +31,7 @@ func addMaps( debug bool, output string, parseOutput  parser.ParseOutput ) strin
 	ret := output
 	tableDetails := parseOutput.TableDetails
 
-	for i :=0;  i < tableDetails.FieldIndex; i++ {
+	for i :=0;  i < tableDetails.TableFields.FieldIndex; i++ {
 		if  tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType != "" {
 			ret = ret + `
 ` + "  " +  strings.ToLower( tableDetails.TableFields.DbFieldDetails[i].DbFieldName) + ":" + `
@@ -46,30 +46,30 @@ func addMaps( debug bool, output string, parseOutput  parser.ParseOutput ) strin
 
 // Add field details
 func addFieldDetails( debug bool, output string, tableDetails  parser.AllFieldDetails, parseOutput  parser.ParseOutput ) string {
-	//ret := output
-/*
+	ret := output
+
 	for i :=0;  i < tableDetails.FieldIndex; i++ {
 		ret = ret + `
 ` + "                 " + strings.ToLower( tableDetails.DbFieldDetails[i].DbFieldName) + ":"
 		if  tableDetails.DbFieldDetails[i].DbFieldMapType != "" ||
-			IsFieldTypeUDT( parseOutput, tableDetails.TypeFields.DbFieldDetails[i].DbFieldType ) {
+			IsFieldTypeUDT( parseOutput, tableDetails.DbFieldDetails[i].DbFieldType ) {
 			ret = ret + `
-` + "                   $ref: " + `"#/definitions/` + strings.ToLower( tableDetails.TypeFields.DbFieldDetails[i].DbFieldName) + `"`
+` + "                   $ref: " + `"#/definitions/` + strings.ToLower( tableDetails.DbFieldDetails[i].DbFieldName) + `"`
 		} else {
-			if tableDetails.TypeFields.DbFieldDetails[i].DbFieldCollectionType != "" {
-				if IsFieldTypeUDT(parseOutput, tableDetails.TypeFields.DbFieldDetails[i].DbFieldCollectionType)  {
+			if tableDetails.DbFieldDetails[i].DbFieldCollectionType != "" {
+				if IsFieldTypeUDT(parseOutput, tableDetails.DbFieldDetails[i].DbFieldCollectionType)  {
 					ret = ret + `
-` + "                   $ref: " + `"#/definitions/` + strings.ToLower( tableDetails.TypeFields.DbFieldDetails[i].DbFieldName) + `"`
+` + "                   $ref: " + `"#/definitions/` + strings.ToLower( tableDetails.DbFieldDetails[i].DbFieldName) + `"`
 				} else {
 					ret = ret + `
-` + "                   " + "type:" + mapCassandraTypeToSwaggerType(true, tableDetails.TypeFields.DbFieldDetails[i].DbFieldType)
-					if tableDetails.TypeFields.DbFieldDetails[i].DbFieldCollectionType != "" {
+` + "                   " + "type:" + mapCassandraTypeToSwaggerType(true, tableDetails.DbFieldDetails[i].DbFieldType)
+					if tableDetails.DbFieldDetails[i].DbFieldCollectionType != "" {
 
 						ret = ret + `
 ` + "                   items:" + `
-` + "                     type: " + mapCassandraTypeToSwaggerType(true, tableDetails.TypeFields.DbFieldDetails[i].DbFieldCollectionType)
+` + "                     type: " + mapCassandraTypeToSwaggerType(true, tableDetails.DbFieldDetails[i].DbFieldCollectionType)
 					} else {
-						if IsFieldaTime(tableDetails.TypeFields.DbFieldDetails[i].DbFieldType) {
+						if IsFieldaTime(tableDetails.DbFieldDetails[i].DbFieldType) {
 							ret = ret + `
 ` + "                   format: date-time"
 						}
@@ -77,12 +77,11 @@ func addFieldDetails( debug bool, output string, tableDetails  parser.AllFieldDe
 				}
 			} else {
 				ret = ret + `
-` + "                   " + "type:" + mapCassandraTypeToSwaggerType(true, tableDetails.TypeFields.DbFieldDetails[i].DbFieldType)
+` + "                   " + "type:" + mapCassandraTypeToSwaggerType(true, tableDetails.DbFieldDetails[i].DbFieldType)
 			}
 		}
 	}
-}
-*/
+
 	return output
 }
 
@@ -100,7 +99,7 @@ func addUDTs( debug bool, output string, parseOutput  parser.ParseOutput ) strin
 		ret = ret + `
 ` + "              properties:"
 
-		for i :=0;  i < tableDetails.FieldIndex; i++ {
+		for i :=0;  i < tableDetails.TypeFields.FieldIndex; i++ {
 			ret = ret + `
 ` + "                 " + strings.ToLower( tableDetails.TypeFields.DbFieldDetails[i].DbFieldName) + ":"
 			if  tableDetails.TypeFields.DbFieldDetails[i].DbFieldMapType != "" ||
@@ -144,7 +143,7 @@ func addParametersAndResponses( debug bool, output string, parseOutput  parser.P
 	tableDetails := parseOutput.TableDetails
 
 	for i :=0;  i < tableDetails.PkIndex; i++ {
-		fieldDetails := findFieldByname( tableDetails.DbPKFields[i], tableDetails.FieldIndex, tableDetails.TableFields)
+		fieldDetails := findFieldByname( tableDetails.DbPKFields[i], tableDetails.TableFields.FieldIndex, tableDetails.TableFields)
 		ret = ret + `
 ` + "        - " + "name: " + strings.ToLower(tableDetails.DbPKFields[i]) + `
 ` + "          in: query" + `
@@ -163,7 +162,7 @@ func addParametersAndResponses( debug bool, output string, parseOutput  parser.P
 ` + "            items:" + `
 ` + "              required:"
 
-	for i :=0;  i < tableDetails.FieldIndex; i++ {
+	for i :=0;  i < tableDetails.TableFields.FieldIndex; i++ {
 		ret = ret + `
 ` + "                - " + strings.ToLower( tableDetails.TableFields.DbFieldDetails[i].DbFieldName)
 	}
@@ -171,7 +170,10 @@ func addParametersAndResponses( debug bool, output string, parseOutput  parser.P
 	ret = ret + `
 ` + "              properties:"
 
-	for i :=0;  i < tableDetails.FieldIndex; i++ {
+	//ret = ret + addFieldDetails( debug, ret, tableDetails.TableFields, parseOutput  )
+
+
+	for i :=0;  i < tableDetails.TableFields.FieldIndex; i++ {
 		ret = ret + `
 ` + "                 " + strings.ToLower( tableDetails.TableFields.DbFieldDetails[i].DbFieldName) + ":"
 		if  tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType != "" ||

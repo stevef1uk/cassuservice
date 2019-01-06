@@ -19,6 +19,7 @@ type FieldDetails struct {
 
 type AllFieldDetails struct {
 	DbFieldDetails [MAXFIELDS] FieldDetails
+	FieldIndex int
 }
 
 
@@ -26,14 +27,12 @@ type TableDetails struct {
 	TableName    string
 	TableFields  AllFieldDetails
 	DbPKFields   [MAXFIELDS] string
-	FieldIndex	int
 	PkIndex	int
 }
 
 type TypeDetails struct {
 	TypeName    string
 	TypeFields  AllFieldDetails
-	FieldIndex	int
 }
 
 type ParseOutput struct {
