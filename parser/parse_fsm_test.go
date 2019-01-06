@@ -32,8 +32,8 @@ func TestSimpleTable(t *testing.T) {
 	if expected.TableDetails.DbPKFields[1] != "NAME" {
 		t.Errorf("DbPKFields[1] incorrect, got: %s, want: %s.", expected.TableDetails.DbPKFields[0], "NAME")
 	}
-	if expected.TableDetails.FieldIndex != 2 {
-		t.Errorf("FieldIndex incorrect, got: %d, want: %d.", expected.TableDetails.FieldIndex, 2)
+	if expected.TableDetails.TableFields.FieldIndex != 2 {
+		t.Errorf("FieldIndex incorrect, got: %d, want: %d.", expected.TableDetails.TableFields.FieldIndex, 2)
 	}
 	if expected.TableDetails.TableFields.DbFieldDetails[0].DbFieldName != "ID" {
 		t.Errorf("DbFieldName incorrect, got: %s, want: %s.", expected.TableDetails.TableFields.DbFieldDetails[0].DbFieldName, "ID" )
@@ -107,8 +107,8 @@ func TestComplexTable(t *testing.T) {
 	if expected.TableDetails.DbPKFields[2] != "TIME1" {
 		t.Errorf("DbPKFields[2] incorrect, got: %s, want: %s.", expected.TableDetails.DbPKFields[0], "TIME1")
 	}
-	if expected.TableDetails.FieldIndex != 21 {
-		t.Errorf("FieldIndex incorrect, got: %d, want: %d.", expected.TableDetails.FieldIndex, 21)
+	if expected.TableDetails.TableFields.FieldIndex != 21 {
+		t.Errorf("FieldIndex incorrect, got: %d, want: %d.", expected.TableDetails.TableFields.FieldIndex, 21)
 	}
 	if expected.TableDetails.TableFields.DbFieldDetails[0].DbFieldName != "ID" {
 		t.Errorf("DbFieldName incorrect, got: %s, want: %s.", expected.TableDetails.TableFields.DbFieldDetails[0].DbFieldName, "ID" )
@@ -178,8 +178,8 @@ func TestTypeandTable(t *testing.T) {
 	if expected.TypeIndex != 1 {
 		t.Errorf("TypeIndex incorrect, got: %d, want: %d.", expected.TypeIndex, 1)
 	}
-	if expected.TypeDetails[0].FieldIndex != 3 {
-		t.Errorf("FieldIndex incorrect, got: %d, want: %d.", expected.TypeDetails[0].FieldIndex, 3)
+	if expected.TypeDetails[0].TypeFields.FieldIndex != 3 {
+		t.Errorf("FieldIndex incorrect, got: %d, want: %d.", expected.TypeDetails[0].TypeFields.FieldIndex, 3)
 	}
 	if expected.TypeDetails[0].TypeName != "CITY" {
 		t.Errorf("TypeName incorrect, got: %s, want: %s.", expected.TypeDetails[0].TypeName, "CITY")
@@ -216,8 +216,8 @@ func TestTypeandTable(t *testing.T) {
 		t.Errorf("PkIndex incorrect, got: %d, want: %d.", expected.TableDetails.PkIndex, 1)
 	}
 
-	if expected.TableDetails.FieldIndex != 5 {
-		t.Errorf("PkIndex incorrect, got: %d, want: %d.", expected.TableDetails.FieldIndex, 5)
+	if expected.TableDetails.TableFields.FieldIndex != 5 {
+		t.Errorf("PkIndex incorrect, got: %d, want: %d.", expected.TableDetails.TableFields.FieldIndex, 5)
 	}
 	if expected.TableDetails.TableFields.DbFieldDetails[0].DbFieldName != "ID" {
 		t.Errorf("TypeIndex incorrect, got: %s, want: %s.", expected.TableDetails.TableFields.DbFieldDetails[0].DbFieldName, "ID" )
@@ -311,26 +311,26 @@ CREATE TABLE demo.pisp_submissions_per_id (
 	if expected.TableSpace != "DEMO" {
 		t.Errorf("Tablespace incorrect, got: %s, want: %s.", expected.TableSpace, "TEST")
 	}
-	if expected.TypeDetails != 3 {
+	if expected.TypeIndex != 3 {
 		t.Errorf("TypeIndex incorrect, got: %d, want: %d.", expected.TypeIndex, 3)
 	}
 	if expected.TypeDetails[0].TypeName != "DEBTOR_AGENT" {
 		t.Errorf("TypeName incorrect, got: %s, want: %s.", expected.TypeDetails[0].TypeName, "DEBTOR_AGENT")
 	}
-	if expected.TypeDetails[0].FieldIndex != 2 {
-		t.Errorf("FieldIndex incorrect, got: %d, want: %d.", expected.TypeDetails[0].FieldIndex, 2)
+	if expected.TypeDetails[0].TypeFields.FieldIndex != 2 {
+		t.Errorf("FieldIndex incorrect, got: %d, want: %d.", expected.TypeDetails[0].TypeFields.FieldIndex, 2)
 	}
 	if expected.TypeDetails[1].TypeName != "DEBTOR_ACCOUNT" {
 		t.Errorf("TypeName incorrect, got: %s, want: %s.", expected.TypeDetails[1].TypeName, "DEBTOR_ACCOUNT")
 	}
-	if expected.TypeDetails[1].FieldIndex != 4 {
-		t.Errorf("FieldIndex incorrect, got: %d, want: %d.", expected.TypeDetails[1].FieldIndex, 4)
+	if expected.TypeDetails[1].TypeFields.FieldIndex != 4 {
+		t.Errorf("FieldIndex incorrect, got: %d, want: %d.", expected.TypeDetails[1].TypeFields.FieldIndex, 4)
 	}
 	if expected.TypeDetails[2].TypeName != "CREDITOR_AGENT" {
 		t.Errorf("TypeName incorrect, got: %s, want: %s.", expected.TypeDetails[2].TypeName, "CREDITOR_AGENT")
 	}
-	if expected.TypeDetails[2].FieldIndex != 2 {
-		t.Errorf("FieldIndex incorrect, got: %d, want: %d.", expected.TypeDetails[2].FieldIndex, 2)
+	if expected.TypeDetails[2].TypeFields.FieldIndex != 2 {
+		t.Errorf("FieldIndex incorrect, got: %d, want: %d.", expected.TypeDetails[2].TypeFields.FieldIndex, 2)
 	}
 	if expected.TableDetails.TableName != "PISP_SUBMISSIONS_PER_ID" {
 		t.Errorf("TableName incorrect, got: %s, want: %s.", expected.TableDetails.TableName, "PISP_SUBMISSIONS_PER_ID")
@@ -339,8 +339,8 @@ CREATE TABLE demo.pisp_submissions_per_id (
 		t.Errorf("PkIndex incorrect, got: %d, want: %d.", expected.TableDetails.PkIndex, 2)
 	}
 
-	if expected.TableDetails.FieldIndex != 6 {
-		t.Errorf("PkIndex incorrect, got: %d, want: %d.", expected.TableDetails.FieldIndex, 6)
+	if expected.TableDetails.TableFields.FieldIndex != 6 {
+		t.Errorf("PkIndex incorrect, got: %d, want: %d.", expected.TableDetails.TableFields.FieldIndex, 6)
 	}
 	if expected.TableDetails.PkIndex != 2 {
 		t.Errorf("PkIndex incorrect, got: %d, want: %d.", expected.TableDetails.PkIndex, 2)

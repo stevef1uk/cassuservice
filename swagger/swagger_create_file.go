@@ -37,8 +37,6 @@ func addMaps( debug bool, output string, parseOutput  parser.ParseOutput ) strin
 ` + "  " + strings.ToLower(tableDetails.TableFields.DbFieldDetails[i].DbFieldName) + ":" + `
 ` + "      additionalProperties:" + `
 `
-
-
 			if IsFieldTypeUDT(parseOutput, tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType) {
 				ret = ret + "         $ref: " +  `"#/definitions/` + strings.ToLower(tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType ) + `"`
 			} else {
@@ -126,7 +124,7 @@ func addUDTs( debug bool, output string, parseOutput  parser.ParseOutput ) strin
 ` + "  " +  strings.ToLower( tableDetails.TypeName) + ":" + `
 `
 		ret = ret + "    properties:"
-		ret = ret + addFieldDetails( debug, "       " , ret, tableDetails.TypeFields, parseOutput  )
+		ret = addFieldDetails( debug, "       " , ret, tableDetails.TypeFields, parseOutput  )
 	}
 
 	return ret
@@ -165,7 +163,7 @@ func addParametersAndResponses( debug bool, output string, parseOutput  parser.P
 	ret = ret + `
 ` + "              properties:"
 
-	ret = ret + addFieldDetails( debug, "                 " , ret, tableDetails.TableFields, parseOutput  )
+	ret = addFieldDetails( debug, "                 " , ret, tableDetails.TableFields, parseOutput  )
 
 	ret = ret + `
 ` + "        400: " + `
