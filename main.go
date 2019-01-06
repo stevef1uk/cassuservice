@@ -27,7 +27,7 @@ func main() {
 		` )
 
 */
-
+/*
 	 ret := parser.ParseText( debug, parser.Setup, parser.Reset, `
        CREATE TYPE demo.city (
 	       id int,
@@ -47,9 +47,41 @@ func main() {
 	ret1 := swagger.CreateSwagger( true, ret )
 	println("Swagger=\n")
 	println(ret1)
+*/
+	ret := parser.ParseText( debug, parser.Setup, parser.Reset, `
+CREATE TYPE demo.debtor_agent (
+  schemeName text,
+  identification text
+);
 
 
 
+CREATE TYPE demo.debtor_account (
+  schemeName text,
+  identification text,
+  name text,
+  secondaryIdentification text
+);
+
+
+CREATE TYPE demo.creditor_agent (
+  schemeName text,
+  identification text
+);
+CREATE TABLE demo.pisp_submissions_per_id (
+	submissionId uuid,
+	timeBucket text,
+	debtorAgent debtor_agent,
+	debtorAccount debtor_account,
+	creditorAgent creditor_agent,
+	lastUpdatedAt timestamp,
+	PRIMARY KEY (submissionId, lastUpdatedAt)
+) WITH CLUSTERING ORDER BY (lastUpdatedAt DESC)
+
+` )
+	ret1 := swagger.CreateSwagger( true, ret )
+	println("Swagger=\n")
+	println(ret1)
 /*
 
 	ret :=  parser.ParseText(debug, parser.Setup, parser.Reset,`

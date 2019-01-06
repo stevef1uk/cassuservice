@@ -40,7 +40,7 @@ func addMaps( debug bool, output string, parseOutput  parser.ParseOutput ) strin
 			if IsFieldTypeUDT(parseOutput, tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType) {
 				ret = ret + "         $ref: " +  `"#/definitions/` + strings.ToLower(tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType ) + `"`
 			} else {
-				ret = ret + "  type: " + mapCassandraTypeToSwaggerType(true, tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType)
+				ret = ret + "  type: " + mapCassandraTypeToSwaggerType(true, tableDetails.TableFields.DbFieldDetails[i].DbFieldName)
 			}
 		}
 	}
@@ -80,8 +80,14 @@ func addFieldDetails( debug bool, spaces string, output string, tableDetails  pa
 ` + spaces + strings.ToLower( tableDetails.DbFieldDetails[i].DbFieldName) + ":"
 		if  tableDetails.DbFieldDetails[i].DbFieldMapType != "" ||
 			IsFieldTypeUDT( parseOutput, tableDetails.DbFieldDetails[i].DbFieldType ) {
-			ret = ret + `
+			if tableDetails.DbFieldDetails[i].DbFieldMapType != "" {
+				ret = ret + `
 ` + spaces + "  $ref: " + `"#/definitions/` + strings.ToLower( tableDetails.DbFieldDetails[i].DbFieldName) + `"`
+			} else {
+				ret = ret + `
+` + spaces + "  $ref: " + `"#/definitions/` + strings.ToLower( tableDetails.DbFieldDetails[i].DbFieldType) + `"`
+			}
+
 		} else {
 			if tableDetails.DbFieldDetails[i].DbFieldCollectionType != "" {
 				if IsFieldTypeUDT(parseOutput, tableDetails.DbFieldDetails[i].DbFieldCollectionType)  {
