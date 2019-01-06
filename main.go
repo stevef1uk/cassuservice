@@ -48,6 +48,8 @@ func main() {
 	println("Swagger=\n")
 	println(ret1)
 */
+
+/*
 	ret := parser.ParseText( debug, parser.Setup, parser.Reset, `
 CREATE TYPE demo.debtor_agent (
   schemeName text,
@@ -82,7 +84,8 @@ CREATE TABLE demo.pisp_submissions_per_id (
 	ret1 := swagger.CreateSwagger( true, ret )
 	println("Swagger=\n")
 	println(ret1)
-/*
+
+*/
 
 	ret :=  parser.ParseText(debug, parser.Setup, parser.Reset,`
 CREATE TABLE demo.accounts4 (
@@ -114,6 +117,5 @@ CREATE TABLE demo.accounts4 (
 	println("Swagger=\n")
 	println(ret1)
 
-*/
 
 }

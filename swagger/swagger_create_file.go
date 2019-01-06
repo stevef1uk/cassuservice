@@ -40,7 +40,7 @@ func addMaps( debug bool, output string, parseOutput  parser.ParseOutput ) strin
 			if IsFieldTypeUDT(parseOutput, tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType) {
 				ret = ret + "         $ref: " +  `"#/definitions/` + strings.ToLower(tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType ) + `"`
 			} else {
-				ret = ret + "  type: " + mapCassandraTypeToSwaggerType(true, tableDetails.TableFields.DbFieldDetails[i].DbFieldName)
+				ret = ret + "        type: " + mapCassandraTypeToSwaggerType(true, tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType)
 			}
 		}
 	}
@@ -48,22 +48,20 @@ func addMaps( debug bool, output string, parseOutput  parser.ParseOutput ) strin
 	return ret
 }
 
-// Add the definition details for list & set types
+// Add the definition details for list & set types when they need adding to the definitions only
 func addCollectionTypes( debug bool, output string, parseOutput  parser.ParseOutput ) string {
 	ret := output
 	tableDetails := parseOutput.TableDetails
 
 	for i :=0;  i < tableDetails.TableFields.FieldIndex; i++ {
 		if  tableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType != "" && tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType == "" {
-			ret = ret + `
+			if IsFieldTypeUDT(parseOutput, tableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType) {
+				ret = ret + `
 ` + "  " + strings.ToLower(tableDetails.TableFields.DbFieldDetails[i].DbFieldName) + ":" + `
 ` + "      type: array" + `
 ` + "      items:" + `
 `
-			if IsFieldTypeUDT(parseOutput, tableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType) {
-				ret = ret + "         $ref: " +  `"#/definitions/` + strings.ToLower(tableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType ) + `"`
-			} else {
-				ret = ret + "         type: " + mapCassandraTypeToSwaggerType(true, tableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType)
+				ret = ret + "         $ref: " + `"#/definitions/` + strings.ToLower(tableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType) + `"`
 			}
 		}
 	}
