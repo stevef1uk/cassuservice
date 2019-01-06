@@ -5,6 +5,45 @@ import (
 	"strings"
 )
 
+// returns the outout plus a flag indicating if definitions are required
+func addDefinitions( debug bool, output string, parseOutput  parser.ParseOutput ) (string, bool) {
+	ret := output
+	defsRequired := false;
+	tableDetails := parseOutput.TableDetails
+
+	for i :=0;  i < tableDetails.FieldIndex; i++ {
+		if  tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType != "" ||
+			IsFieldTypeUDT( parseOutput, tableDetails.TableFields.DbFieldDetails[i].DbFieldType ) {
+			defsRequired = true
+		}
+
+	}
+	if defsRequired {
+		ret = ret + `
+` + "definitions:"
+	}
+
+	return ret, defsRequired
+}
+
+// Add the definition details for map types
+func addMaps( debug bool, output string, parseOutput  parser.ParseOutput ) string {
+	ret := output
+	tableDetails := parseOutput.TableDetails
+
+	for i :=0;  i < tableDetails.FieldIndex; i++ {
+		if  tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType != "" {
+			ret = ret + `
+` + "  " +  strings.ToLower( tableDetails.TableFields.DbFieldDetails[i].DbFieldName) + ":" + `
+` + "    additionalProperties:" + `
+` + "      type: " +  mapCassandraTypeToSwaggerType(true, tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType)
+
+		}
+	}
+
+	return ret
+}
+
 
 func addParametersAndResponses( debug bool, output string, parseOutput  parser.ParseOutput) string {
 	ret := output
@@ -87,6 +126,10 @@ func CreateSwagger( debug bool, parseOutput parser.ParseOutput ) string {
 
 	// Add the parameters
 	retSwagger = addParametersAndResponses( debug, retSwagger, parseOutput )
+	retSwagger, haveDefs := addDefinitions( debug, retSwagger, parseOutput  )
+	if haveDefs {
+		retSwagger = addMaps( debug, retSwagger, parseOutput )
+	}
 
 	return retSwagger
 }
