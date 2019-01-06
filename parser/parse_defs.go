@@ -41,7 +41,7 @@ type ParseOutput struct {
 	TableDetails TableDetails
 	TypeDetails [MAXFIELDS] TypeDetails
 	inTable bool
-	typeIndex int
+	TypeIndex int
 }
 
 var parseOutput ParseOutput

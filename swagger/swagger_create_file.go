@@ -44,6 +44,21 @@ func addMaps( debug bool, output string, parseOutput  parser.ParseOutput ) strin
 	return ret
 }
 
+// Add the UDT details in the definitions sections
+func addUDTs( debug bool, output string, parseOutput  parser.ParseOutput ) string {
+	ret := output
+
+
+	for i :=0;  i < parseOutput.TypeIndex; i++ {
+		tableDetails := parseOutput.TypeDetails[i]
+		ret = ret + `
+` + "  " +  strings.ToLower( tableDetails.TypeName) + ":" + `
+`
+	}
+
+	return ret
+}
+
 
 func addParametersAndResponses( debug bool, output string, parseOutput  parser.ParseOutput) string {
 	ret := output
@@ -85,17 +100,28 @@ func addParametersAndResponses( debug bool, output string, parseOutput  parser.P
 			ret = ret + `
 ` + "                   $ref: " + `"#/definitions/` + strings.ToLower( tableDetails.TableFields.DbFieldDetails[i].DbFieldName) + `"`
 		} else {
-			ret = ret + `
-` + "                   " + "type:" + mapCassandraTypeToSwaggerType(true, tableDetails.TableFields.DbFieldDetails[i].DbFieldType)
 			if tableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType != "" {
-				ret = ret + `
+				if IsFieldTypeUDT(parseOutput, tableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType)  {
+					ret = ret + `
+` + "                   $ref: " + `"#/definitions/` + strings.ToLower( tableDetails.TableFields.DbFieldDetails[i].DbFieldName) + `"`
+				} else {
+					ret = ret + `
+` + "                   " + "type:" + mapCassandraTypeToSwaggerType(true, tableDetails.TableFields.DbFieldDetails[i].DbFieldType)
+					if tableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType != "" {
+
+						ret = ret + `
 ` + "                   items:" + `
 ` + "                     type: " + mapCassandraTypeToSwaggerType(true, tableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType)
-			} else {
-				if IsFieldaTime( tableDetails.TableFields.DbFieldDetails[i].DbFieldType ) {
-					ret = ret + `
+					} else {
+						if IsFieldaTime(tableDetails.TableFields.DbFieldDetails[i].DbFieldType) {
+							ret = ret + `
 ` + "                   format: date-time"
+						}
+					}
 				}
+			} else {
+				ret = ret + `
+` + "                   " + "type:" + mapCassandraTypeToSwaggerType(true, tableDetails.TableFields.DbFieldDetails[i].DbFieldType)
 			}
 		}
 	}
@@ -128,7 +154,8 @@ func CreateSwagger( debug bool, parseOutput parser.ParseOutput ) string {
 	retSwagger = addParametersAndResponses( debug, retSwagger, parseOutput )
 	retSwagger, haveDefs := addDefinitions( debug, retSwagger, parseOutput  )
 	if haveDefs {
-		retSwagger = addMaps( debug, retSwagger, parseOutput )
+		//retSwagger = addUDTs( debug, retSwagger, parseOutput )
+		//retSwagger = addMaps( debug, retSwagger, parseOutput )
 	}
 
 	return retSwagger

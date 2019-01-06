@@ -23,7 +23,7 @@ func processType(debug bool, p []string, regRow fsmRow) bool {
 	}
 	parseOutput.inTable = false
 	//parseOutput.typeIndex = parseOutput.typeIndex + 1
-	parseOutput.TypeDetails[parseOutput.typeIndex].TypeName = p[2]
+	parseOutput.TypeDetails[parseOutput.TypeIndex].TypeName = p[2]
 	theFSM.state = regRow.nextState
 	return ret
 }
@@ -44,9 +44,9 @@ func processTableField(debug bool, p []string, regRow fsmRow ) bool {
 		parseOutput.TableDetails.FieldIndex = parseOutput.TableDetails.FieldIndex + 1
 		fieldDetails = &parseOutput.TableDetails.TableFields.DbFieldDetails[index]
 	} else {
-		index = parseOutput.TypeDetails[parseOutput.typeIndex].FieldIndex
-		parseOutput.TypeDetails[parseOutput.typeIndex].FieldIndex = parseOutput.TypeDetails[parseOutput.typeIndex].FieldIndex + 1
-		fieldDetails = &parseOutput.TypeDetails[parseOutput.typeIndex].TypeFields.DbFieldDetails[index]
+		index = parseOutput.TypeDetails[parseOutput.TypeIndex].FieldIndex
+		parseOutput.TypeDetails[parseOutput.TypeIndex].FieldIndex = parseOutput.TypeDetails[parseOutput.TypeIndex].FieldIndex + 1
+		fieldDetails = &parseOutput.TypeDetails[parseOutput.TypeIndex].TypeFields.DbFieldDetails[index]
 	}
 
 	fieldDetails.DbFieldName = p[1]
@@ -116,7 +116,7 @@ func processPrimaryInLine(debug bool, p []string, regRow fsmRow) bool {
 
 func procNil(debug bool, p []string, regRow fsmRow) bool {
 	ret := false
-	parseOutput.typeIndex = parseOutput.typeIndex + 1
+	parseOutput.TypeIndex = parseOutput.TypeIndex + 1
 	theFSM.state = regRow.nextState // Force searching for other fields
 	return ret
 }

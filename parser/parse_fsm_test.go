@@ -17,8 +17,8 @@ func TestSimpleTable(t *testing.T) {
 	if expected.TableSpace != "DEMO" {
 		t.Errorf("Tablespace incorrect, got: %s, want: %s.", expected.TableSpace, "DEMO")
 	}
-	if expected.typeIndex != 0 {
-		t.Errorf("TypeIndex incorrect, got: %d, want: %d.", expected.typeIndex, 0)
+	if expected.TypeIndex != 0 {
+		t.Errorf("TypeIndex incorrect, got: %d, want: %d.", expected.TypeIndex, 0)
 	}
 	if expected.TableDetails.TableName != "ACCOUNTS" {
 		t.Errorf("TableName incorrect, got: %s, want: %s.", expected.TableDetails.TableName, "ACCOUNTS")
@@ -89,8 +89,8 @@ func TestComplexTable(t *testing.T) {
 	if expected.TableSpace != "SPACE1" {
 		t.Errorf("Tablespace incorrect, got: %s, want: %s.", expected.TableSpace, "SPACE1")
 	}
-	if expected.typeIndex != 0 {
-		t.Errorf("TypeIndex incorrect, got: %d, want: %d.", expected.typeIndex, 0)
+	if expected.TypeIndex != 0 {
+		t.Errorf("TypeIndex incorrect, got: %d, want: %d.", expected.TypeIndex, 0)
 	}
 	if expected.TableDetails.TableName != "ACCOUNTS4" {
 		t.Errorf("TableName incorrect, got: %s, want: %s.", expected.TableDetails.TableName, "ACCOUNTS4")
@@ -175,8 +175,8 @@ func TestTypeandTable(t *testing.T) {
 	if expected.TableSpace != "TEST" {
 		t.Errorf("Tablespace incorrect, got: %s, want: %s.", expected.TableSpace, "TEST")
 	}
-	if expected.typeIndex != 1 {
-		t.Errorf("TypeIndex incorrect, got: %d, want: %d.", expected.typeIndex, 1)
+	if expected.TypeIndex != 1 {
+		t.Errorf("TypeIndex incorrect, got: %d, want: %d.", expected.TypeIndex, 1)
 	}
 	if expected.TypeDetails[0].FieldIndex != 3 {
 		t.Errorf("FieldIndex incorrect, got: %d, want: %d.", expected.TypeDetails[0].FieldIndex, 3)
@@ -311,8 +311,8 @@ CREATE TABLE demo.pisp_submissions_per_id (
 	if expected.TableSpace != "DEMO" {
 		t.Errorf("Tablespace incorrect, got: %s, want: %s.", expected.TableSpace, "TEST")
 	}
-	if expected.typeIndex != 3 {
-		t.Errorf("TypeIndex incorrect, got: %d, want: %d.", expected.typeIndex, 3)
+	if expected.TypeDetails != 3 {
+		t.Errorf("TypeIndex incorrect, got: %d, want: %d.", expected.TypeIndex, 3)
 	}
 	if expected.TypeDetails[0].TypeName != "DEBTOR_AGENT" {
 		t.Errorf("TypeName incorrect, got: %s, want: %s.", expected.TypeDetails[0].TypeName, "DEBTOR_AGENT")
