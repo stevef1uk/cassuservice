@@ -7,7 +7,7 @@ The architecture approach is simple:
 
 1. Parse Cassandra DDL to create a swagger file
 2. Use go-swagger to generate the RESTful server
-3. Parse Cassandra DDL to create the Cassandra handler and wite it into the RESTful sewrver.
+3. Parse Cassandra DDL to create the Cassandra handler and wite it into the RESTful server.
 
 My last approach for the parser was not to use a lex / yacc grammer but use regular expressions to identify the key data needed. This approach worked but produced code that was very hard to understand. Therefore, I have taken a differnet approach this time. I have written a simple FSM that contains states and is configured to look for regular exprerssions in each state and invoke functions to process the matches.
 
