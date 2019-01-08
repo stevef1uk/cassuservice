@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"github.com/stevef1uk/cassuservice/handler"
 	"github.com/stevef1uk/cassuservice/parser"
 	"github.com/stevef1uk/cassuservice/swagger"
 )
@@ -30,6 +31,9 @@ func main() {
 	println("Swagger=\n")
 	println(ret1)
 
+	ret2 := handler.ReviseFieldName( true, "Id", false )
+	println(ret2)
+	_ = ret2;
 /*
 	 ret := parser.ParseText( debug, parser.Setup, parser.Reset, `
        CREATE TYPE demo.city (
