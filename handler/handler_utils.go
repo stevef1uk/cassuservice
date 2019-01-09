@@ -173,30 +173,30 @@ func setUpArrayTypes(  debug bool, output string, field parser.FieldDetails,  do
 		ret = ret + `
         ` + tmpVar + " = strfmt.NewDateTime().String()" + `
         ` + "_ = " + tmpVar + `
-		` + strings.ToLower(field.DbFieldName) + "= " + RAWRESULT + `["` + strings.ToLower(field.DbFieldName) + `"].([]` +
-		    mapCassandraTypeToGoType( true, field,false,   false, false, false) +  `)
-		` + "payLoad." + ReviseFieldName( debug, field.DbFieldName, dontUpdate) + " = make([] string, len(" + strings.ToLower(field.DbFieldName) + ") )" + `
+		` + strings.ToLower(field.DbFieldName) + " = " + RAWRESULT + `["` + strings.ToLower(field.DbFieldName) + `"].([]` +
+		    mapCassandraTypeToGoType( debug, field,false,   false, false, true) +  `)
+		` + "payLoad." + ReviseFieldName( debug, field.DbFieldName, dontUpdate) + " = make([] string, len( payLoad." +strings.ToLower(field.DbFieldName) + ") )" + `
 		for i := 0; i < len(` + strings.ToLower(field.DbFieldName) + `); i++ {
-			payLoad.` + ReviseFieldName( debug, field.DbFieldType, dontUpdate) + "[i] = " + strings.ToLower(field.DbFieldType) + "[i].String()" + `
+			payLoad.` + ReviseFieldName( debug, field.DbFieldName, dontUpdate) + "[i] = " + strings.ToLower(field.DbFieldName) + "[i].String()" + `
 		}`
 	} else {
 		if ( strings.ToLower(field.DbFieldType) == "decimal") {
 			ret = ret + `
-    payLoad.` + ReviseFieldName(debug, field.DbFieldType, dontUpdate) + " = make([]float64, len(" + strings.ToLower(field.DbFieldType) + ") )" + `
-    for i := 0; i < len(` + strings.ToLower(field.DbFieldType) + `); i++ {
-        ` + "mytmpdecjf123_" + strings.ToLower(field.DbFieldType) + ", err := strconv.ParseFloat( " + strings.ToLower(field.DbFieldType) + "[i].String(), 64 )" + `
+    payLoad.` + ReviseFieldName(debug, field.DbFieldName, dontUpdate) + " = make([]float64, len(" + strings.ToLower(field.DbFieldName) + ") )" + `
+    for i := 0; i < len( payLoad.` + strings.ToLower(field.DbFieldName) + `); i++ {
+        ` + tmpVar + ", err := strconv.ParseFloat( " + strings.ToLower(field.DbFieldName) + "[i].String(), 64 )" + `
         if ( err != nil ) {
-            log.Println("error parsing decimal value for field",` + field.DbFieldType + `)
+            log.Println("error parsing decimal value for field %s\n",` + field.DbFieldName + `)
         }
 ` + `
-        payLoad.` + ReviseFieldName( debug, field.DbFieldName, dontUpdate) + "[i] = " + "mytmpdecjf123_" + strings.ToLower(field.DbFieldName) + `
+        payLoad.` + ReviseFieldName( debug, field.DbFieldName, dontUpdate) + "[i] = " + tmpVar + `
     }`
 		} else {
 			ret = ret + `
-		` + strings.ToLower(field.DbFieldName) + "= " + RAWRESULT + `["` + strings.ToLower(field.DbFieldName) + `"].([]` + mapCassandraTypeToGoType( true, field,false,   false, false, false) + `)`
+		` + strings.ToLower(field.DbFieldName) + " = " + RAWRESULT + `["` + strings.ToLower(field.DbFieldName) + `"].([]` + mapCassandraTypeToGoType( debug, field,false,   false, false, false) + `)`
 			ret = ret + `
 		` + "payLoad." + ReviseFieldName(debug, field.DbFieldName, dontUpdate) + " = make([]" + mapCassandraTypeToGoType( true, field,false,   false, false, false) + ",len(" + strings.ToLower(field.DbFieldName) + ") )" + `
-		for i := 0; i < len(` + strings.ToLower(field.DbFieldName) + `); i++ {
+		for i := 0; i < len( payload.` + strings.ToLower(field.DbFieldName) + `); i++ {
 			payLoad.` + ReviseFieldName(debug,field.DbFieldName, dontUpdate) + "[i] = " + mapCassandraTypeToGoType( true, field,false,   false, false, false) + "(" + strings.ToLower(field.DbFieldName) + "[i])" + `
 		}`
 		}

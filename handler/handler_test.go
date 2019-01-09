@@ -66,7 +66,7 @@ func TestReviceFieldName(t *testing.T) {
 		t.Errorf("Expected tmp_field1_1 got %s", ret3 )
 	}
 
-	field = parser.FieldDetails{ "test", "int", "", "", ""}
+	field = parser.FieldDetails{ "id", "TIMEUUID", "", "", ""}
 	output := ""
 
 	ret4 := setUpArrayTypes(  true , output , field,  false )
