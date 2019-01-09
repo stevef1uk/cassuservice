@@ -105,7 +105,6 @@ func parseLine(debug bool, text string) bool {
 }
 
 // ParseText is called to process the Cassandra CQL definitions. setup and reset functions allow this function to do different things
-//
 func ParseText(debug bool, setUp func( bool), reset func(),  text string) ParseOutput {
 
 

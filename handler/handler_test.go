@@ -65,4 +65,10 @@ func TestReviceFieldName(t *testing.T) {
 	if ret3 != "tmp_field1_1" {
 		t.Errorf("Expected tmp_field1_1 got %s", ret3 )
 	}
+
+	field = parser.FieldDetails{ "test", "int", "", "", ""}
+	output := ""
+
+	ret4 := setUpArrayTypes(  true , output , field,  false )
+	_ = ret4
 }

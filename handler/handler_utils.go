@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/stevef1uk/cassuservice/parser"
+	"github.com/stevef1uk/cassuservice/swagger"
 	"strconv"
 
 	//"github.com/stevef1uk/cassuservice/swagger"
@@ -163,42 +164,43 @@ func createTempVar ( fieldName string ) string {
 }
 
 // Helper function for createSelect to handle array fields
-/*
+
 func setUpArrayTypes(  debug bool, output string, field parser.FieldDetails,  dontUpdate bool ) string {
 	ret := output
-	if ( swagger.IsFieldaTime( field.DbFieldType ) {
+	tmpVar := createTempVar( field.DbFieldName)
+
+	if  swagger.IsFieldaTime( field.DbFieldType ) {
 		ret = ret + `
-        ` + "mytmpsjf123tmp = strfmt.NewDateTime().String()" + `
-        ` + "_ = mytmpsjf123tmp" + `
-		` + strings.ToLower(fieldName) + "= " + RAWRESULT + `["` + strings.ToLower(fieldName) + `"].([]` + mapType(fieldType) + `) 
-		` + "payLoad." + updateFieldName(fieldName, supressIDUpdate) + " = make([] string, len(" + strings.ToLower(fieldName) + ") )" + `
-		for i := 0; i < len(` + strings.ToLower(fieldName) + `); i++ {
-			payLoad.` + updateFieldName(fieldName, supressIDUpdate) + "[i] = " + strings.ToLower(fieldName) + "[i].String()" + `
+        ` + tmpVar + " = strfmt.NewDateTime().String()" + `
+        ` + "_ = " + tmpVar + `
+		` + strings.ToLower(field.DbFieldName) + "= " + RAWRESULT + `["` + strings.ToLower(field.DbFieldName) + `"].([]` +
+		    mapCassandraTypeToGoType( true, field,false,   false, false, false) +  `)
+		` + "payLoad." + ReviseFieldName( debug, field.DbFieldName, dontUpdate) + " = make([] string, len(" + strings.ToLower(field.DbFieldName) + ") )" + `
+		for i := 0; i < len(` + strings.ToLower(field.DbFieldName) + `); i++ {
+			payLoad.` + ReviseFieldName( debug, field.DbFieldType, dontUpdate) + "[i] = " + strings.ToLower(field.DbFieldType) + "[i].String()" + `
 		}`
 	} else {
-		if ( strings.ToLower(fieldType) == "decimal") {
-			payloadParams = payloadParams + `
-    payLoad.` + updateFieldName(fieldName, supressIDUpdate) + " = make([]float64, len(" + strings.ToLower(fieldName) + ") )" + `
-    for i := 0; i < len(` + strings.ToLower(fieldName) + `); i++ {
-        ` + "mytmpdecjf123_" + strings.ToLower(fieldName) + ", err := strconv.ParseFloat( " + strings.ToLower(fieldName) + "[i].String(), 64 )" + `
+		if ( strings.ToLower(field.DbFieldType) == "decimal") {
+			ret = ret + `
+    payLoad.` + ReviseFieldName(debug, field.DbFieldType, dontUpdate) + " = make([]float64, len(" + strings.ToLower(field.DbFieldType) + ") )" + `
+    for i := 0; i < len(` + strings.ToLower(field.DbFieldType) + `); i++ {
+        ` + "mytmpdecjf123_" + strings.ToLower(field.DbFieldType) + ", err := strconv.ParseFloat( " + strings.ToLower(field.DbFieldType) + "[i].String(), 64 )" + `
         if ( err != nil ) {
-            log.Println("error parsing decimal value for field",` + fieldName + `)
+            log.Println("error parsing decimal value for field",` + field.DbFieldType + `)
         }
 ` + `
-        payLoad.` + updateFieldName(fieldName, supressIDUpdate) + "[i] = " + "mytmpdecjf123_" + strings.ToLower(fieldName) + `
+        payLoad.` + ReviseFieldName( debug, field.DbFieldName, dontUpdate) + "[i] = " + "mytmpdecjf123_" + strings.ToLower(field.DbFieldName) + `
     }`
 		} else {
-			payloadParams = payloadParams + `
-		` + strings.ToLower(fieldName) + "= " + RAWRESULT + `["` + strings.ToLower(fieldName) + `"].([]` + mapType(fieldType) + `)`
-			mapType := retFunc(false, false, false, false)
-			payloadParams = payloadParams + `
-		` + "payLoad." + updateFieldName(fieldName, supressIDUpdate) + " = make([]" + mapType(fieldType) + ",len(" + strings.ToLower(fieldName) + ") )" + `
-		for i := 0; i < len(` + strings.ToLower(fieldName) + `); i++ {
-			payLoad.` + updateFieldName(fieldName, supressIDUpdate) + "[i] = " + mapType(fieldType) + "(" + strings.ToLower(fieldName) + "[i])" + `
+			ret = ret + `
+		` + strings.ToLower(field.DbFieldName) + "= " + RAWRESULT + `["` + strings.ToLower(field.DbFieldName) + `"].([]` + mapCassandraTypeToGoType( true, field,false,   false, false, false) + `)`
+			ret = ret + `
+		` + "payLoad." + ReviseFieldName(debug, field.DbFieldName, dontUpdate) + " = make([]" + mapCassandraTypeToGoType( true, field,false,   false, false, false) + ",len(" + strings.ToLower(field.DbFieldName) + ") )" + `
+		for i := 0; i < len(` + strings.ToLower(field.DbFieldName) + `); i++ {
+			payLoad.` + ReviseFieldName(debug,field.DbFieldName, dontUpdate) + "[i] = " + mapCassandraTypeToGoType( true, field,false,   false, false, false) + "(" + strings.ToLower(field.DbFieldName) + "[i])" + `
 		}`
 		}
 	}
-	}
+	if debug { fmt.Printf("setUpArrayTypes returning %s\n", ret ) }
 	return ret
 }
-*/
