@@ -9,39 +9,41 @@ import (
 func TestReviceFieldName(t *testing.T) {
 
 
-	ret := ReviseFieldName( false, "id", false )
+	ret := Capitiseid( false, "id", false )
 	if ret != "ID" {
 		t.Errorf("Expencted ID got %s", ret )
 	}
 
-	ret = ReviseFieldName( false, "id", true )
+	ret = Capitiseid( false, "id", true )
 	if ret != "id" {
 		t.Errorf("Expencted id got %s", ret )
 	}
 
-	ret = ReviseFieldName( false, "Id", false )
+	ret = Capitiseid( false, "Id", false )
 	if ret != "ID" {
 		t.Errorf("Expencted id got %s", ret )
 	}
 
-	ret = ReviseFieldName( false, "iD", false )
+	ret = Capitiseid( false, "iD", false )
 	if ret != "ID" {
 		t.Errorf("Expencted id got %s", ret )
 	}
 
-	ret = ReviseFieldName( false, "ID", false )
+	ret = Capitiseid( false, "ID", false )
 	if ret != "ID" {
 		t.Errorf("Expencted id got %s", ret )
 	}
 
-	ret = ReviseFieldName( false, "aid", false )
+	ret = Capitiseid( false, "aid", false )
 	if ret != "aID" {
 		t.Errorf("Expencted id got %s", ret )
 	}
-	ret = ReviseFieldName( true, "aid1", false )
+	ret = Capitiseid( true, "aid1", false )
 	if ret != "aid1" {
 		t.Errorf("Expencted id got %s", ret )
 	}
+
+
 	ret1:= CreateFile( true , "/tmp", "/tmp" )
 	ret1.Close()
 
@@ -71,4 +73,26 @@ func TestReviceFieldName(t *testing.T) {
 
 	ret4 := setUpArrayTypes(  true , output , field,  false )
 	_ = ret4
+
+
+	ret5 := CapitaliseSplitFieldName( true, "id", false )
+	if ret5 != "ID" {
+		t.Errorf("Expected ID got %s", ret5 )
+	}
+	ret5 = CapitaliseSplitFieldName( true, "id", true )
+	if ret5 != "id" {
+		t.Errorf("Expected id got %s", ret5 )
+	}
+	ret5 = CapitaliseSplitFieldName( true, "steve", false )
+	if ret5 != "Steve" {
+		t.Errorf("Expected Steve got %s", ret5 )
+	}
+	ret5 = CapitaliseSplitFieldName( true, "my_id_twoid", false )
+	if ret5 != "MyIDTwoID" {
+		t.Errorf("Expected MyIDTwoID got :%s:", ret5 )
+	}
+	ret5 = CapitaliseSplitFieldName( true, "my_id_twoid", true )
+	if ret5 != "my_id_twoid" {
+		t.Errorf("Expected MyIDTwoID got :%s:", ret5 )
+	}
 }

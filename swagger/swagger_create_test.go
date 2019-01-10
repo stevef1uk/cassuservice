@@ -472,3 +472,136 @@ CREATE TABLE demo.accounts (
 		t.Errorf("Swagger output wrong got:%s: want:%s:", ret1, expectedOutput )
 	}
 }
+
+func TestAlmostSimple(t *testing.T) {
+
+	expectedOutput := `swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Simple API
+  description: A generated file representing a Cassandra Table definition
+schemes:
+  - http
+host: localhost
+basePath: /v1
+paths:
+  /employee:
+    get: 
+      summary: Retrieve some records from the Cassandra table 
+      description: Returns rows from the Cassandra table
+      parameters:
+        - name: id
+          in: query
+          description: Primary Key field in Table
+          required: true
+          type: integer
+          format: int32
+        - name: mediate
+          in: query
+          description: Primary Key field in Table
+          required: true
+          type: string
+          format: date-time
+        - name: second_ts
+          in: query
+          description: Primary Key field in Table
+          required: true
+          type: string
+          format: date-time
+      responses:
+        200:
+          description: A list of records
+          schema:
+            type: array
+            items:
+              required:
+                - id
+                - address_set
+                - my_list
+                - name
+                - mediate
+                - second_ts
+              properties:
+                 id:
+                   type: integer
+                 address_set:
+                   $ref: "#/definitions/address_set"
+                 my_list:
+                   $ref: "#/definitions/my_list"
+                 name:
+                   type: string
+                 mediate:
+                   type: string
+                 second_ts:
+                   type: string
+        400: 
+          description: Record not found
+        default:
+          description: Sorry unexpected error
+definitions:
+  simple:
+    properties:
+       dummy:
+         type: string
+  city:
+    properties:
+       id:
+         type: integer
+       citycode:
+         type: string
+       cityname:
+         type: string
+       test_int:
+         type: integer
+       lastupdatedat:
+         type: string
+       myfloat:
+         type: number
+  address_set:
+      type: array
+      items:
+         $ref: "#/definitions/city"
+  my_list:
+      type: array
+      items:
+         $ref: "#/definitions/simple"`
+
+	ret := parser.ParseText( false, parser.Setup, parser.Reset, `
+CREATE TYPE demo.simple (
+   dummy text
+);
+
+CREATE TYPE demo.city (
+    id int,
+    citycode text,
+    cityname text,
+    test_int int,
+    lastUpdatedAt TIMESTAMP,
+    myfloat float
+);
+
+CREATE TABLE demo.employee (
+    id int,
+    address_set set<frozen<city>>,
+    my_List list<frozen<simple>>,
+    name text,
+    mediate TIMESTAMP,
+    second_ts timestamp,
+   PRIMARY KEY (id, mediate, second_ts )
+ ) WITH CLUSTERING ORDER BY (mediate ASC, second_ts ASC)
+` )
+
+	ret1 := CreateSwagger( true, ret )
+	if expectedOutput != ret1 {
+
+		if len(expectedOutput) != len(ret1) {
+			t.Errorf("Expected length %d, actual, %d", len(expectedOutput), len(ret1) )
+		}
+		for i, _ := range expectedOutput {
+			if (expectedOutput[i] != ret1[i] ) {
+				t.Errorf("Difference at %d, got %c expected %c", i, expectedOutput[i], ret1[i] )
+			}
+		}
+		t.Errorf("Swagger output wrong got:%s: want:%s:", ret1, expectedOutput )
+	}
+}

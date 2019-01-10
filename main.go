@@ -20,18 +20,35 @@ func main() {
 
 
 		ret := parser.ParseText( debug, parser.Setup, parser.Reset,`
-			CREATE TABLE demo.accounts (
-			id int,
-			name text,
-			PRIMARY KEY (id, name)
-		) WITH CLUSTERING ORDER BY (name ASC)
+CREATE TYPE demo.simple (
+   dummy text
+);
+
+CREATE TYPE demo.city (
+    id int,
+    citycode text,
+    cityname text,
+    test_int int,
+    lastUpdatedAt TIMESTAMP,
+    myfloat float
+);
+
+CREATE TABLE demo.employee (
+    id int,
+    address_set set<frozen<city>>,
+    my_List list<frozen<simple>>,
+    name text,
+    mediate TIMESTAMP,
+    second_ts timestamp,
+   PRIMARY KEY (id, mediate, second_ts )
+ ) WITH CLUSTERING ORDER BY (mediate ASC, second_ts ASC)
 		` )
 
 	ret1 := swagger.CreateSwagger( true, ret )
 	println("Swagger=\n")
 	println(ret1)
 
-	ret2 := handler.ReviseFieldName( true, "Id", false )
+	ret2 := handler.Capitiseid( true, "Id", false )
 	println(ret2)
 	_ = ret2;
 /*

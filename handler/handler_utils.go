@@ -44,26 +44,26 @@ func CreateFile( debug bool, codeBasePath string, generateDir string ) *os.File 
 }
 
 // Function that renames fields to match that performed for some reason by go-swagger in its generated framework code
-func ReviseFieldName ( debug bool, fieldName string, dontUpdate bool ) string {
+func Capitiseid( debug bool, fieldName string, dontUpdate bool ) string {
 
 	var ret string = ""
-	if debug { fmt.Printf("ReviseFieldName entry field  = %s, len = %d\n ",fieldName, len(fieldName) ) }
+	if debug { fmt.Printf("Capitiseid entry field  = %s, len = %d\n ",fieldName, len(fieldName) ) }
 
 	if dontUpdate {
 		ret = fieldName
-		if debug { fmt.Printf("ReviseFieldName told not to update\n ") }
+		if debug { fmt.Printf("Capitiseid told not to update\n ") }
 	} else {
 		runes := []rune(fieldName[:])
 		last := len( runes  ) - 1
 
 		for i := 0; i < last ; i++   {
-				//if debug { fmt.Printf("ReviseFieldName i   = %d\n ",i ) }
+				//if debug { fmt.Printf("Capitiseid i   = %d\n ",i ) }
 				if ! ( ( i == 0 ) || ( i == last -1 ) ) {
 					continue;
 				}
-				//if debug { fmt.Printf("ReviseFieldName [0] = %q, [1] = %q\n ", runes[i], runes[i+1]) }
+				//if debug { fmt.Printf("Capitiseid [0] = %q, [1] = %q\n ", runes[i], runes[i+1]) }
 				if (runes[i] == rune('i') || runes[i] == rune('I')) && (runes[i+1] == rune('d') || runes[i+1] == rune('D')) {
-					if debug { fmt.Printf("ReviseFieldName match at i= %d\n ", i)}
+					if debug { fmt.Printf("Capitiseid match at i= %d\n ", i)}
 					runes[i] = rune('I')
 					runes[i+1] = rune('D')
 				}
@@ -71,7 +71,33 @@ func ReviseFieldName ( debug bool, fieldName string, dontUpdate bool ) string {
 			ret = string(runes)
 		}
 
-	if debug {fmt.Printf("ReviseFieldName returning field  = %s\n ", ret)}
+	if debug {fmt.Printf("Capitiseid returning field  = %s\n ", ret)}
+	return ret
+}
+
+// Function that renames fields to match that performed for some reason by go-swagger in its generated framework code e.g. My_List becomes MyList & address_id becomes AddressID
+func CapitaliseSplitFieldName ( debug bool, fieldName string, dontUpdate bool ) string {
+
+	var ret string = ""
+	if debug { fmt.Printf("CapitaliseSplitFieldName entry field  = %s, len = %d\n ",fieldName, len(fieldName) ) }
+
+	if dontUpdate {
+		ret = fieldName
+		if debug { fmt.Printf("CapitaliseSplitFieldName told not to update\n ") }
+	} else {
+		tmpFields := strings.Split(fieldName, "_" )
+		if debug {fmt.Printf("CapitaliseSplitFieldName tmpFields  = %q\n ", tmpFields)}
+		for _, v := range tmpFields {
+			v = Capitiseid( debug, v, dontUpdate )
+			v = strings.ToUpper(string(v[0])) + v[1:]
+			ret = ret + v
+		}
+		ret = strings.ToUpper(string(ret[0])) + ret[1:]
+
+	}
+
+
+	if debug {fmt.Printf("Capitiseid returning field  = %s\n ", ret)}
 	return ret
 }
 
@@ -175,29 +201,29 @@ func setUpArrayTypes(  debug bool, output string, field parser.FieldDetails,  do
         ` + "_ = " + tmpVar + `
 		` + strings.ToLower(field.DbFieldName) + " = " + RAWRESULT + `["` + strings.ToLower(field.DbFieldName) + `"].([]` +
 		    mapCassandraTypeToGoType( debug, field,false,   false, false, true) +  `)
-		` + "payLoad." + ReviseFieldName( debug, field.DbFieldName, dontUpdate) + " = make([] string, len( payLoad." +strings.ToLower(field.DbFieldName) + ") )" + `
+		` + "payLoad." + Capitiseid( debug, field.DbFieldName, dontUpdate) + " = make([] string, len( payLoad." +strings.ToLower(field.DbFieldName) + ") )" + `
 		for i := 0; i < len(` + strings.ToLower(field.DbFieldName) + `); i++ {
-			payLoad.` + ReviseFieldName( debug, field.DbFieldName, dontUpdate) + "[i] = " + strings.ToLower(field.DbFieldName) + "[i].String()" + `
+			payLoad.` + Capitiseid( debug, field.DbFieldName, dontUpdate) + "[i] = " + strings.ToLower(field.DbFieldName) + "[i].String()" + `
 		}`
 	} else {
 		if ( strings.ToLower(field.DbFieldType) == "decimal") {
 			ret = ret + `
-    payLoad.` + ReviseFieldName(debug, field.DbFieldName, dontUpdate) + " = make([]float64, len(" + strings.ToLower(field.DbFieldName) + ") )" + `
+    payLoad.` + Capitiseid(debug, field.DbFieldName, dontUpdate) + " = make([]float64, len(" + strings.ToLower(field.DbFieldName) + ") )" + `
     for i := 0; i < len( payLoad.` + strings.ToLower(field.DbFieldName) + `); i++ {
         ` + tmpVar + ", err := strconv.ParseFloat( " + strings.ToLower(field.DbFieldName) + "[i].String(), 64 )" + `
         if ( err != nil ) {
             log.Println("error parsing decimal value for field %s\n",` + field.DbFieldName + `)
         }
 ` + `
-        payLoad.` + ReviseFieldName( debug, field.DbFieldName, dontUpdate) + "[i] = " + tmpVar + `
+        payLoad.` + Capitiseid( debug, field.DbFieldName, dontUpdate) + "[i] = " + tmpVar + `
     }`
 		} else {
 			ret = ret + `
 		` + strings.ToLower(field.DbFieldName) + " = " + RAWRESULT + `["` + strings.ToLower(field.DbFieldName) + `"].([]` + mapCassandraTypeToGoType( debug, field,false,   false, false, false) + `)`
 			ret = ret + `
-		` + "payLoad." + ReviseFieldName(debug, field.DbFieldName, dontUpdate) + " = make([]" + mapCassandraTypeToGoType( true, field,false,   false, false, false) + ",len(" + strings.ToLower(field.DbFieldName) + ") )" + `
+		` + "payLoad." + Capitiseid(debug, field.DbFieldName, dontUpdate) + " = make([]" + mapCassandraTypeToGoType( true, field,false,   false, false, false) + ",len(" + strings.ToLower(field.DbFieldName) + ") )" + `
 		for i := 0; i < len( payload.` + strings.ToLower(field.DbFieldName) + `); i++ {
-			payLoad.` + ReviseFieldName(debug,field.DbFieldName, dontUpdate) + "[i] = " + mapCassandraTypeToGoType( true, field,false,   false, false, false) + "(" + strings.ToLower(field.DbFieldName) + "[i])" + `
+			payLoad.` + Capitiseid(debug,field.DbFieldName, dontUpdate) + "[i] = " + mapCassandraTypeToGoType( true, field,false,   false, false, false) + "(" + strings.ToLower(field.DbFieldName) + "[i])" + `
 		}`
 		}
 	}
