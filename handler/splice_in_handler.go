@@ -39,7 +39,7 @@ func output(in *os.File)  {
 func openFile(  debug bool, genDir string ) *os.File {
 
 	// Create the directory if not already there
-	fullfileName := genDir + "/" + MAINFILE
+	fullfileName := genDir + "/" + FILETOPROCESS
 	if debug { fmt.Println("Dir Name = ", fullfileName )}
 	// Create data dir if it doesn't already exist
 	_, err := os.Stat(fullfileName)
@@ -77,7 +77,7 @@ func createFile( generatedCodePath string, tmpFile string  ) {
 }
 
 // Only enable debug here when in difficulty as the debug strings will end up in the generated file causing compilation issues
-func Parse( debug bool, generatedCodePath string, tableName string, endPointNameOverRide string) {
+func SpiceInHandler( debug bool, generatedCodePath string, tableName string, endPointNameOverRide string) bool {
 	reprocessing := false
 	genString := ""
 	if (endPointNameOverRide != "" ) {
@@ -85,7 +85,7 @@ func Parse( debug bool, generatedCodePath string, tableName string, endPointName
 	} else {
 		genString = tableName
 	}
-	if debug {fmt.Println("handler.Parse  genString = ", genString)
+	if debug {fmt.Println("SpiceInHandler  genString = ", genString)
 	}
 	handlerString := "api.Get" + genString + "Handler = operations.Get" + genString
 
@@ -140,12 +140,10 @@ for {
 `)
 			} else if ( strings.Contains(text, handlerString) ) {
 				if debug {
-					fmt.Print("Found hadlerString")
+					fmt.Print("Found handlerString")
 				}
 				fmt.Println(text)
 				skip = true
-				//fmt.Println(text)
-
 				fmt.Println(`
 	return data.Search(params)
 `)
@@ -165,4 +163,5 @@ for {
 
 		createFile(generatedCodePath, fileout.Name())
 	}
+	return ! reprocessing
 }

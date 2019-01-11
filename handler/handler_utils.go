@@ -189,7 +189,6 @@ func createTempVar ( fieldName string ) string {
 	return ret
 }
 
-// Helper function for createSelect to handle array fields
 
 func setUpArrayTypes(  debug bool, output string, field parser.FieldDetails,  dontUpdate bool ) string {
 	ret := output
@@ -230,3 +229,26 @@ func setUpArrayTypes(  debug bool, output string, field parser.FieldDetails,  do
 	if debug { fmt.Printf("setUpArrayTypes returning %s\n", ret ) }
 	return ret
 }
+
+
+
+func retArrayTypes(debug bool, output string, field parser.FieldDetails, index int, simple bool, dontUpdate bool ) string {
+	ret := output
+	v :=  field
+	if ( v.DbFieldType == "map" ) {
+		ret = ret + "payLoad." + CapitaliseSplitFieldName( debug, v.DbFieldName, dontUpdate ) + " = " + v.DbFieldName
+	} else {
+		switchValue := strings.ToLower( v.DbFieldCollectionType )
+		switch switchValue {
+		case "float", "int", "varint", "boolean", "uuid", "bigint", "counter", "decimal", "double", "text", "varchar", "ascii", "blob", "inet", swagger.DATE, swagger.TIMESTAMP, swagger.TIMEUUID :
+			ret = setUpArrayTypes(  debug , output , v,  dontUpdate  )
+
+		default:
+			ret = ret + "payLoad." + CapitaliseSplitFieldName( debug, v.DbFieldName, dontUpdate ) + " = " + v.DbFieldName
+		}
+	}
+
+	return ret
+}
+
+//func WriteHeaderPart( repoPath string, tableStuff * parser.TableDetails, dbTypes  map[string]parser.TableDetails, exportPath string, supressIDUpdate bool, output  *os.File ) bool  {

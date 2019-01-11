@@ -95,4 +95,8 @@ func TestReviceFieldName(t *testing.T) {
 	if ret5 != "my_id_twoid" {
 		t.Errorf("Expected MyIDTwoID got :%s:", ret5 )
 	}
+
+	ret6 :=  SpiceInHandler( false , "/Users/stevef1/Source_Code/go/src/github.com/stevef1uk/test3/", "Employee", "" )
+	_ = ret6
 }
+
