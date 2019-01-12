@@ -21,9 +21,9 @@ const (
 package data
 
 import (
-  "{{.PATH}}/models"
-  "{{.PATH}}/restapi/operations"
-    middleware "github.com/go-openapi/runtime/middleware"
+    "{{.PATH}}/models"
+    "{{.PATH}}/restapi/operations"
+    "middleware "github.com/go-openapi/runtime/middleware"
     "github.com/gocql/gocql"
     "os"
     "log"`

@@ -36,13 +36,13 @@ func WriteHeaderPart( debug bool, parserOutput parser.ParseOutput, generateDir s
 
 
 // Entry point
-func CreateCode( debug bool, generateDir string,   parseOutput parser.ParseOutput, cassandraConsistencyRequired string, endPointNameOverRide string, overridePrimaryKeys int, allowFiltering bool, dontUpdate bool, logExtraInfo bool   ) {
+func CreateCode( debug bool, generateDir string,  goPathForRepo string,  parseOutput parser.ParseOutput, cassandraConsistencyRequired string, endPointNameOverRide string, overridePrimaryKeys int, allowFiltering bool, dontUpdate bool, logExtraInfo bool   ) {
 
 	output := CreateFile( debug, generateDir, "/data" )
 	defer output.Close()
 
 
-	WriteHeaderPart( debug, parseOutput, generateDir, endPointNameOverRide, dontUpdate, output )
+	WriteHeaderPart( debug, parseOutput, goPathForRepo, endPointNameOverRide, dontUpdate, output )
 
 }
 
