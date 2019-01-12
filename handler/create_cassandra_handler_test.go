@@ -12,9 +12,19 @@ import (
 const (
 
 	CSQ_TEST1 = `
+
+    CREATE TYPE TEST.city (
+	       id int,
+           now date,
+           dec decimal
+	       citycode text,
+	       cityname text
+	   );
+
     CREATE TABLE demo.accounts (
-			id decimal,
-			name date,
+			id int,
+			name text,
+            city city,
 			PRIMARY KEY (id, name)
 		) WITH CLUSTERING ORDER BY (name ASC)
 `

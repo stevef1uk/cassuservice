@@ -11,7 +11,7 @@ const (
 type FieldDetails struct {
 	DbFieldName string
 	DbFieldType string
-	FieldFormat string
+	OrigFieldName string
 	DbFieldCollectionType string
 	DbFieldMapType string
 }

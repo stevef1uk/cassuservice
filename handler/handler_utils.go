@@ -112,7 +112,7 @@ func CapitaliseSplitFieldName ( debug bool, fieldName string, dontUpdate bool ) 
 }
 
 
-func mapCassandraTypeToGoType( debug bool, field parser.FieldDetails, collectionofUDT bool, smallInt bool, smallFloat bool, istimeuuid bool  ) string {
+func mapCassandraTypeToGoType( debug bool, field parser.FieldDetails, collectionofUDT bool, smallInt bool, smallFloat bool  ) string {
 	var text string = ""
 	switch strings.ToLower(field.DbFieldType) {
 	case "int":
@@ -126,7 +126,7 @@ func mapCassandraTypeToGoType( debug bool, field parser.FieldDetails, collection
 	case "date":
 		text = "time.Time"
 	case "timeuuid":
-		if (istimeuuid) {
+		if ( field.DbFieldType == swagger.TIMEUUID ) {
 			text = "gocql.UUID"
 		} else {
 			text = "time.Time"
@@ -209,7 +209,7 @@ func setUpArrayTypes(  debug bool, output string, field parser.FieldDetails,  do
         ` + tmpVar + " = strfmt.NewDateTime().String()" + `
         ` + "_ = " + tmpVar + `
 		` + strings.ToLower(field.DbFieldName) + " = " + RAWRESULT + `["` + strings.ToLower(field.DbFieldName) + `"].([]` +
-		    mapCassandraTypeToGoType( debug, field,false,   false, false, true) +  `)
+		    mapCassandraTypeToGoType( debug, field,false,   false, false ) +  `)
 		` + "payLoad." + Capitiseid( debug, field.DbFieldName, dontUpdate) + " = make([] string, len( payLoad." +strings.ToLower(field.DbFieldName) + ") )" + `
 		for i := 0; i < len(` + strings.ToLower(field.DbFieldName) + `); i++ {
 			payLoad.` + Capitiseid( debug, field.DbFieldName, dontUpdate) + "[i] = " + strings.ToLower(field.DbFieldName) + "[i].String()" + `
@@ -228,11 +228,11 @@ func setUpArrayTypes(  debug bool, output string, field parser.FieldDetails,  do
     }`
 		} else {
 			ret = ret + `
-		` + strings.ToLower(field.DbFieldName) + " = " + RAWRESULT + `["` + strings.ToLower(field.DbFieldName) + `"].([]` + mapCassandraTypeToGoType( debug, field,false,   false, false, false) + `)`
+		` + strings.ToLower(field.DbFieldName) + " = " + RAWRESULT + `["` + strings.ToLower(field.DbFieldName) + `"].([]` + mapCassandraTypeToGoType( debug, field,false,   false, false ) + `)`
 			ret = ret + `
-		` + "payLoad." + Capitiseid(debug, field.DbFieldName, dontUpdate) + " = make([]" + mapCassandraTypeToGoType( true, field,false,   false, false, false) + ",len(" + strings.ToLower(field.DbFieldName) + ") )" + `
+		` + "payLoad." + Capitiseid(debug, field.DbFieldName, dontUpdate) + " = make([]" + mapCassandraTypeToGoType( true, field,false,   false, false ) + ",len(" + strings.ToLower(field.DbFieldName) + ") )" + `
 		for i := 0; i < len( payload.` + strings.ToLower(field.DbFieldName) + `); i++ {
-			payLoad.` + Capitiseid(debug,field.DbFieldName, dontUpdate) + "[i] = " + mapCassandraTypeToGoType( true, field,false,   false, false, false) + "(" + strings.ToLower(field.DbFieldName) + "[i])" + `
+			payLoad.` + Capitiseid(debug,field.DbFieldName, dontUpdate) + "[i] = " + mapCassandraTypeToGoType( true, field,false,   false, false ) + "(" + strings.ToLower(field.DbFieldName) + "[i])" + `
 		}`
 		}
 	}

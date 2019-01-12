@@ -31,6 +31,7 @@ import (
 	IMPORTSEND = `
 )
 `
+
 	IMPORTSTIMESTAMP = `
     "time"
      strfmt "github.com/go-openapi/strfmt"`
@@ -63,5 +64,6 @@ func Stop() {
 
 func Search(params operations.Get{{.EXPORTPATH}}Params) middleware.Responder {
 `
+
 )
 

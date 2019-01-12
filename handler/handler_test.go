@@ -51,13 +51,13 @@ func TestFieldName2(t *testing.T) {
 	ret1.Close()
 
 	field := parser.FieldDetails{"test", "int", "", "", ""}
-	ret2 := mapCassandraTypeToGoType(true, field, false, false, false, false)
+	ret2 := mapCassandraTypeToGoType(true, field, false, false, false )
 	if ret2 != "int64" {
 		t.Errorf("Expected int64 got %s", ret2)
 	}
 
 	field = parser.FieldDetails{"test", "int", "", "", ""}
-	ret2 = mapCassandraTypeToGoType(true, field, false, true, false, false)
+	ret2 = mapCassandraTypeToGoType(true, field, false, true, false )
 	if ret2 != "int" {
 		t.Errorf("Expected int got %s", ret2)
 	}
