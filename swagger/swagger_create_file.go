@@ -101,7 +101,7 @@ func addFieldDetails( debug bool, spaces string, output string, tableDetails  pa
 ` + spaces + "  items:" + `
 ` + spaces + "    type: " + mapCassandraTypeToSwaggerType(true, tableDetails.DbFieldDetails[i].DbFieldCollectionType)
 					} else {
-						if IsFieldaTime(tableDetails.DbFieldDetails[i].DbFieldType) {
+						if IsFieldTypeATime(tableDetails.DbFieldDetails[i].DbFieldType) {
 							ret = ret + `
 ` + spaces + "format: date-time"
 						}

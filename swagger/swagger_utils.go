@@ -20,7 +20,7 @@ func IsFieldTypeUDT( typeDetails parser.ParseOutput, fieldType string ) bool {
 }
 
 // Simple function to return true if the string passed is a Cassandra time feld
-func IsFieldaTime(  fType string ) bool {
+func IsFieldTypeATime(  fType string ) bool {
 	ret := false
 	if fType == TIMESTAMP || fType == DATE || fType == TIMEUUID {
 		ret = true;

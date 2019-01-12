@@ -1,5 +1,13 @@
 package handler
 
+// Type used for template processing
+type tableDetails struct {
+	PATH   string
+	KEYSPACE string
+	TABLENAME string
+	EXPORTPATH string
+}
+
 
 const (
 	MAINFILE = "GeneratedHandler.go"

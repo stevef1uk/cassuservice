@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/stevef1uk/cassuservice/parser"
+	"os"
 	"testing"
 )
 
@@ -96,7 +97,19 @@ func TestReviceFieldName(t *testing.T) {
 		t.Errorf("Expected MyIDTwoID got :%s:", ret5 )
 	}
 
-	ret6 :=  SpiceInHandler( false , "/Users/stevef1/Source_Code/go/src/github.com/stevef1uk/test3/", "Employee", "" )
+	path := os.Getenv("GOPATH")  + "/src/github.com/stevef1uk/test3/"
+	ret6 :=  SpiceInHandler( false , path, "Employee", "" )
 	_ = ret6
-}
+
+	parse1 := parser.ParseText( false, parser.Setup, parser.Reset, `
+			CREATE TABLE demo.accounts (
+			id int,
+			name text,
+			PRIMARY KEY (id, name)
+		) WITH CLUSTERING ORDER BY (name ASC)
+		` )
+
+	CreateCode( true, path, parse1,  "",  "",  0, false , false , true   )
+
+	}
 

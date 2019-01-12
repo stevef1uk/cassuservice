@@ -16,10 +16,10 @@ import (
 )
 
 // Function to create a file that will contain the Cassandra handler code
-func CreateFile( debug bool, codeBasePath string, generateDir string ) *os.File {
+func CreateFile( debug bool, pathPrefix string, dir string ) *os.File {
 
 	// Create the directory if not already there
-	fulldirName := generateDir  + codeBasePath
+	fulldirName := pathPrefix  + dir
 	if debug { fmt.Println("Dir Name = ", fulldirName )}
 	// Create data dir if it doesn't already exist
 	if _, err := os.Stat(fulldirName); err != nil {
@@ -42,6 +42,16 @@ func CreateFile( debug bool, codeBasePath string, generateDir string ) *os.File 
 
 	return file
 }
+
+
+func getServiceName ( tableName, endPointNameOverRide string ) string {
+	ret := tableName
+	if ( endPointNameOverRide != "") {
+		ret = strings.Title( endPointNameOverRide  )
+	}
+	return ret
+}
+
 
 // Function that renames fields to match that performed for some reason by go-swagger in its generated framework code
 func Capitiseid( debug bool, fieldName string, dontUpdate bool ) string {
@@ -194,7 +204,7 @@ func setUpArrayTypes(  debug bool, output string, field parser.FieldDetails,  do
 	ret := output
 	tmpVar := createTempVar( field.DbFieldName)
 
-	if  swagger.IsFieldaTime( field.DbFieldType ) {
+	if  swagger.IsFieldTypeATime( field.DbFieldType ) {
 		ret = ret + `
         ` + tmpVar + " = strfmt.NewDateTime().String()" + `
         ` + "_ = " + tmpVar + `
@@ -251,4 +261,82 @@ func retArrayTypes(debug bool, output string, field parser.FieldDetails, index i
 	return ret
 }
 
-//func WriteHeaderPart( repoPath string, tableStuff * parser.TableDetails, dbTypes  map[string]parser.TableDetails, exportPath string, supressIDUpdate bool, output  *os.File ) bool  {
+func existsTimeField( fieldDetails parser.FieldDetails  ) bool {
+	ret := false
+
+	if ( swagger.IsFieldTypeATime( fieldDetails.DbFieldType ) ||
+		 swagger.IsFieldTypeATime( fieldDetails.DbFieldCollectionType ) ||
+		 swagger.IsFieldTypeATime( fieldDetails.DbFieldMapType ) ) {
+		ret = true
+	}
+	return ret
+}
+
+
+func existsFieldType( fieldDetails parser.FieldDetails, fieldType string  ) bool {
+	ret := false
+	
+	if swagger.IsFieldTypeATime( strings.ToUpper( fieldType ) ) {
+		ret = existsTimeField( fieldDetails )
+	} else if ( ( strings.ToLower( fieldDetails.DbFieldType ) == fieldType ) ||
+		 ( strings.ToLower( fieldDetails.DbFieldCollectionType ) == fieldType ) ||
+		 (  strings.ToLower( fieldDetails.DbFieldMapType ) == fieldType ) ) {
+		ret = true
+		}
+	return ret
+}
+
+
+
+
+// Scan through fields and UDT fields to see if a type contained is a time type. Return true if a field is a time field
+func doINeedTime(  parserOutput parser.ParseOutput   ) bool {
+	ret := false
+	for _, v := range parserOutput.TableDetails.TableFields.DbFieldDetails {
+		if existsTimeField(v) {
+			ret = true;
+			break;
+		}
+	}
+	if ! ret {
+		for _, v := range parserOutput.TypeDetails {
+			for _, k := range v.TypeFields.DbFieldDetails {
+				if existsTimeField(k) {
+					ret = true;
+					break;
+				}
+			}
+			if ret {
+				break
+			}
+		}
+
+	}
+	return ret
+}
+
+//Scan through fields and UDT fields to see if a type contained is a decimal. Return true if a field is a decimal
+func doINeedDecimal(  parserOutput parser.ParseOutput  ) bool {
+	ret := false
+	for _, v := range parserOutput.TableDetails.TableFields.DbFieldDetails {
+		if existsFieldType( v , swagger.DECIMAL ) {
+			ret = true;
+			break;
+		}
+	}
+	if ! ret {
+		for _, v := range parserOutput.TypeDetails {
+			for _, k := range v.TypeFields.DbFieldDetails {
+				if existsFieldType( k, swagger.DECIMAL ) {
+					ret = true;
+					break;
+				}
+			}
+			if ret {
+				break
+			}
+		}
+
+	}
+	return ret
+}

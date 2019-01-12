@@ -15,4 +15,5 @@ paths:`
 	TIMESTAMP = "TIMESTAMP"
 	DATE = "DATE"
 	TIMEUUID = "TIMEUUID"
+	DECIMAL = "decimal"
 )

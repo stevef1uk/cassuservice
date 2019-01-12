@@ -130,14 +130,13 @@ for {
 			fmt.Println(`
         api.ServerShutdown = func() {
         data.Stop()
-    }
-`)
+    } ` )
+
 		} else if ( strings.Contains(text, "func setupMiddlewares(handler") ) {
 			if debug { fmt.Print("Found setupMiddlewares") }
 			fmt.Println(text)
 			fmt.Println(`
-        data.SetUp()
-`)
+        data.SetUp() `)
 			} else if ( strings.Contains(text, handlerString) ) {
 				if debug {
 					fmt.Print("Found handlerString")
@@ -145,8 +144,7 @@ for {
 				fmt.Println(text)
 				skip = true
 				fmt.Println(`
-	return data.Search(params)
-`)
+	return data.Search(params) `)
 				} else if ( strings.Contains(text, "restapi/operations") ) {
 					if debug {
 						fmt.Print("Found import")
