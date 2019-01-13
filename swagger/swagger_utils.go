@@ -7,9 +7,9 @@ import (
 )
 
 // Utility function to identify if the passed fieldType is a User Defined Type
-func IsFieldTypeUDT( typeDetails parser.ParseOutput, fieldType string ) bool {
+func IsFieldTypeUDT( parserOutput parser.ParseOutput, fieldType string ) bool {
 	ret := false
-	for _, v := range typeDetails.TypeDetails {
+	for _, v := range parserOutput.TypeDetails {
 		if v.TypeName == fieldType {
 			ret = true
 			break

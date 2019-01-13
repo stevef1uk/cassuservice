@@ -112,9 +112,9 @@ func CapitaliseSplitFieldName ( debug bool, fieldName string, dontUpdate bool ) 
 }
 
 
-func mapCassandraTypeToGoType( debug bool, field parser.FieldDetails, collectionofUDT bool, smallInt bool, smallFloat bool  ) string {
+func mapCassandraTypeToGoType( debug bool, fieldType string, collectionofUDT bool, smallInt bool, smallFloat bool  ) string {
 	var text string = ""
-	switch strings.ToLower(field.DbFieldType) {
+	switch strings.ToLower(fieldType) {
 	case "int":
 		if (smallInt) {
 			text = "int" // Reflection of Cassandra Type is int not int64
@@ -126,7 +126,7 @@ func mapCassandraTypeToGoType( debug bool, field parser.FieldDetails, collection
 	case "date":
 		text = "time.Time"
 	case "timeuuid":
-		if ( field.DbFieldType == swagger.TIMEUUID ) {
+		if ( fieldType == swagger.TIMEUUID ) {
 			text = "gocql.UUID"
 		} else {
 			text = "time.Time"
@@ -183,11 +183,11 @@ func mapCassandraTypeToGoType( debug bool, field parser.FieldDetails, collection
 		}
 
 	default:
-		fmt.Printf("Field type not recognised %q = ", field)
+		fmt.Printf("Field type not recognised %q = ", fieldType)
 		panic(1)
 	}
 
-	if debug { fmt.Printf("mapCassandraTypeToGoType returning %s from field %q\n", text, field ) }
+	if debug { fmt.Printf("mapCassandraTypeToGoType returning %s from field %q\n", text, fieldType ) }
 	return text
 }
 
@@ -199,67 +199,6 @@ func createTempVar ( fieldName string ) string {
 	return ret
 }
 
-
-func setUpArrayTypes(  debug bool, output string, field parser.FieldDetails,  dontUpdate bool ) string {
-	ret := output
-	tmpVar := createTempVar( field.DbFieldName)
-
-	if  swagger.IsFieldTypeATime( field.DbFieldType ) {
-		ret = ret + `
-        ` + tmpVar + " = strfmt.NewDateTime().String()" + `
-        ` + "_ = " + tmpVar + `
-		` + strings.ToLower(field.DbFieldName) + " = " + RAWRESULT + `["` + strings.ToLower(field.DbFieldName) + `"].([]` +
-		    mapCassandraTypeToGoType( debug, field,false,   false, false ) +  `)
-		` + "payLoad." + Capitiseid( debug, field.DbFieldName, dontUpdate) + " = make([] string, len( payLoad." +strings.ToLower(field.DbFieldName) + ") )" + `
-		for i := 0; i < len(` + strings.ToLower(field.DbFieldName) + `); i++ {
-			payLoad.` + Capitiseid( debug, field.DbFieldName, dontUpdate) + "[i] = " + strings.ToLower(field.DbFieldName) + "[i].String()" + `
-		}`
-	} else {
-		if ( strings.ToLower(field.DbFieldType) == "decimal") {
-			ret = ret + `
-    payLoad.` + Capitiseid(debug, field.DbFieldName, dontUpdate) + " = make([]float64, len(" + strings.ToLower(field.DbFieldName) + ") )" + `
-    for i := 0; i < len( payLoad.` + strings.ToLower(field.DbFieldName) + `); i++ {
-        ` + tmpVar + ", err := strconv.ParseFloat( " + strings.ToLower(field.DbFieldName) + "[i].String(), 64 )" + `
-        if ( err != nil ) {
-            log.Println("error parsing decimal value for field %s\n",` + field.DbFieldName + `)
-        }
-` + `
-        payLoad.` + Capitiseid( debug, field.DbFieldName, dontUpdate) + "[i] = " + tmpVar + `
-    }`
-		} else {
-			ret = ret + `
-		` + strings.ToLower(field.DbFieldName) + " = " + RAWRESULT + `["` + strings.ToLower(field.DbFieldName) + `"].([]` + mapCassandraTypeToGoType( debug, field,false,   false, false ) + `)`
-			ret = ret + `
-		` + "payLoad." + Capitiseid(debug, field.DbFieldName, dontUpdate) + " = make([]" + mapCassandraTypeToGoType( true, field,false,   false, false ) + ",len(" + strings.ToLower(field.DbFieldName) + ") )" + `
-		for i := 0; i < len( payload.` + strings.ToLower(field.DbFieldName) + `); i++ {
-			payLoad.` + Capitiseid(debug,field.DbFieldName, dontUpdate) + "[i] = " + mapCassandraTypeToGoType( true, field,false,   false, false ) + "(" + strings.ToLower(field.DbFieldName) + "[i])" + `
-		}`
-		}
-	}
-	if debug { fmt.Printf("setUpArrayTypes returning %s\n", ret ) }
-	return ret
-}
-
-
-
-func retArrayTypes(debug bool, output string, field parser.FieldDetails, index int, simple bool, dontUpdate bool ) string {
-	ret := output
-	v :=  field
-	if ( v.DbFieldType == "map" ) {
-		ret = ret + "payLoad." + CapitaliseSplitFieldName( debug, v.DbFieldName, dontUpdate ) + " = " + v.DbFieldName
-	} else {
-		switchValue := strings.ToLower( v.DbFieldCollectionType )
-		switch switchValue {
-		case "float", "int", "varint", "boolean", "uuid", "bigint", "counter", "decimal", "double", "text", "varchar", "ascii", "blob", "inet", swagger.DATE, swagger.TIMESTAMP, swagger.TIMEUUID :
-			ret = setUpArrayTypes(  debug , output , v,  dontUpdate  )
-
-		default:
-			ret = ret + "payLoad." + CapitaliseSplitFieldName( debug, v.DbFieldName, dontUpdate ) + " = " + v.DbFieldName
-		}
-	}
-
-	return ret
-}
 
 func existsTimeField( fieldDetails parser.FieldDetails  ) bool {
 	ret := false

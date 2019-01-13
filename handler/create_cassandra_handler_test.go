@@ -25,6 +25,7 @@ const (
 			id int,
 			name text,
             city city,
+            events set<int>,
 			PRIMARY KEY (id, name)
 		) WITH CLUSTERING ORDER BY (name ASC)
 `
@@ -48,7 +49,7 @@ import (
 )
 
 
-func performCreateTest1( test string, cql string, expected string , t *testing.T ) {
+func performCreateTest1( debug bool, test string, cql string, expected string , t *testing.T ) {
 
 	// Mock stdin
 	file := tempFile()
@@ -66,8 +67,8 @@ func performCreateTest1( test string, cql string, expected string , t *testing.T
 	file.Sync()
 	input(file)
 
-	parse1 := parser.ParseText( false, parser.Setup, parser.Reset, cql )
-	CreateCode( true, "/tmp", "github.com/stevef1uk/test3", parse1,  "",  "",  0, false , false , true   )
+	parse1 := parser.ParseText( debug, parser.Setup, parser.Reset, cql )
+	CreateCode( debug, "/tmp", "github.com/stevef1uk/test3", parse1,  "",  "",  0, false , false , true   )
 
 
 	// Read generated file
@@ -99,7 +100,7 @@ _ = ret6
 */
 
 func Test1(t *testing.T) {
-	performCreateTest1("Test1", CSQ_TEST1, EXPECTED_OUTPUT_TEST1, t )
+	performCreateTest1(true, "Test1", CSQ_TEST1, EXPECTED_OUTPUT_TEST1, t )
 }
 
 

@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/stevef1uk/cassuservice/parser"
+	//"github.com/stevef1uk/cassuservice/parser"
 	"os"
 	"testing"
 )
@@ -50,14 +50,14 @@ func TestFieldName2(t *testing.T) {
 	ret1 := CreateFile(true, "/tmp", "/tmp")
 	ret1.Close()
 
-	field := parser.FieldDetails{"test", "int", "", "", ""}
-	ret2 := mapCassandraTypeToGoType(true, field, false, false, false )
+	//field := parser.FieldDetails{"test", "int", "", "", ""}
+	ret2 := mapCassandraTypeToGoType(true, "test", false, false, false )
 	if ret2 != "int64" {
 		t.Errorf("Expected int64 got %s", ret2)
 	}
 
-	field = parser.FieldDetails{"test", "int", "", "", ""}
-	ret2 = mapCassandraTypeToGoType(true, field, false, true, false )
+	//field = parser.FieldDetails{"test", "int", "", "", ""}
+	ret2 = mapCassandraTypeToGoType(true, "test", false, true, false )
 	if ret2 != "int" {
 		t.Errorf("Expected int got %s", ret2)
 	}
@@ -71,11 +71,10 @@ func TestFieldName2(t *testing.T) {
 		t.Errorf("Expected tmp_field1_1 got %s", ret3)
 	}
 
-	field = parser.FieldDetails{"id", "TIMEUUID", "", "", ""}
-	output := ""
+	//field = parser.FieldDetails{"id", "TIMEUUID", "", "", ""}
 
-	ret4 := setUpArrayTypes(true, output, field, false)
-	_ = ret4
+	//ret4 := setUpArrayTypes(true, "TIMEUUID", false)
+	//_ = ret4
 }
 
 func TestFieldName3(t *testing.T) {
