@@ -31,6 +31,10 @@ CREATE TYPE demo.city (
     test_int int,
     lastUpdatedAt TIMESTAMP,
     myfloat float
+    events set<int>,
+    mymap  map<int, text>
+    mylist list<float>,
+    address_list set<frozen<simple>>,
 );
 
 CREATE TABLE demo.employee (
@@ -40,15 +44,18 @@ CREATE TABLE demo.employee (
     name text,
     mediate TIMESTAMP,
     second_ts timestamp,
+    tevents set<int>,
+    tmylist list<float>
+    tmymap  map<int, text>
    PRIMARY KEY (id, mediate, second_ts )
  ) WITH CLUSTERING ORDER BY (mediate ASC, second_ts ASC)
 		` )
 
-	ret1 := swagger.CreateSwagger( true, ret )
+	ret1 := swagger.CreateSwagger( false, ret )
 	println("Swagger=\n")
 	println(ret1)
 
-	ret2 := handler.Capitiseid( true, "Id", false )
+	ret2 := handler.Capitiseid( false, "Id", false )
 	println(ret2)
 	_ = ret2;
 /*

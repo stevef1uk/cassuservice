@@ -19,6 +19,18 @@ func addDefinitions( debug bool, output string, parseOutput  parser.ParseOutput 
 		}
 
 	}
+	if ! defsRequired {
+		for i :=0;  i < parseOutput.TypeIndex;  i++ {
+			thisType := parseOutput.TypeDetails[i]
+			for j :=0;  j < thisType.TypeFields.FieldIndex; j++ {
+				v := thisType.TypeFields.DbFieldDetails
+				if v[j].DbFieldMapType != "" || v[j].DbFieldCollectionType != "" || IsFieldTypeUDT(parseOutput, v[j].DbFieldType) {
+					defsRequired = true
+				}
+			}
+
+		}
+	}
 	if defsRequired {
 		ret = ret + `
 ` + "definitions:"
@@ -49,22 +61,42 @@ func addMaps( debug bool, output string, parseOutput  parser.ParseOutput ) strin
 	return ret
 }
 
-// Add the definition details for list & set types when they need adding to the definitions only
-func addCollectionTypes( debug bool, output string, parseOutput  parser.ParseOutput ) string {
-	ret := output
-	tableDetails := parseOutput.TableDetails
 
-	for i :=0;  i < tableDetails.TableFields.FieldIndex; i++ {
-		if  tableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType != "" && tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType == "" {
-			if IsFieldTypeUDT(parseOutput, tableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType) {
-				ret = ret + `
-` + "  " + strings.ToLower(tableDetails.TableFields.DbFieldDetails[i].DbFieldName) + ":" + `
+// Add the definition details for list & set types when they need adding to the definitions only
+func addCollectionType( debug bool, fieldDetails parser.FieldDetails ) string {
+	ret := `
+` + "  " + strings.ToLower(fieldDetails.DbFieldName) + ":" + `
 ` + "      type: array" + `
 ` + "      items:" + `
-`
-				ret = ret + "         $ref: " + `"#/definitions/` + strings.ToLower(tableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType) + `"`
+` + "         $ref: " + `"#/definitions/` + strings.ToLower(fieldDetails.DbFieldCollectionType) + `"`
+
+	return ret
+}
+
+
+// Add the definition details for list & set types when they need adding to the definitions only
+func addCollectionTypes( debug bool, output string, parserOutput  parser.ParseOutput ) string {
+	ret := output
+	tableDetails := parserOutput.TableDetails
+
+	for i := 0;  i < tableDetails.TableFields.FieldIndex; i++ {
+		if  tableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType != "" && tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType == "" {
+			if IsFieldTypeUDT(parserOutput, tableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType) {
+				ret = ret + addCollectionType(debug, tableDetails.TableFields.DbFieldDetails[i])
 			}
 		}
+	}
+
+	for i := 0; i < parserOutput.TypeIndex; i++ {
+		v := parserOutput.TypeDetails[i]
+		for j := 0; j < v.TypeFields.FieldIndex ; j++ {
+			if v.TypeFields.DbFieldDetails[j].DbFieldCollectionType != "" && v.TypeFields.DbFieldDetails[j].DbFieldMapType == "" {
+				if IsFieldTypeUDT(parserOutput, v.TypeFields.DbFieldDetails[j].DbFieldCollectionType ) {
+					ret = ret + addCollectionType(debug, v.TypeFields.DbFieldDetails[j])
+				}
+			}
+		}
+
 	}
 
 	return ret
