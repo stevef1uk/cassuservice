@@ -18,7 +18,7 @@ func main() {
 	debug = *debugPtr
 	//parser.Setup()
 
-
+// //mylist list<float>,
 		ret := parser.ParseText( debug, parser.Setup, parser.Reset,`
 CREATE TYPE demo.simple (
    dummy text
@@ -33,7 +33,6 @@ CREATE TYPE demo.city (
     myfloat float
     events set<int>,
     mymap  map<int, text>
-    mylist list<float>,
     address_list set<frozen<simple>>,
 );
 

@@ -39,22 +39,45 @@ func addDefinitions( debug bool, output string, parseOutput  parser.ParseOutput 
 	return ret, defsRequired
 }
 
-// Add the definition details for map types
-func addMaps( debug bool, output string, parseOutput  parser.ParseOutput ) string {
-	ret := output
-	tableDetails := parseOutput.TableDetails
 
-	for i :=0;  i < tableDetails.TableFields.FieldIndex; i++ {
-		if  tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType != "" {
+// Add the definition details for map types, ensure that these are delineated between tables & UDTs
+func addMap( debug bool, parserOutput  parser.ParseOutput, fieldDetails parser.FieldDetails, inType bool, typeIndex int) string {
+	ret := ""
+	if  fieldDetails.DbFieldMapType != "" {
+		if inType {
 			ret = ret + `
-` + "  " + strings.ToLower(tableDetails.TableFields.DbFieldDetails[i].DbFieldName) + ":" + `
+` + "  " + strings.ToLower(parserOutput.TypeDetails[typeIndex].TypeName) + "_" + strings.ToLower(fieldDetails.DbFieldName)
+		} else {
+			ret = ret + `
+` + "  " + strings.ToLower(fieldDetails.DbFieldName)
+		}
+		ret = ret +  ":" + `
 ` + "      additionalProperties:" + `
 `
-			if IsFieldTypeUDT(parseOutput, tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType) {
-				ret = ret + "         $ref: " +  `"#/definitions/` + strings.ToLower(tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType ) + `"`
-			} else {
-				ret = ret + "        type: " + mapCassandraTypeToSwaggerType(true, tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType)
-			}
+
+		if IsFieldTypeUDT(parserOutput, fieldDetails.DbFieldMapType) {
+			ret = ret + "         $ref: " +  `"#/definitions/` + strings.ToLower(fieldDetails.DbFieldMapType ) + `"`
+		} else {
+			ret = ret + "        type: " + mapCassandraTypeToSwaggerType(true, fieldDetails.DbFieldMapType)
+		}
+	}
+	return ret
+}
+
+
+// Add the definition details for map types
+func addMaps( debug bool, output string, parserOutput  parser.ParseOutput ) string {
+	ret := output
+	tableDetails := parserOutput.TableDetails
+
+	for i :=0;  i < tableDetails.TableFields.FieldIndex; i++ {
+		ret = ret + addMap( debug, parserOutput, tableDetails.TableFields.DbFieldDetails[i], false, 0 )
+	}
+
+	for i := 0; i < parserOutput.TypeIndex; i++ {
+		v := parserOutput.TypeDetails[i]
+		for j := 0; j < v.TypeFields.FieldIndex ; j++ {
+			ret = ret + addMap( debug, parserOutput, v.TypeFields.DbFieldDetails[j], true, i )
 		}
 	}
 
@@ -63,9 +86,16 @@ func addMaps( debug bool, output string, parseOutput  parser.ParseOutput ) strin
 
 
 // Add the definition details for list & set types when they need adding to the definitions only
-func addCollectionType( debug bool, fieldDetails parser.FieldDetails ) string {
+func addCollectionType( debug bool, parseOutput  parser.ParseOutput, fieldDetails parser.FieldDetails, inType bool, typeIndex int ) string {
 	ret := `
-` + "  " + strings.ToLower(fieldDetails.DbFieldName) + ":" + `
+` + "  "
+	if inType {
+		ret = ret + strings.ToLower(parseOutput.TypeDetails[typeIndex].TypeName) + "_" +  strings.ToLower(fieldDetails.DbFieldName)
+	} else
+	{
+		ret = ret + strings.ToLower(fieldDetails.DbFieldName)
+	}
+	ret = ret + ":" + `
 ` + "      type: array" + `
 ` + "      items:" + `
 ` + "         $ref: " + `"#/definitions/` + strings.ToLower(fieldDetails.DbFieldCollectionType) + `"`
@@ -82,7 +112,7 @@ func addCollectionTypes( debug bool, output string, parserOutput  parser.ParseOu
 	for i := 0;  i < tableDetails.TableFields.FieldIndex; i++ {
 		if  tableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType != "" && tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType == "" {
 			if IsFieldTypeUDT(parserOutput, tableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType) {
-				ret = ret + addCollectionType(debug, tableDetails.TableFields.DbFieldDetails[i])
+				ret = ret + addCollectionType(debug, parserOutput, tableDetails.TableFields.DbFieldDetails[i], false, 0)
 			}
 		}
 	}
@@ -92,7 +122,7 @@ func addCollectionTypes( debug bool, output string, parserOutput  parser.ParseOu
 		for j := 0; j < v.TypeFields.FieldIndex ; j++ {
 			if v.TypeFields.DbFieldDetails[j].DbFieldCollectionType != "" && v.TypeFields.DbFieldDetails[j].DbFieldMapType == "" {
 				if IsFieldTypeUDT(parserOutput, v.TypeFields.DbFieldDetails[j].DbFieldCollectionType ) {
-					ret = ret + addCollectionType(debug, v.TypeFields.DbFieldDetails[j])
+					ret = ret + addCollectionType(debug, parserOutput, v.TypeFields.DbFieldDetails[j], true, i)
 				}
 			}
 		}
@@ -103,7 +133,7 @@ func addCollectionTypes( debug bool, output string, parserOutput  parser.ParseOu
 }
 
 // Add field details
-func addFieldDetails( debug bool, spaces string, output string, tableDetails  parser.AllFieldDetails, parseOutput  parser.ParseOutput ) string {
+func addFieldDetails( debug bool, spaces string, output string, parseOutput  parser.ParseOutput, tableDetails  parser.AllFieldDetails, inType bool, typeIndex int ) string {
 	ret := output
 
 	for i :=0;  i < tableDetails.FieldIndex; i++ {
@@ -114,6 +144,9 @@ func addFieldDetails( debug bool, spaces string, output string, tableDetails  pa
 			if tableDetails.DbFieldDetails[i].DbFieldMapType != "" {
 				ret = ret + `
 ` + spaces + "  $ref: " + `"#/definitions/` + strings.ToLower( tableDetails.DbFieldDetails[i].DbFieldName) + `"`
+
+
+
 			} else {
 				ret = ret + `
 ` + spaces + "  $ref: " + `"#/definitions/` + strings.ToLower( tableDetails.DbFieldDetails[i].DbFieldType) + `"`
@@ -161,7 +194,7 @@ func addUDTs( debug bool, output string, parseOutput  parser.ParseOutput ) strin
 ` + "  " +  strings.ToLower( tableDetails.TypeName) + ":" + `
 `
 		ret = ret + "    properties:"
-		ret = addFieldDetails( debug, "       " , ret, tableDetails.TypeFields, parseOutput  )
+		ret = addFieldDetails( debug, "       " , ret, parseOutput, tableDetails.TypeFields,true, i   )
 	}
 
 	return ret
@@ -200,7 +233,7 @@ func addParametersAndResponses( debug bool, output string, parseOutput  parser.P
 	ret = ret + `
 ` + "              properties:"
 
-	ret = addFieldDetails( debug, "                 " , ret, tableDetails.TableFields, parseOutput  )
+	ret = addFieldDetails( debug, "                 " , ret, parseOutput, tableDetails.TableFields, false, 0  )
 
 	ret = ret + `
 ` + "        400: " + `
