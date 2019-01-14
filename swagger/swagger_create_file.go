@@ -142,21 +142,34 @@ func addFieldDetails( debug bool, spaces string, output string, parseOutput  par
 		if  tableDetails.DbFieldDetails[i].DbFieldMapType != "" ||
 			IsFieldTypeUDT( parseOutput, tableDetails.DbFieldDetails[i].DbFieldType ) {
 			if tableDetails.DbFieldDetails[i].DbFieldMapType != "" {
-				ret = ret + `
+				if inType {
+					ret = ret + `
+` + spaces + "  $ref: " + `"#/definitions/` + strings.ToLower(parseOutput.TypeDetails[typeIndex].TypeName) + "_" + strings.ToLower( tableDetails.DbFieldDetails[i].DbFieldName) + `"`
+				} else {
+					ret = ret + `
 ` + spaces + "  $ref: " + `"#/definitions/` + strings.ToLower( tableDetails.DbFieldDetails[i].DbFieldName) + `"`
-
-
+				}
 
 			} else {
-				ret = ret + `
+				if inType {
+					ret = ret + `
+` + spaces + "  $ref: " + `"#/definitions/` + strings.ToLower(parseOutput.TypeDetails[typeIndex].TypeName) + "_" + strings.ToLower( tableDetails.DbFieldDetails[i].DbFieldType) + `"`
+				} else {
+					ret = ret + `
 ` + spaces + "  $ref: " + `"#/definitions/` + strings.ToLower( tableDetails.DbFieldDetails[i].DbFieldType) + `"`
+				}
 			}
 
 		} else {
 			if tableDetails.DbFieldDetails[i].DbFieldCollectionType != "" {
 				if IsFieldTypeUDT(parseOutput, tableDetails.DbFieldDetails[i].DbFieldCollectionType)  {
-					ret = ret + `
+					if inType {
+						ret = ret + `
+` + spaces + "  $ref: " + `"#/definitions/` + strings.ToLower(parseOutput.TypeDetails[typeIndex].TypeName) + "_" + strings.ToLower( tableDetails.DbFieldDetails[i].DbFieldName) + `"`
+					} else {
+						ret = ret + `
 ` + spaces + "  $ref: " + `"#/definitions/` + strings.ToLower( tableDetails.DbFieldDetails[i].DbFieldName) + `"`
+					}
 				} else {
 					ret = ret + `
 ` + spaces + "  type: " + mapCassandraTypeToSwaggerType(true, tableDetails.DbFieldDetails[i].DbFieldType)
