@@ -42,11 +42,12 @@ func addStruct( debug bool, parserOutput parser.ParseOutput, dontUpdate bool, ou
 
 	for i := 0; i < parserOutput.TypeIndex; i++ {
 		v := parserOutput.TypeDetails[i]
-		output.WriteString( "\ntype " + strings.ToLower(v.TypeName) + " struct {")
+		output.WriteString( "\ntype " + CapitaliseSplitFieldName( debug, strings.ToLower(v.TypeName),dontUpdate)  + " struct {")
 		for j := 0; j < v.TypeFields.FieldIndex ; j++ {
 			revisedFieldName := CapitaliseSplitFieldName(debug, strings.ToLower( v.TypeFields.DbFieldDetails[j].DbFieldName ), dontUpdate )
+			revisedType := CapitaliseSplitFieldName( debug, strings.ToLower(v.TypeName),dontUpdate)
 			output.WriteString( "\n    " + revisedFieldName + " ")
-			output.WriteString( mapCassandraTypeToGoType( debug, v.TypeFields.DbFieldDetails[j].DbFieldType, false, true, true )  + " `" + `cql:"` + revisedFieldName + `"` +"`")
+			output.WriteString( mapCassandraTypeToGoType( debug, revisedFieldName, strings.ToLower(v.TypeFields.DbFieldDetails[j].DbFieldType), revisedType, v.TypeFields.DbFieldDetails[j], parserOutput, false, false, true )  + " `" + `cql:"` + strings.ToLower( v.TypeFields.DbFieldDetails[j].DbFieldName ) + `"` +"`")
 		}
 		output.WriteString("\n}\n" )
 	}
@@ -121,7 +122,7 @@ func writeField( debug bool, parserOutput parser.ParseOutput, field parser.Field
 
 	if field.DbFieldCollectionType != "" {
 		collectionofUDT := swagger.IsFieldTypeUDT(  parserOutput, field.DbFieldCollectionType )
-		fieldType :=  mapCassandraTypeToGoType( debug, field.DbFieldCollectionType, collectionofUDT,  false, false)
+		fieldType :=  mapCassandraTypeToGoType( debug, strings.ToLower(field.DbFieldName), "CHANGEME", field.DbFieldCollectionType, field, parserOutput, collectionofUDT,  false, false)
 		output.WriteString( INDENT_1 + "var " + strings.ToLower( field.DbFieldName  )+ "[]" + fieldType )
 	}
 }

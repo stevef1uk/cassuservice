@@ -9,7 +9,13 @@ import (
 // Utility function to identify if the passed fieldType is a User Defined Type
 func IsFieldTypeUDT( parserOutput parser.ParseOutput, fieldType string ) bool {
 	ret := false
+	i := 0
 	for _, v := range parserOutput.TypeDetails {
+		if i == parserOutput.TypeIndex {
+			break
+		} else {
+			i++
+		}
 		if v.TypeName == fieldType {
 			ret = true
 			break

@@ -1,8 +1,6 @@
 package handler
 
 import (
-	//"github.com/stevef1uk/cassuservice/parser"
-	"os"
 	"testing"
 )
 
@@ -50,18 +48,19 @@ func TestFieldName2(t *testing.T) {
 	ret1 := CreateFile(true, "/tmp", "/tmp")
 	ret1.Close()
 
+	/*
 	//field := parser.FieldDetails{"test", "int", "", "", ""}
-	ret2 := mapCassandraTypeToGoType(true, "test", false, false, false )
+	ret2 := mapCassandraTypeToGoType(true, "test","int", "test", false, false, false )
 	if ret2 != "int64" {
 		t.Errorf("Expected int64 got %s", ret2)
 	}
 
 	//field = parser.FieldDetails{"test", "int", "", "", ""}
-	ret2 = mapCassandraTypeToGoType(true, "test", false, true, false )
+	ret2 = mapCassandraTypeToGoType(true, "test", "int", "test", false, true, false )
 	if ret2 != "int" {
 		t.Errorf("Expected int got %s", ret2)
 	}
-
+*/
 	ret3 := createTempVar("field1")
 	if ret3 != "tmp_field1_0" {
 		t.Errorf("Expected tmp_field1_0 got %s", ret3)
@@ -103,6 +102,7 @@ func TestFieldName3(t *testing.T) {
 	}
 }
 
+/*
 func TestSplice(t *testing.T) {
 
 	path := os.Getenv("GOPATH")  + "/src/github.com/stevef1uk/test3/"
@@ -113,3 +113,4 @@ func TestSplice(t *testing.T) {
 
 }
 
+*/

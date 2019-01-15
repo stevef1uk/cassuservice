@@ -9,25 +9,39 @@ import (
 	"testing"
 )
 
+//address_list set<frozen<simple>>,
 const (
 
 	CSQ_TEST1 = `
 
-    CREATE TYPE TEST.city (
-	       id int,
-           now date,
-           dec decimal
-	       citycode text,
-	       cityname text
-	   );
+    CREATE TYPE demo.simple (
+       dummy text
+    );
 
-    CREATE TABLE demo.accounts (
-			id int,
-			name text,
-            city city,
-            events set<int>,
-			PRIMARY KEY (id, name)
-		) WITH CLUSTERING ORDER BY (name ASC)
+    CREATE TYPE demo.city (
+    id int,
+    citycode text,
+    cityname text,
+    test_int int,
+    lastUpdatedAt TIMESTAMP,
+    myfloat float
+    events set<int>,
+    mymap  map<int, text>
+    address_list set<frozen<simple>>,
+);
+
+CREATE TABLE demo.employee (
+    id int,
+    address_set set<frozen<city>>,
+    my_List list<frozen<simple>>,
+    name text,
+    mediate TIMESTAMP,
+    second_ts timestamp,
+    tevents set<int>,
+    tmylist list<float>
+    tmymap  map<int, text>
+   PRIMARY KEY (id, mediate, second_ts )
+ ) WITH CLUSTERING ORDER BY (mediate ASC, second_ts ASC)
 `
 	EXPECTED_OUTPUT_TEST1 = `// GENERATED FILE so do not edit or will be overwritten upon next generate
 package data

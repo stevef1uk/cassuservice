@@ -112,7 +112,7 @@ func CapitaliseSplitFieldName ( debug bool, fieldName string, dontUpdate bool ) 
 }
 
 
-func mapCassandraTypeToGoType( debug bool, fieldType string, collectionofUDT bool, smallInt bool, smallFloat bool  ) string {
+func mapCassandraTypeToGoType( debug bool, fieldName string, fieldType string, typeName string, fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, collectionofUDT bool, smallInt bool, smallFloat bool  ) string {
 	var text string = ""
 	switch strings.ToLower(fieldType) {
 	case "int":
@@ -132,7 +132,8 @@ func mapCassandraTypeToGoType( debug bool, fieldType string, collectionofUDT boo
 			text = "time.Time"
 		}
 	case "timestamp":
-		text = "time.Time"
+		//text = "time.Time"
+		text = "string"
 	case "varint":
 		text = "int64"
 	case "boolean":
@@ -164,27 +165,28 @@ func mapCassandraTypeToGoType( debug bool, fieldType string, collectionofUDT boo
 	case "smallint":
 		text = "int16"
 	case "list":
-		if (collectionofUDT) {
-			text = ""
-		} else {
-			text = "[]"
-		}
 	case "set":
 		if (collectionofUDT) {
 			text = ""
 		} else {
-			text = "[]"
+			if  (  swagger.IsFieldTypeUDT( parserOutput,  strings.ToUpper(fieldDetails.DbFieldCollectionType)) )  {
+				text = typeName + fieldName
+			} else {
+				text = "[]"
+				text = text + mapCassandraTypeToGoType( debug , fieldName , fieldDetails.DbFieldCollectionType , typeName , fieldDetails, parserOutput,  collectionofUDT , smallInt , smallFloat   )
+			}
 		}
 	case "map":
 		if (collectionofUDT) {
 			text = "map[string]string" // This is the type required by go-swagger
 		} else {
-			text = "" // go-swagger will have created a type for the map
+			text = typeName + fieldName
 		}
 
 	default:
-		fmt.Printf("Field type not recognised %q = ", fieldType)
-		panic(1)
+			//fmt.Printf("Field type not recognised %q = ", fieldType)
+			text =  typeName + fieldName
+			//panic(1)
 	}
 
 	if debug { fmt.Printf("mapCassandraTypeToGoType returning %s from field %q\n", text, fieldType ) }
