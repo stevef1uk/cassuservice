@@ -112,7 +112,7 @@ func CapitaliseSplitFieldName ( debug bool, fieldName string, dontUpdate bool ) 
 }
 
 
-func mapCassandraTypeToGoType( debug bool, fieldName string, fieldType string, typeName string, fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, collectionofUDT bool, smallInt bool, smallFloat bool  ) string {
+func mapCassandraTypeToGoType( debug bool, fieldName string, fieldType string, typeName string, fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, collectionofUDT bool, smallInt bool, smallFloat bool, timeAsString bool  ) string {
 	var text string = ""
 	switch strings.ToLower(fieldType) {
 	case "int":
@@ -126,14 +126,17 @@ func mapCassandraTypeToGoType( debug bool, fieldName string, fieldType string, t
 	case "date":
 		text = "time.Time"
 	case "timeuuid":
-		if ( fieldType == swagger.TIMEUUID ) {
+		if (fieldType == swagger.TIMEUUID) {
 			text = "gocql.UUID"
 		} else {
 			text = "time.Time"
 		}
 	case "timestamp":
-		//text = "time.Time"
-		text = "string"
+		if timeAsString {
+			text = "string"
+		} else {
+			text = "time.Time"
+		}
 	case "varint":
 		text = "int64"
 	case "boolean":
@@ -173,7 +176,7 @@ func mapCassandraTypeToGoType( debug bool, fieldName string, fieldType string, t
 				text = typeName + fieldName
 			} else {
 				text = "[]"
-				text = text + mapCassandraTypeToGoType( debug , fieldName , fieldDetails.DbFieldCollectionType , typeName , fieldDetails, parserOutput,  collectionofUDT , smallInt , smallFloat   )
+				text = text + mapCassandraTypeToGoType( debug , fieldName , fieldDetails.DbFieldCollectionType , typeName , fieldDetails, parserOutput,  collectionofUDT , smallInt , smallFloat, timeAsString   )
 			}
 		}
 	case "map":

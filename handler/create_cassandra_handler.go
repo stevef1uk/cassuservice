@@ -47,7 +47,7 @@ func addStruct( debug bool, parserOutput parser.ParseOutput, dontUpdate bool, ou
 			revisedFieldName := CapitaliseSplitFieldName(debug, strings.ToLower( v.TypeFields.DbFieldDetails[j].DbFieldName ), dontUpdate )
 			revisedType := CapitaliseSplitFieldName( debug, strings.ToLower(v.TypeName),dontUpdate)
 			output.WriteString( "\n    " + revisedFieldName + " ")
-			output.WriteString( mapCassandraTypeToGoType( debug, revisedFieldName, strings.ToLower(v.TypeFields.DbFieldDetails[j].DbFieldType), revisedType, v.TypeFields.DbFieldDetails[j], parserOutput, false, false, true )  + " `" + `cql:"` + strings.ToLower( v.TypeFields.DbFieldDetails[j].DbFieldName ) + `"` +"`")
+			output.WriteString( mapCassandraTypeToGoType( debug, revisedFieldName, strings.ToLower(v.TypeFields.DbFieldDetails[j].DbFieldType), revisedType, v.TypeFields.DbFieldDetails[j], parserOutput, false, false, true, true )  + " `" + `cql:"` + strings.ToLower( v.TypeFields.DbFieldDetails[j].DbFieldName ) + `"` +"`")
 		}
 		output.WriteString("\n}\n" )
 	}
@@ -120,10 +120,19 @@ func retArrayTypes(debug bool, field parser.FieldDetails, dontUpdate bool ) stri
 
 func writeField( debug bool, parserOutput parser.ParseOutput, field parser.FieldDetails, dontUpdate bool, output  *os.File) {
 
+	fieldName := strings.ToLower(field.DbFieldName)
 	if field.DbFieldCollectionType != "" {
 		collectionofUDT := swagger.IsFieldTypeUDT(  parserOutput, field.DbFieldCollectionType )
-		fieldType :=  mapCassandraTypeToGoType( debug, strings.ToLower(field.DbFieldName), "CHANGEME", field.DbFieldCollectionType, field, parserOutput, collectionofUDT,  false, false)
-		output.WriteString( INDENT_1 + "var " + strings.ToLower( field.DbFieldName  )+ "[]" + fieldType )
+		fieldType :=  mapCassandraTypeToGoType( debug, strings.ToLower(field.DbFieldName), strings.ToLower(field.DbFieldCollectionType), field.DbFieldCollectionType, field, parserOutput, collectionofUDT,  false, false, false)
+		if debug {fmt.Println("writeField name =", field.DbFieldName, " fieldType = ", fieldType) }
+		if strings.ToLower(fieldType ) == "map" {
+			output.WriteString( INDENT_1 + "var " + strings.ToLower( field.DbFieldName  )+ " models." +  CapitaliseSplitFieldName( debug, strings.ToLower(field.DbFieldName),dontUpdate) )
+		}
+
+	} else {
+		fieldType :=  mapCassandraTypeToGoType( debug, strings.ToLower(field.DbFieldName), strings.ToLower(field.DbFieldType), field.DbFieldCollectionType, field, parserOutput, false,  false, false, false)
+		if debug {fmt.Println("writeField name =", field.DbFieldName, " fieldType = ", fieldType) }
+		output.WriteString( INDENT_1 + "var " + fieldName + " " + fieldType )
 	}
 }
 
@@ -139,19 +148,16 @@ func WriteVars(  debug bool, parserOutput parser.ParseOutput, goPathForRepo stri
 
 	for i := 0; i < parserOutput.TableDetails.TableFields.FieldIndex; i++ {
 		v := parserOutput.TableDetails.TableFields.DbFieldDetails[i]
-		if debug {
-			fmt.Println("WriteVars v =", v.DbFieldName)
-		}
+		if debug {fmt.Println("WriteVars v =", v.DbFieldName) }
 		// If field type is a UDT
 		if swagger.IsFieldTypeUDT(parserOutput, v.DbFieldType) {
-			if debug {
-				fmt.Println("WriteVars Found UDT = ", v.DbFieldType)
-			}
+			if debug {fmt.Println("WriteVars Found UDT = ", v.DbFieldType)}
 			// Process UDT
 			fieldName := CapitaliseSplitFieldName(debug, strings.ToLower(v.DbFieldName), dontUpdate)
 			output.WriteString( INDENT_1 + fieldName + " := &" + strings.ToLower( v.DbFieldType ) + "{}" )
 
 		} else {
+			if debug {fmt.Println("WriteVars writing field") }
 			writeField( debug, parserOutput, v, dontUpdate, output)
 		}
 	}
