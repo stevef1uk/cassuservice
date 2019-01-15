@@ -112,7 +112,7 @@ func CapitaliseSplitFieldName ( debug bool, fieldName string, dontUpdate bool ) 
 }
 
 
-func mapCassandraTypeToGoType( debug bool, fieldName string, fieldType string, typeName string, fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, collectionofUDT bool, smallInt bool, smallFloat bool, timeAsString bool  ) string {
+func mapCassandraTypeToGoType( debug bool, inTable bool, fieldName string, fieldType string, typeName string, fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, collectionofUDT bool, smallInt bool, smallFloat bool, timeAsString bool  ) string {
 	var text string = ""
 	switch strings.ToLower(fieldType) {
 	case "int":
@@ -169,21 +169,34 @@ func mapCassandraTypeToGoType( debug bool, fieldName string, fieldType string, t
 		text = "int16"
 	case "list":
 	case "set":
+		if debug { fmt.Printf("mapCassandraTypeToGoType %s identified \n", fieldType ) }
 		if (collectionofUDT) {
 			text = ""
+			if debug { fmt.Printf("mapCassandraTypeToGoType collectionofUDT is true\n" ) }
 		} else {
 			if  (  swagger.IsFieldTypeUDT( parserOutput,  strings.ToUpper(fieldDetails.DbFieldCollectionType)) )  {
-				text = typeName + fieldName
+				if debug { fmt.Printf("mapCassandraTypeToGoType IsFieldTypeUDT is true\n" ) }
+				if inTable {
+					if debug { fmt.Printf("mapCassandraTypeToGoType inTable is true\n" ) }
+					text = fieldName
+				} else {
+					text = typeName + fieldName
+				}
 			} else {
+				if debug { fmt.Printf("mapCassandraTypeToGoType IsFieldTypeUDT is false\n" ) }
 				text = "[]"
-				text = text + mapCassandraTypeToGoType( debug , fieldName , fieldDetails.DbFieldCollectionType , typeName , fieldDetails, parserOutput,  collectionofUDT , smallInt , smallFloat, timeAsString   )
+				text = text + mapCassandraTypeToGoType( debug , inTable, fieldName , fieldDetails.DbFieldCollectionType , typeName , fieldDetails, parserOutput,  collectionofUDT , smallInt , smallFloat, timeAsString   )
 			}
 		}
 	case "map":
 		if (collectionofUDT) {
 			text = "map[string]string" // This is the type required by go-swagger
 		} else {
-			text = typeName + fieldName
+			if inTable {
+				text = fieldName
+			} else {
+				text = typeName + fieldName
+			}
 		}
 
 	default:
@@ -192,7 +205,7 @@ func mapCassandraTypeToGoType( debug bool, fieldName string, fieldType string, t
 			//panic(1)
 	}
 
-	if debug { fmt.Printf("mapCassandraTypeToGoType returning %s from field %q\n", text, fieldType ) }
+	if debug { fmt.Printf("mapCassandraTypeToGoType returning %s from field %s type %s\n", text, fieldName, fieldType ) }
 	return text
 }
 
