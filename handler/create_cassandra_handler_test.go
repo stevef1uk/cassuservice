@@ -81,7 +81,7 @@ func performCreateTest1( debug bool, test string, cql string, expected string , 
 	file.Sync()
 	input(file)
 
-	parse1 := parser.ParseText( debug, parser.Setup, parser.Reset, cql )
+	parse1 := parser.ParseText( false, parser.Setup, parser.Reset, cql )
 	CreateCode( debug, "/tmp", "github.com/stevef1uk/test3", parse1,  "",  "",  0, false , false , true   )
 
 
