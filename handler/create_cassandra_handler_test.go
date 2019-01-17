@@ -43,21 +43,8 @@ CREATE TABLE demo.employee (
    PRIMARY KEY (id, mediate, second_ts )
  ) WITH CLUSTERING ORDER BY (mediate ASC, second_ts ASC)
 `
-	EXPECTED_OUTPUT_TEST1 = `// GENERATED FILE so do not edit or will be overwritten upon next generate
-package data
+	EXPECTED_OUTPUT_TEST1 = `
 
-import (
-    "github.com/stevef1uk/test3/models"
-    "github.com/stevef1uk/test3/restapi/operations"
-    "middleware "github.com/go-openapi/runtime/middleware"
-    "github.com/gocql/gocql"
-    "os"
-    "log"
-    "time"
-     strfmt "github.com/go-openapi/strfmt"
-    "gopkg.in/inf.v0"
-    "strconv"
-)
 `
 
 )

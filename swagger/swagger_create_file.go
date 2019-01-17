@@ -219,7 +219,7 @@ func addParametersAndResponses( debug bool, output string, parseOutput  parser.P
 	tableDetails := parseOutput.TableDetails
 
 	for i :=0;  i < tableDetails.PkIndex; i++ {
-		fieldDetails := findFieldByname( tableDetails.DbPKFields[i], tableDetails.TableFields.FieldIndex, tableDetails.TableFields)
+		fieldDetails := FindFieldByname( tableDetails.DbPKFields[i], tableDetails.TableFields.FieldIndex, tableDetails.TableFields)
 		ret = ret + `
 ` + "        - " + "name: " + strings.ToLower(tableDetails.DbPKFields[i]) + `
 ` + "          in: query" + `

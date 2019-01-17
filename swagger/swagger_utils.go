@@ -34,10 +34,10 @@ func IsFieldTypeATime(  fType string ) bool {
 	return ret
 }
 
-func findFieldByname( fieldName string, noFields int,  fields parser.AllFieldDetails )  parser.FieldDetails {
+func FindFieldByname( fieldName string, noFields int,  fields parser.AllFieldDetails )  parser.FieldDetails {
 	var ret parser.FieldDetails
 	for i := 0; i < noFields;  i++ {
-		if  fields.DbFieldDetails[i].DbFieldName== fieldName {
+		if  fields.DbFieldDetails[i].DbFieldName == fieldName {
 			ret = fields.DbFieldDetails[i]
 			break
 		}

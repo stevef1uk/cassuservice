@@ -5,7 +5,7 @@ import "text/template"
 
 
 
-func WriteSwaggerParttoFile(  text string , partName string, file *os.File, aStruct interface{}) {
+func WriteStringToFileWithTemplates(  text string , partName string, file *os.File, aStruct interface{}) {
 	tmpl := template.New( partName )
 	template.Must(tmpl.Parse(text))
 	err := tmpl.Execute(file, aStruct)
@@ -14,6 +14,7 @@ func WriteSwaggerParttoFile(  text string , partName string, file *os.File, aStr
 	}
 
 }
+
 
 
 

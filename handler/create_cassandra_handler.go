@@ -29,7 +29,7 @@ func WriteHeaderPart( debug bool, parserOutput parser.ParseOutput, generateDir s
 	}
 
 	tmpData := &tableDetails{ generateDir, "", "",""}
-	WriteSwaggerParttoFile(  COMMONIMPORTS + extraImports + IMPORTSEND , "codegen-get", output, &tmpData)
+	WriteStringToFileWithTemplates(  COMMONIMPORTS + extraImports + IMPORTSEND , "codegen-get", output, &tmpData)
 
 
 	return doNeedTimeImports
@@ -143,9 +143,9 @@ func writeField( debug bool, parserOutput parser.ParseOutput, field parser.Field
 }
 
 
-// Function that writes out the variable types for the table
-func WriteVars(  debug bool, parserOutput parser.ParseOutput, goPathForRepo string, doNeedTimeImports bool, dontUpdate bool, output  *os.File ) {
-	// Need to output parameter variable
+// Function that writes out the variable types for the table & returns the temporary variable created if there is a time field
+func WriteVars(  debug bool, parserOutput parser.ParseOutput, goPathForRepo string, doNeedTimeImports bool, dontUpdate bool, endPointNameOverRide string, output  *os.File )  string {
+	tmpTimeVar := ""
 
 	const UDTTYPE = `
     {{.FieldName}} := &{{.TypeName}}{}
@@ -168,8 +168,73 @@ func WriteVars(  debug bool, parserOutput parser.ParseOutput, goPathForRepo stri
 		}
 	}
 
+	if doNeedTimeImports {
+		ret := createTempVar( TMP_TIME_VAR_PREFIX )
+		output.WriteString( INDENT_1 + ret + " := strfmt.NewDateTime().String()" )
+	}
+	output.WriteString( "\n" + INDENT_1 + SELECT_OUTPUT + " := map[string]interface{}{}\n")
+
+	tableName := parserOutput.TableDetails.TableName
+	if endPointNameOverRide != "" {
+		tableName = endPointNameOverRide
+	}
+	tableName = CapitaliseSplitFieldName( debug, strings.ToLower(tableName), false)
+	output.WriteString( INDENT_1 + "ret := make(models.Get" + tableName + "OKBody,1)\n" )
+	return tmpTimeVar
 }
 
+
+func buildSelectParams ( debug bool, parserOutput parser.ParseOutput,  dontUpdate bool )  string {
+	ret := ""
+	for i :=0; i < parserOutput.TableDetails.TableFields.FieldIndex; i++ {
+		if i > 0 {
+			ret = ret + ", "
+		}
+		ret = ret + strings.ToLower( parserOutput.TableDetails.TableFields.DbFieldDetails[i].DbFieldName )
+	}
+	return ret
+}
+
+
+func createSelectString( debug bool, parserOutput parser.ParseOutput, timeVar string, cassandraConsistencyRequired string,  overridePrimaryKeys int, allowFiltering bool, dontUpdate bool, logExtraInfo bool, output  *os.File )  string {
+
+	ret := buildSelectParams( debug, parserOutput, dontUpdate )
+	// First build primary key conditions
+	pkNum := parserOutput.TableDetails.PkIndex
+	if overridePrimaryKeys != 0 {
+		if debug {fmt.Println("createSelectString primary fields constrained for select statement\n") }
+		pkNum = overridePrimaryKeys
+	}
+	whereClause := " WHERE "
+	varsClause := ""
+	for i:= 0; i < pkNum; i++ {
+		v := swagger.FindFieldByname( parserOutput.TableDetails.DbPKFields[i], parserOutput.TableDetails.TableFields.FieldIndex, parserOutput.TableDetails.TableFields )
+		if i > 0 {
+			whereClause = whereClause + "and "
+			varsClause = varsClause + ","
+		}
+		whereClause = whereClause + strings.ToLower( v.DbFieldName ) + " = ? "
+
+		fieldName := CapitaliseSplitFieldName(debug, strings.ToLower(v.DbFieldName), dontUpdate)
+		if swagger.IsFieldTypeATime( v.DbFieldType) {
+			// Need to parse the received parameter
+			output.WriteString( INDENT_1 + fieldName + ",_ = time.Parse(time.RFC3339,params." + fieldName + ".String() ) ")
+			varsClause = varsClause + fieldName
+		} else {
+			varsClause = varsClause + "params." + fieldName
+		}
+	}
+
+	consistency := "gocql.One"
+	if cassandraConsistencyRequired != "" {
+		consistency = strings.ToLower(cassandraConsistencyRequired)
+	}
+
+	ret = ret + " FROM " + strings.ToLower( parserOutput.TableDetails.TableName) + whereClause +  "`" + `+"` +"`" + `"+` +"`," + varsClause + ")"
+	ret = ret + "Consistency(" + consistency + ").MapScan(codeGenRawTableResult); err != nil {"
+
+	return ret
+}
 
 // Entry point
 func CreateCode( debug bool, generateDir string,  goPathForRepo string,  parserOutput parser.ParseOutput, cassandraConsistencyRequired string, endPointNameOverRide string, overridePrimaryKeys int, allowFiltering bool, dontUpdate bool, logExtraInfo bool   ) {
@@ -181,8 +246,17 @@ func CreateCode( debug bool, generateDir string,  goPathForRepo string,  parserO
 	doNeedTimeImports := WriteHeaderPart( debug, parserOutput, goPathForRepo, endPointNameOverRide, dontUpdate, output )
 	addStruct( debug, parserOutput,dontUpdate, output )
 	// Write out the static part of the header
-	output.WriteString( "\n" + HEADER)
-	WriteVars( debug, parserOutput, goPathForRepo, doNeedTimeImports,dontUpdate, output )
+	tmpName := CapitaliseSplitFieldName(debug, strings.ToLower(parserOutput.TableDetails.TableName), false)
+	if endPointNameOverRide != "" {
+		tmpName = CapitaliseSplitFieldName( debug, strings.ToLower(endPointNameOverRide), false)
+	}
+	tmpData := &tableDetails{ generateDir, strings.ToLower(parserOutput.TableSpace), strings.ToLower(parserOutput.TableDetails.TableName), tmpName}
+	WriteStringToFileWithTemplates(  "\n" + HEADER, "header", output, &tmpData)
+	//output.WriteString( "\n" + HEADER)
+	tmpTimeVar := WriteVars( debug, parserOutput, goPathForRepo, doNeedTimeImports,dontUpdate, endPointNameOverRide, output )
+	tmp := createSelectString( debug , parserOutput, tmpTimeVar, cassandraConsistencyRequired, overridePrimaryKeys, allowFiltering, dontUpdate, logExtraInfo, output )
+	output.WriteString( INDENT_1 + "if err := session.Query("+"`+"+`"`+"`"+`"`+"+`"+"SELECT " + tmp )
+ 
 
 }
 

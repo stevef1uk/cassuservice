@@ -41,19 +41,19 @@ import (
     "strconv"`
 
 	HEADER =`
-var session *gocql.Session
+var ` + SESSION_VAR + ` *gocql.Session
 
 func SetUp() {
   var err error
   log.Println("Tring to connect to Cassandra database using ", os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster := gocql.NewCluster(os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster.Keyspace = "{{.KEYSPACE}}"
-  cluster.Consistency = gocql.One
-  session, err = cluster.CreateSession()
+  cluster.Consistency = gocql.One` + `
+` + "  "+ SESSION_VAR  + `, err = cluster.CreateSession()
   if ( err != nil ) {
-	  log.Fatal("Have you remembered to set the env var $CASSANDRA_SERVICE_HOST as connection to Cannandra failed with error = ", err)
+    log.Fatal("Have you remembered to set the env var $CASSANDRA_SERVICE_HOST as connection to Cannandra failed with error = ", err)
   } else {
-	  log.Println("Yay! Connection to Cannandra established")
+    log.Println("Yay! Connection to Cannandra established")
   }
 }
 
@@ -66,5 +66,9 @@ func Search(params operations.Get{{.EXPORTPATH}}Params) middleware.Responder {
 `
 
 	INDENT_1 = "\n    "
+
+	SELECT_OUTPUT = "codeGenRawTableResult"
+	TMP_TIME_VAR_PREFIX = "cassuservice_tmp_time"
+	SESSION_VAR = "cassuservice_session"
 )
 
