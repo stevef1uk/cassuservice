@@ -53,6 +53,19 @@ func getServiceName ( tableName, endPointNameOverRide string ) string {
 }
 
 
+
+func GetFieldName(  debug bool, leaveCase bool, fieldName string, dontUpdate bool ) string {
+	name := ""
+	if leaveCase {
+		name = fieldName
+	} else {
+		name = strings.ToLower(fieldName)
+	}
+	return CapitaliseSplitFieldName( debug, name, dontUpdate )
+}
+
+
+
 // Function that renames fields to match that performed for some reason by go-swagger in its generated framework code
 func Capitiseid( debug bool, fieldName string, dontUpdate bool ) string {
 
@@ -113,8 +126,13 @@ debug = false
 }
 
 // THis function returns the Go types for UDT fields
-func basicMapCassandraTypeToGoType( debug bool,  fieldName string, fieldType string, typeName string,  fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, dontUpdate bool ) string {
+func basicMapCassandraTypeToGoType( debug bool, leaveFieldCase bool, inTable bool, fieldName string, fieldType string, typeName string,  fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, dontUpdate bool ) string {
 	text := ""
+	leaveCase := false
+	if leaveFieldCase {
+		leaveCase = true
+	}
+
 	if debug {fmt.Printf("basicMapCassandraTypeToGoType %s %s\n ", fieldName,fieldType )}
 	switch strings.ToLower(fieldType) {
 	case "int": fallthrough
@@ -158,16 +176,25 @@ func basicMapCassandraTypeToGoType( debug bool,  fieldName string, fieldType str
 			text = "[]"
 		}
 
-		text = text + basicMapCassandraTypeToGoType( debug,  fieldName, fieldDetails.DbFieldCollectionType, typeName,   fieldDetails , parserOutput, dontUpdate )
+		text = text + basicMapCassandraTypeToGoType( debug, true, inTable, fieldName, fieldDetails.DbFieldCollectionType, typeName,   fieldDetails , parserOutput, dontUpdate )
 	case "map":
-		fieldName = CapitaliseSplitFieldName( debug, fieldName, dontUpdate)
-		typeName = CapitaliseSplitFieldName( debug, strings.ToLower(typeName), dontUpdate)
-		text = typeName + fieldName
+		fieldName = GetFieldName( debug, leaveCase, fieldName, dontUpdate)
+		if inTable {
+			text = MODELS + fieldName
+		} else {
+			typeName = GetFieldName( debug, leaveCase, typeName, dontUpdate)
+			text = MODELS + typeName + fieldName
+		}
 	default:
 		if debug {fmt.Printf("basicMapCassandraTypeToGoType TYPE NOT MATCHED!!!!\n " )}
-		fieldName = CapitaliseSplitFieldName( debug, fieldName, dontUpdate)
-		typeName = CapitaliseSplitFieldName( debug, strings.ToLower(typeName), dontUpdate)
-		text =  typeName + fieldName
+		fieldName = GetFieldName( debug, leaveCase, fieldName, dontUpdate)
+		if inTable {
+			text =  MODELS + fieldName
+		} else {
+			typeName = GetFieldName( debug, leaveCase, typeName, dontUpdate)
+			text =  MODELS + typeName + fieldName
+		}
+
 		//panic(1)
 	}
 
@@ -182,16 +209,47 @@ func mapTableTypeToGoType( debug bool, fieldName string, fieldType string, typeN
 	text := ""
 
 	switch strings.ToLower(fieldType) {
-	case "timeuuid": fallthrough
-	case "timestamp":
-		text = "time.Time"
+
 	default:
-		text = basicMapCassandraTypeToGoType( debug,  fieldName, fieldType, typeName,   fieldDetails , parserOutput, dontUpdate )
+		text = basicMapCassandraTypeToGoType( debug, true, true, fieldName, fieldType, typeName,   fieldDetails , parserOutput, dontUpdate )
 	}
 
 	if debug { fmt.Printf("mapTableTypeToGoType returning %s from field %s type %s\n", text, fieldName, fieldType ) }
 	return text
 }
+
+
+func mapFieldTypeToGoCSQLType( debug bool, fieldName string, leaveFieldCase bool, inTable bool, fieldType string, typeName string, fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, dontUpdate bool  ) string {
+
+	text := ""
+	if debug {fmt.Printf("mapFieldTypeToGoCSQLType %s %s\n ", fieldName,fieldType )}
+
+	switch strings.ToLower(fieldType) {
+	case "int": fallthrough
+	case "varint":
+		text = "int32"
+	case "uuid":
+		text = "string"
+	case "date": fallthrough
+	case "timeuuid":
+		text = "strfmt.DateTime"
+	case "float":
+		text = "float64"
+	case "list": fallthrough
+	case "set":
+		if ! swagger.IsFieldTypeUDT( parserOutput, fieldDetails.DbFieldCollectionType) {
+			text = "[]*"
+		}
+
+		text = text + basicMapCassandraTypeToGoType( debug, true, true, fieldName, fieldDetails.DbFieldCollectionType, typeName,   fieldDetails , parserOutput, dontUpdate )
+	default:
+		text = basicMapCassandraTypeToGoType( debug, true, true, fieldName, fieldType, typeName,   fieldDetails , parserOutput, dontUpdate )
+	}
+
+	if debug { fmt.Printf("mapFieldTypeToGoCSQLType returning %s from field %s type %s\n", text, fieldName, fieldType ) }
+	return text
+}
+
 
 // Function to return a temporary variable based on string
 var counter int = 0
@@ -280,4 +338,29 @@ func doINeedDecimal(  parserOutput parser.ParseOutput  ) bool {
 
 	}
 	return ret
+}
+
+
+func ProcessTime ( indent string, timeVar string, fieldName string ) (string, string)  {
+
+	ret := indent + timeVar  + " = " + fieldName + ".String()"
+	tmpV := createTempVar( fieldName )
+	tmpV2 := createTempVar( fieldName )
+	ret = ret + indent + tmpV + " := " + timeVar + `[0:10] + "T" + ` + timeVar + `[11:19] + "." + ` + timeVar + "[20:22]"
+	ret = ret + indent + "if " + timeVar + "[22] == ' ' " + "{" +  indent + "  " + timeVar + " = " + tmpV  + ` + "0" + "Z" ` +
+		indent + `} else { ` + indent + "  "  + timeVar  + " = " +  tmpV + ` + "Z"` + indent + "}"
+	ret = ret + indent + timeVar + ", err := strfmt.ParseDateTime(" + timeVar + ")"
+	ret = ret + indent + tmpV2 + " := " + timeVar
+
+	return ret, tmpV2
+}
+
+
+func CopyArrayElements( debug bool, destFieldName string, origfieldName string, fieldName string, arrayType string, typeName string, inTable bool, fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput  ) string {
+
+	//tmpType :=  mapFieldTypeToGoCSQLType( debug, fieldName, true, inTable, arrayType , typeName, fieldDetails, parserOutput, true   )
+	switch strings.ToLower(arrayType) {
+
+	}
+	return ""
 }

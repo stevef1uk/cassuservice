@@ -13,6 +13,7 @@ const (
 	MAINFILE = "GeneratedHandler.go"
 	TMP = "tmp"
     MODELS = "models." // this is the directory where the map types are created by go-swagger
+    OPERATIONS = "operations."
     TEMP_VAR_PREFIX = "tmp_"
     RAWRESULT = TEMP_VAR_PREFIX + "_" + "resultSet"
 
@@ -23,7 +24,7 @@ package data
 import (
     "{{.PATH}}/models"
     "{{.PATH}}/restapi/operations"
-    "middleware "github.com/go-openapi/runtime/middleware"
+    middleware "github.com/go-openapi/runtime/middleware"
     "github.com/gocql/gocql"
     "os"
     "log"`
@@ -58,8 +59,8 @@ func SetUp() {
 }
 
 func Stop() {
-    log.Println("Shutting down the service handler")
-    session.Close()
+    log.Println("Shutting down the service handler")` + `
+` + "  " + SESSION_VAR + `.Close()
 }
 
 func Search(params operations.Get{{.EXPORTPATH}}Params) middleware.Responder {
@@ -70,5 +71,10 @@ func Search(params operations.Get{{.EXPORTPATH}}Params) middleware.Responder {
 	SELECT_OUTPUT = "codeGenRawTableResult"
 	TMP_TIME_VAR_PREFIX = "cassuservice_tmp_time"
 	SESSION_VAR = "cassuservice_session"
+	PAYLOAD = "payLoad"
+	PAYLOAD_STRUCT = "Payload"
+	PARAMS_RET = "retParams"
+
+
 )
 

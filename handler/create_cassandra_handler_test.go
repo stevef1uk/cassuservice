@@ -10,6 +10,8 @@ import (
 )
 
 //address_list set<frozen<simple>>,
+//lastUpdatedAt TIMESTAMP,
+
 const (
 
 	CSQ_TEST1 = `
@@ -36,7 +38,7 @@ CREATE TABLE demo.employee (
     my_List list<frozen<simple>>,
     name text,
     mediate TIMESTAMP,
-    second_ts timestamp,
+    second_ts date,
     tevents set<int>,
     tmylist list<float>
     tmymap  map<int, text>
@@ -69,7 +71,7 @@ func performCreateTest1( debug bool, test string, cql string, expected string , 
 	input(file)
 
 	parse1 := parser.ParseText( false, parser.Setup, parser.Reset, cql )
-	CreateCode( debug, "/tmp", "github.com/stevef1uk/test3", parse1,  "",  "",  0, false , false , true   )
+	CreateCode( debug, "/tmp", "github.com/stevef1uk/test4", parse1,  "",  "",  0, false , false , true   )
 
 
 	// Read generated file
@@ -93,15 +95,14 @@ func performCreateTest1( debug bool, test string, cql string, expected string , 
 }
 
 
-/*
 
-path := os.Getenv("GOPATH")  + "/src/github.com/stevef1uk/test3/"
-ret6 :=  SpiceInHandler( false , path, "Employee", "" )
-_ = ret6
-*/
+
 
 func Test1(t *testing.T) {
 	performCreateTest1(true, "Test1", CSQ_TEST1, EXPECTED_OUTPUT_TEST1, t )
+	path := os.Getenv("GOPATH")  + "/src/github.com/stevef1uk/test4/"
+	ret6 :=  SpiceInHandler( false , path, "Employee", "" )
+	_ = ret6
 }
 
 

@@ -3,7 +3,6 @@ package handler
 import (
 	"fmt"
 	"github.com/stevef1uk/cassuservice/swagger"
-
 	//"fmt"
 	"github.com/stevef1uk/cassuservice/parser"
 	"os"
@@ -42,11 +41,11 @@ func addStruct( debug bool, parserOutput parser.ParseOutput, dontUpdate bool, ou
 
 	for i := 0; i < parserOutput.TypeIndex; i++ {
 		v := parserOutput.TypeDetails[i]
-		output.WriteString( "\ntype " + CapitaliseSplitFieldName( debug, strings.ToLower(v.TypeName),dontUpdate)  + " struct {")
+		output.WriteString( "\ntype " + GetFieldName( debug, false, v.TypeName,dontUpdate)  + " struct {")
 		for j := 0; j < v.TypeFields.FieldIndex ; j++ {
-			revisedFieldName := CapitaliseSplitFieldName(debug, strings.ToLower( v.TypeFields.DbFieldDetails[j].DbFieldName ), dontUpdate )
-			revisedType := CapitaliseSplitFieldName( debug, strings.ToLower(v.TypeName),dontUpdate)
-			tmp := basicMapCassandraTypeToGoType( debug, revisedFieldName, v.TypeFields.DbFieldDetails[j].DbFieldType, revisedType, v.TypeFields.DbFieldDetails[j], parserOutput, dontUpdate  )
+			revisedFieldName := GetFieldName(debug, false, v.TypeFields.DbFieldDetails[j].DbFieldName , dontUpdate )
+			revisedType := GetFieldName( debug, false, v.TypeName,dontUpdate)
+			tmp := basicMapCassandraTypeToGoType( debug, true, false, revisedFieldName, v.TypeFields.DbFieldDetails[j].DbFieldType, revisedType, v.TypeFields.DbFieldDetails[j], parserOutput, dontUpdate  )
 			output.WriteString( "\n    " + revisedFieldName + " ")
 			output.WriteString( tmp   + " `" + `cql:"` + strings.ToLower( v.TypeFields.DbFieldDetails[j].DbFieldName ) + `"` +"`")
 		}
@@ -103,7 +102,7 @@ func retArrayTypes(debug bool, field parser.FieldDetails, dontUpdate bool ) stri
 	ret := ""
 	v :=  field
 	if ( v.DbFieldType == "map" ) {
-		ret = ret + "payLoad." + CapitaliseSplitFieldName( debug, v.DbFieldName, dontUpdate ) + " = " + v.DbFieldName
+		ret = ret + "payLoad." + GetFieldName( debug, false, v.DbFieldName, dontUpdate ) + " = " + v.DbFieldName
 	} else {
 		switchValue := strings.ToLower( v.DbFieldCollectionType )
 		switch switchValue {
@@ -121,18 +120,19 @@ func retArrayTypes(debug bool, field parser.FieldDetails, dontUpdate bool ) stri
 
 func writeField( debug bool, parserOutput parser.ParseOutput, field parser.FieldDetails, dontUpdate bool, output  *os.File) {
 
-	fieldName := CapitaliseSplitFieldName( debug, strings.ToLower(field.DbFieldName), dontUpdate)
+	fieldName := GetFieldName( debug, false, field.DbFieldName, dontUpdate)
+
 	if field.DbFieldCollectionType != "" {
-		collectionType := CapitaliseSplitFieldName(debug, strings.ToLower(field.DbFieldCollectionType), dontUpdate )
+		collectionType := GetFieldName(debug, false, field.DbFieldCollectionType, false )
 		fieldType :=  mapTableTypeToGoType( debug, fieldName, collectionType, field.DbFieldCollectionType, field, parserOutput, dontUpdate )
 		if debug {fmt.Println("writeField name =", field.DbFieldName, " fieldType = ", fieldType) }
 		if strings.ToLower(fieldType ) == "map" {
-			output.WriteString( INDENT_1 + "var " + strings.ToLower( field.DbFieldName  )+ " models." +  fieldName )
+			output.WriteString( INDENT_1 + "var " + fieldName + " " +  fieldName )
 		} else {
 			if swagger.IsFieldTypeUDT( parserOutput, field.DbFieldCollectionType ) {
-				output.WriteString( INDENT_1 + "var " + strings.ToLower( field.DbFieldName  )+ " models." + fieldType )
+				output.WriteString( INDENT_1 + "var " + fieldName + " " + fieldType )
 			} else {
-				output.WriteString( INDENT_1 + "var " + strings.ToLower( field.DbFieldName  )+ " []" + fieldType )
+				output.WriteString( INDENT_1 + "var " + fieldName + " []" + fieldType )
 			}
 		}
 	} else {
@@ -159,7 +159,7 @@ func WriteVars(  debug bool, parserOutput parser.ParseOutput, goPathForRepo stri
 		if swagger.IsFieldTypeUDT(parserOutput, v.DbFieldType) {
 			if debug {fmt.Println("WriteVars Found UDT = ", v.DbFieldType)}
 			// Process UDT
-			fieldName := CapitaliseSplitFieldName(debug, strings.ToLower(v.DbFieldName), dontUpdate)
+			fieldName := GetFieldName(debug, false, v.DbFieldName, dontUpdate)
 			output.WriteString( INDENT_1 + fieldName + " := &" + strings.ToLower( v.DbFieldType ) + "{}" )
 
 		} else {
@@ -169,17 +169,21 @@ func WriteVars(  debug bool, parserOutput parser.ParseOutput, goPathForRepo stri
 	}
 
 	if doNeedTimeImports {
-		ret := createTempVar( TMP_TIME_VAR_PREFIX )
-		output.WriteString( INDENT_1 + ret + " := strfmt.NewDateTime().String()" )
+		tmpTimeVar = createTempVar( TMP_TIME_VAR_PREFIX )
+		output.WriteString( INDENT_1 + tmpTimeVar + " := strfmt.NewDateTime().String()" )
 	}
 	output.WriteString( "\n" + INDENT_1 + SELECT_OUTPUT + " := map[string]interface{}{}\n")
 
+	/*
 	tableName := parserOutput.TableDetails.TableName
+
 	if endPointNameOverRide != "" {
 		tableName = endPointNameOverRide
 	}
-	tableName = CapitaliseSplitFieldName( debug, strings.ToLower(tableName), false)
-	output.WriteString( INDENT_1 + "ret := make(models.Get" + tableName + "OKBody,1)\n" )
+	tableName = GetFieldName( debug, false, tableName, false)
+	//output.WriteString( INDENT_1 + "ret := " + OPERATIONS + "NewGet" + tableName + "OK()\n" )
+	//output.WriteString( INDENT_1 + "ret." + PAYLOAD_STRUCT + "= " + OPERATIONS + "NewGet" + tableName + "OK()\n" )
+	*/
 	return tmpTimeVar
 }
 
@@ -202,7 +206,7 @@ func createSelectString( debug bool, parserOutput parser.ParseOutput, timeVar st
 	// First build primary key conditions
 	pkNum := parserOutput.TableDetails.PkIndex
 	if overridePrimaryKeys != 0 {
-		if debug {fmt.Println("createSelectString primary fields constrained for select statement\n") }
+		if debug {fmt.Println("createSelectString primary fields constrained for select statement") }
 		pkNum = overridePrimaryKeys
 	}
 	whereClause := " WHERE "
@@ -215,7 +219,7 @@ func createSelectString( debug bool, parserOutput parser.ParseOutput, timeVar st
 		}
 		whereClause = whereClause + strings.ToLower( v.DbFieldName ) + " = ? "
 
-		fieldName := CapitaliseSplitFieldName(debug, strings.ToLower(v.DbFieldName), dontUpdate)
+		fieldName := GetFieldName(debug, false, v.DbFieldName, dontUpdate)
 		if swagger.IsFieldTypeATime( v.DbFieldType) {
 			// Need to parse the received parameter
 			output.WriteString( INDENT_1 + fieldName + ",_ = time.Parse(time.RFC3339,params." + fieldName + ".String() ) ")
@@ -230,11 +234,76 @@ func createSelectString( debug bool, parserOutput parser.ParseOutput, timeVar st
 		consistency = strings.ToLower(cassandraConsistencyRequired)
 	}
 
-	ret = ret + " FROM " + strings.ToLower( parserOutput.TableDetails.TableName) + whereClause +  "`" + `+"` +"`" + `"+` +"`," + varsClause + ")"
-	ret = ret + "Consistency(" + consistency + ").MapScan(codeGenRawTableResult); err != nil {"
+	ret = ret + " FROM " + strings.ToLower( parserOutput.TableDetails.TableName) + whereClause +  "`," + varsClause + ")"
+	ret = ret + ".Consistency(" + consistency + ").MapScan(codeGenRawTableResult); err != nil {"
+	if logExtraInfo {
+		ret = ret + INDENT_1 + `  log.Println("No data? ", err)`
+	}
+	tableName := GetFieldName(debug, false, parserOutput.TableDetails.TableName, false)
+	ret = ret + INDENT_1 + "  return " + OPERATIONS + "NewGet" + tableName + "BadRequest()" +  INDENT_1 + "}"
+	ret = ret + INDENT_1 + PAYLOAD + " := " + OPERATIONS + "NewGet" +  tableName + "OK()"
+	ret = ret + INDENT_1 + PAYLOAD + "." + PAYLOAD_STRUCT + " = make([]*models.Get" + tableName + "OKBodyItems,1)"
+	ret = ret + INDENT_1 + PARAMS_RET + " := " + PAYLOAD + "." + PAYLOAD_STRUCT + "[0]"
 
 	return ret
 }
+
+
+
+
+func handleReturnedVar( debug bool, inTable bool, fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, timeVar string, dontUpdate bool ) string {
+    ret := ""
+	fieldName := GetFieldName( debug, false, fieldDetails.DbFieldName, false)
+	switch ( strings.ToLower( fieldDetails.DbFieldType ) ) {
+	case "int":
+		tmp_var := createTempVar( fieldName )
+		ret = ret + INDENT_1 + tmp_var + " := " +  SELECT_OUTPUT + `["` + strings.ToLower(fieldName) + `"].(int)`
+		ret = ret + INDENT_1 + fieldName + " = int64(" + tmp_var + ")"
+		ret = ret + INDENT_1 + PARAMS_RET + "." + fieldName + " = &" + fieldName
+	case "date": fallthrough
+	case "timestamp": fallthrough
+	case "timeuuid":
+		ret = ret + INDENT_1 + fieldName + " = " + SELECT_OUTPUT + `["` + strings.ToLower(fieldName) + `"].(time.Time)`
+		tmp, tmp1 := ProcessTime( INDENT_1, timeVar, fieldName )
+		ret = ret + tmp
+		ret = ret  + INDENT_1 + PARAMS_RET + "." + fieldName + " = &" + tmp1
+	case "nottimestamp":
+		// @TODO need to check return type!
+		ret = ret + INDENT_1 + fieldName + " = " + SELECT_OUTPUT + `["` + strings.ToLower(fieldName) + `"].(string)`
+		ret = ret + INDENT_1 + PARAMS_RET + "." + fieldName + " = &" + fieldName
+	case "set": fallthrough
+	case "list":
+		//destName := PARAMS_RET + "." + fieldName
+		collectionType := GetFieldName(debug, false, fieldDetails.DbFieldCollectionType, dontUpdate )
+		if swagger.IsFieldTypeUDT( parserOutput, collectionType ) {
+
+		} else {
+			elementType := mapFieldTypeToGoCSQLType(debug, fieldName, false, inTable, collectionType, "", fieldDetails, parserOutput, dontUpdate )
+//func mapFieldTypeToGoCSQLType( debug bool, fieldName string, leaveFieldCase bool, inTable bool, fieldType string, typeName string, fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, dontUpdate bool  ) string {
+
+			ret = ret + INDENT_1 + PARAMS_RET + "." + fieldName + " = make([] " + elementType
+		}
+		//ret = ret + INDENT_1 + CopyArrayElements(  )
+
+
+
+	default:
+		ret = INDENT_1  + PARAMS_RET + "." + fieldName + " = &" + fieldName
+
+	}
+    return ret
+}
+
+
+
+func handleSelectReturn( debug bool, parserOutput parser.ParseOutput, timeVar string, dontUpdate bool ) string {
+	ret := ""
+	for i :=0; i < parserOutput.TableDetails.TableFields.FieldIndex; i++ {
+		ret = ret + handleReturnedVar( debug, true, parserOutput.TableDetails.TableFields.DbFieldDetails[i], parserOutput, timeVar, dontUpdate )
+	}
+	return ret
+}
+
 
 // Entry point
 func CreateCode( debug bool, generateDir string,  goPathForRepo string,  parserOutput parser.ParseOutput, cassandraConsistencyRequired string, endPointNameOverRide string, overridePrimaryKeys int, allowFiltering bool, dontUpdate bool, logExtraInfo bool   ) {
@@ -246,16 +315,18 @@ func CreateCode( debug bool, generateDir string,  goPathForRepo string,  parserO
 	doNeedTimeImports := WriteHeaderPart( debug, parserOutput, goPathForRepo, endPointNameOverRide, dontUpdate, output )
 	addStruct( debug, parserOutput,dontUpdate, output )
 	// Write out the static part of the header
-	tmpName := CapitaliseSplitFieldName(debug, strings.ToLower(parserOutput.TableDetails.TableName), false)
+	tmpName := GetFieldName(debug, false, parserOutput.TableDetails.TableName, false)
 	if endPointNameOverRide != "" {
-		tmpName = CapitaliseSplitFieldName( debug, strings.ToLower(endPointNameOverRide), false)
+		tmpName = GetFieldName( debug, false, endPointNameOverRide, false)
 	}
 	tmpData := &tableDetails{ generateDir, strings.ToLower(parserOutput.TableSpace), strings.ToLower(parserOutput.TableDetails.TableName), tmpName}
 	WriteStringToFileWithTemplates(  "\n" + HEADER, "header", output, &tmpData)
 	//output.WriteString( "\n" + HEADER)
 	tmpTimeVar := WriteVars( debug, parserOutput, goPathForRepo, doNeedTimeImports,dontUpdate, endPointNameOverRide, output )
 	tmp := createSelectString( debug , parserOutput, tmpTimeVar, cassandraConsistencyRequired, overridePrimaryKeys, allowFiltering, dontUpdate, logExtraInfo, output )
-	output.WriteString( INDENT_1 + "if err := session.Query("+"`+"+`"`+"`"+`"`+"+`"+"SELECT " + tmp )
+	output.WriteString( INDENT_1 + "if err := " + SESSION_VAR + ".Query(" + "`" + " SELECT " + tmp )
+	tmp = handleSelectReturn( debug, parserOutput, tmpTimeVar, dontUpdate )
+	output.WriteString( tmp )
  
 
 }
