@@ -98,6 +98,7 @@ func setUpArrayTypes(  debug bool, field parser.FieldDetails,  dontUpdate bool )
 
 
 // Setup array types from gocql select result
+/*
 func retArrayTypes(debug bool, field parser.FieldDetails, dontUpdate bool ) string {
 	ret := ""
 	v :=  field
@@ -116,7 +117,7 @@ func retArrayTypes(debug bool, field parser.FieldDetails, dontUpdate bool ) stri
 
 	return ret
 }
-
+*/
 
 func writeField( debug bool, parserOutput parser.ParseOutput, field parser.FieldDetails, dontUpdate bool, output  *os.File) {
 
@@ -251,7 +252,7 @@ func createSelectString( debug bool, parserOutput parser.ParseOutput, timeVar st
 
 
 
-func handleReturnedVar( debug bool, inTable bool, fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, timeVar string, dontUpdate bool ) string {
+func handleReturnedVar( debug bool, timeFound bool, inTable bool, typeIndex int , fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, timeVar string, dontUpdate bool ) (string, bool) {
     ret := ""
 	fieldName := GetFieldName( debug, false, fieldDetails.DbFieldName, false)
 	switch ( strings.ToLower( fieldDetails.DbFieldType ) ) {
@@ -263,8 +264,9 @@ func handleReturnedVar( debug bool, inTable bool, fieldDetails parser.FieldDetai
 	case "date": fallthrough
 	case "timestamp": fallthrough
 	case "timeuuid":
+		timeFound = true
 		ret = ret + INDENT_1 + fieldName + " = " + SELECT_OUTPUT + `["` + strings.ToLower(fieldName) + `"].(time.Time)`
-		tmp, tmp1 := ProcessTime( INDENT_1, timeVar, fieldName )
+		tmp, tmp1 := ProcessTime( timeFound, INDENT_1, timeVar, fieldName )
 		ret = ret + tmp
 		ret = ret  + INDENT_1 + PARAMS_RET + "." + fieldName + " = &" + tmp1
 	case "nottimestamp":
@@ -276,30 +278,30 @@ func handleReturnedVar( debug bool, inTable bool, fieldDetails parser.FieldDetai
 		//destName := PARAMS_RET + "." + fieldName
 		collectionType := GetFieldName(debug, false, fieldDetails.DbFieldCollectionType, dontUpdate )
 		if swagger.IsFieldTypeUDT( parserOutput, collectionType ) {
+			arrayType := collectionType
+			if ! inTable {
+				arrayType = GetFieldName(debug, false, parserOutput.TypeDetails[typeIndex].TypeName, dontUpdate) + arrayType
+			}
 
 		} else {
-			elementType := mapFieldTypeToGoCSQLType(debug, fieldName, false, inTable, collectionType, "", fieldDetails, parserOutput, dontUpdate )
-//func mapFieldTypeToGoCSQLType( debug bool, fieldName string, leaveFieldCase bool, inTable bool, fieldType string, typeName string, fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, dontUpdate bool  ) string {
-
-			ret = ret + INDENT_1 + PARAMS_RET + "." + fieldName + " = make([] " + elementType
+			//ret = CopyArrayElements( debug, inTable, INDENT_1, fieldName, PARAMS_RET + "." + fieldName,  fieldDetails, parserOutput, dontUpdate  )
 		}
-		//ret = ret + INDENT_1 + CopyArrayElements(  )
-
-
-
 	default:
 		ret = INDENT_1  + PARAMS_RET + "." + fieldName + " = &" + fieldName
 
 	}
-    return ret
+    return ret, timeFound
 }
 
 
 
 func handleSelectReturn( debug bool, parserOutput parser.ParseOutput, timeVar string, dontUpdate bool ) string {
 	ret := ""
+	tmp := ""
+	timeFound := false
 	for i :=0; i < parserOutput.TableDetails.TableFields.FieldIndex; i++ {
-		ret = ret + handleReturnedVar( debug, true, parserOutput.TableDetails.TableFields.DbFieldDetails[i], parserOutput, timeVar, dontUpdate )
+		tmp, timeFound = handleReturnedVar( debug, timeFound, true, 0, parserOutput.TableDetails.TableFields.DbFieldDetails[i], parserOutput, timeVar, dontUpdate )
+		ret = ret + tmp
 	}
 	return ret
 }

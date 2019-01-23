@@ -38,7 +38,7 @@ CREATE TABLE demo.employee (
     my_List list<frozen<simple>>,
     name text,
     mediate TIMESTAMP,
-    second_ts date,
+    second_ts TIMESTAMP,
     tevents set<int>,
     tmylist list<float>
     tmymap  map<int, text>

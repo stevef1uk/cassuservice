@@ -140,12 +140,10 @@ func basicMapCassandraTypeToGoType( debug bool, leaveFieldCase bool, inTable boo
 			text = "int64"
 	case "uuid":
 		text = "string"
-	case "date":
-		text = "time.Time"
-	case "timeuuid":
-			text = "time.Time"
+	case "date": fallthrough
+	case "timeuuid": fallthrough
 	case "timestamp":
-			text = "string"
+			text = "time.Time"
 	case "boolean":
 		text = "bool"
 	case "bigint":
@@ -155,7 +153,7 @@ func basicMapCassandraTypeToGoType( debug bool, leaveFieldCase bool, inTable boo
 	case "decimal":
 		text = "*inf.Dec" // this is in the gopkg.in/inf.v0 package
 	case "float":
-			text = "float32" // Reflection of Cassandra Type is int not int64
+			text = "float64"
 	case "double":
 		text = "float64"
 	case "text":
@@ -234,7 +232,7 @@ func mapFieldTypeToGoCSQLType( debug bool, fieldName string, leaveFieldCase bool
 	case "timeuuid":
 		text = "strfmt.DateTime"
 	case "float":
-		text = "float64"
+		text = "float32"
 	case "list": fallthrough
 	case "set":
 		if ! swagger.IsFieldTypeUDT( parserOutput, fieldDetails.DbFieldCollectionType) {
@@ -341,26 +339,36 @@ func doINeedDecimal(  parserOutput parser.ParseOutput  ) bool {
 }
 
 
-func ProcessTime ( indent string, timeVar string, fieldName string ) (string, string)  {
+func ProcessTime ( firstTime bool , indent string, timeVar string, fieldName string ) (string, string)  {
 
+	equals := " = "
+	if firstTime {
+		equals = " := "
+	}
 	ret := indent + timeVar  + " = " + fieldName + ".String()"
 	tmpV := createTempVar( fieldName )
 	tmpV2 := createTempVar( fieldName )
+	tmpV3 := createTempVar( fieldName )
 	ret = ret + indent + tmpV + " := " + timeVar + `[0:10] + "T" + ` + timeVar + `[11:19] + "." + ` + timeVar + "[20:22]"
 	ret = ret + indent + "if " + timeVar + "[22] == ' ' " + "{" +  indent + "  " + timeVar + " = " + tmpV  + ` + "0" + "Z" ` +
 		indent + `} else { ` + indent + "  "  + timeVar  + " = " +  tmpV + ` + "Z"` + indent + "}"
-	ret = ret + indent + timeVar + ", err := strfmt.ParseDateTime(" + timeVar + ")"
-	ret = ret + indent + tmpV2 + " := " + timeVar
+	ret = ret + indent + tmpV3 + ", err" + equals + "strfmt.ParseDateTime(" + timeVar + ")"
+	ret = ret + indent + tmpV2 + " := " + tmpV3 + ".String()"
 
 	return ret, tmpV2
 }
 
 
-func CopyArrayElements( debug bool, destFieldName string, origfieldName string, fieldName string, arrayType string, typeName string, inTable bool, fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput  ) string {
+func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName string, destFieldName string,  fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, dontUpdate bool  ) string {
 
-	//tmpType :=  mapFieldTypeToGoCSQLType( debug, fieldName, true, inTable, arrayType , typeName, fieldDetails, parserOutput, true   )
-	switch strings.ToLower(arrayType) {
-
+	arrayType := basicMapCassandraTypeToGoType(debug, false, inTable, fieldDetails.DbFieldName, fieldDetails.DbFieldCollectionType, "", fieldDetails, parserOutput, dontUpdate )
+	ret := inDent + destFieldName + " := " + "make([] " + arrayType + ", len(" + sourceFieldName + ") )"
+	ret = ret + inDent + "for i := 0; i < len(" + sourceFieldName + " ); i++ { "
+	switch arrayType {
+	case "int64":
+		ret = ret + inDent + INDENT + destFieldName + "[i] := " +  "int64(" + sourceFieldName + "[i])" + inDent + "}"
+	default:
+		ret = "BLAH BLAH BLAH"
 	}
-	return ""
+	return ret
 }
