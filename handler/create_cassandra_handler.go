@@ -258,33 +258,36 @@ func handleReturnedVar( debug bool, timeFound bool, inTable bool, typeIndex int 
 	switch ( strings.ToLower( fieldDetails.DbFieldType ) ) {
 	case "int":
 		tmp_var := createTempVar( fieldName )
-		ret = ret + INDENT_1 + tmp_var + " := " +  SELECT_OUTPUT + `["` + strings.ToLower(fieldName) + `"].(int)`
+		ret = ret + INDENT_1 + tmp_var + " := " +  SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(int)`
 		ret = ret + INDENT_1 + fieldName + " = int64(" + tmp_var + ")"
 		ret = ret + INDENT_1 + PARAMS_RET + "." + fieldName + " = &" + fieldName
 	case "date": fallthrough
 	case "timestamp": fallthrough
 	case "timeuuid":
 		timeFound = true
-		ret = ret + INDENT_1 + fieldName + " = " + SELECT_OUTPUT + `["` + strings.ToLower(fieldName) + `"].(time.Time)`
+		ret = ret + INDENT_1 + fieldName + " = " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(time.Time)`
 		tmp, tmp1 := ProcessTime( timeFound, INDENT_1, timeVar, fieldName )
 		ret = ret + tmp
 		ret = ret  + INDENT_1 + PARAMS_RET + "." + fieldName + " = &" + tmp1
 	case "nottimestamp":
 		// @TODO need to check return type!
-		ret = ret + INDENT_1 + fieldName + " = " + SELECT_OUTPUT + `["` + strings.ToLower(fieldName) + `"].(string)`
+		ret = ret + INDENT_1 + fieldName + " = " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(string)`
 		ret = ret + INDENT_1 + PARAMS_RET + "." + fieldName + " = &" + fieldName
 	case "set": fallthrough
 	case "list":
-		//destName := PARAMS_RET + "." + fieldName
 		collectionType := GetFieldName(debug, false, fieldDetails.DbFieldCollectionType, dontUpdate )
 		if swagger.IsFieldTypeUDT( parserOutput, collectionType ) {
 			arrayType := collectionType
+			tmp_var := createTempVar( collectionType )
+			ret = INDENT_1 + tmp_var + ", ok := " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + ` "].([]map[string]interface{})`
+			ret = ret + INDENT_1 +  "if != ok {" + INDENT_1 + INDENT + `log.Fatal("handleReturnedVar() - failed to find entry for ` + strings.ToLower(fieldDetails.DbFieldName ) + `", ok )` + INDENT_1 + "}"
 			if ! inTable {
 				arrayType = GetFieldName(debug, false, parserOutput.TypeDetails[typeIndex].TypeName, dontUpdate) + arrayType
 			}
+			ret = ret + setUpStruct( debug, tmp_var, fieldDetails.DbFieldCollectionType, parserOutput)
 
 		} else {
-			//ret = CopyArrayElements( debug, inTable, INDENT_1, fieldName, PARAMS_RET + "." + fieldName,  fieldDetails, parserOutput, dontUpdate  )
+			ret = CopyArrayElements( debug, inTable, INDENT_1, fieldName, PARAMS_RET + "." + fieldName,  fieldDetails, parserOutput, dontUpdate  )
 		}
 	default:
 		ret = INDENT_1  + PARAMS_RET + "." + fieldName + " = &" + fieldName

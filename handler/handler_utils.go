@@ -352,10 +352,35 @@ func ProcessTime ( firstTime bool , indent string, timeVar string, fieldName str
 	ret = ret + indent + tmpV + " := " + timeVar + `[0:10] + "T" + ` + timeVar + `[11:19] + "." + ` + timeVar + "[20:22]"
 	ret = ret + indent + "if " + timeVar + "[22] == ' ' " + "{" +  indent + "  " + timeVar + " = " + tmpV  + ` + "0" + "Z" ` +
 		indent + `} else { ` + indent + "  "  + timeVar  + " = " +  tmpV + ` + "Z"` + indent + "}"
-	ret = ret + indent + tmpV3 + ", err" + equals + "strfmt.ParseDateTime(" + timeVar + ")"
-	ret = ret + indent + tmpV2 + " := " + tmpV3 + ".String()"
+	ret = ret + indent + tmpV2 + ", err" + equals + "strfmt.ParseDateTime(" + timeVar + ")"
+	ret = ret + indent + tmpV3 + " := " + tmpV2 + ".String()"
 
 	return ret, tmpV2
+}
+
+func findTypeDetails ( debug bool, typeName string, parserOutput parser.ParseOutput ) *parser.TypeDetails {
+	ret := &parser.TypeDetails{}
+	typeName = strings.ToUpper(( typeName ))
+	for i := 0; i < parserOutput.TypeIndex; i++ {
+		if  typeName == parserOutput.TypeDetails[i].TypeName {
+			ret = &parserOutput.TypeDetails[i]
+			break
+		}
+	}
+	return ret
+}
+
+func setUpStruct ( debug bool,  theVar string, theType string,  parserOutput parser.ParseOutput  ) string {
+	ret := ""
+	typeStruct := findTypeDetails( debug, theType, parserOutput )
+	ret = INDENT_1 + INDENT + "&" + theVar + ":=  {"
+	for i := 0; i < typeStruct.TypeFields.FieldIndex; i++ {
+		fieldName := GetFieldName( debug, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldName, false)
+		ret = ret + INDENT_1 + INDENT + fieldName + ":" + "TODO!"
+	} 	
+
+
+	return ret
 }
 
 
@@ -365,10 +390,12 @@ func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName
 	ret := inDent + destFieldName + " := " + "make([] " + arrayType + ", len(" + sourceFieldName + ") )"
 	ret = ret + inDent + "for i := 0; i < len(" + sourceFieldName + " ); i++ { "
 	switch arrayType {
+	case "float64":
+		ret = ret + inDent + INDENT + destFieldName + "[i] := " +  "float64(" + sourceFieldName + "[i])" + inDent + "}"
 	case "int64":
 		ret = ret + inDent + INDENT + destFieldName + "[i] := " +  "int64(" + sourceFieldName + "[i])" + inDent + "}"
 	default:
-		ret = "BLAH BLAH BLAH"
+		if debug {fmt.Printf("CopyArrayElements TYPE NOT MATCHED!!!!\n " )}
 	}
 	return ret
 }

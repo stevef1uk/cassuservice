@@ -9,6 +9,7 @@ import (
 // Utility function to identify if the passed fieldType is a User Defined Type
 func IsFieldTypeUDT( parserOutput parser.ParseOutput, fieldType string ) bool {
 	ret := false
+	fieldType = strings.ToUpper(fieldType)
 	i := 0
 	for _, v := range parserOutput.TypeDetails {
 		if i == parserOutput.TypeIndex {
@@ -28,6 +29,7 @@ func IsFieldTypeUDT( parserOutput parser.ParseOutput, fieldType string ) bool {
 // Simple function to return true if the string passed is a Cassandra time feld
 func IsFieldTypeATime(  fType string ) bool {
 	ret := false
+	fType = strings.ToUpper( fType)
 	if fType == TIMESTAMP || fType == DATE || fType == TIMEUUID {
 		ret = true;
 	}
