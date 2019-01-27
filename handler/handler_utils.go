@@ -173,9 +173,17 @@ func basicMapCassandraTypeToGoType( debug bool, leaveFieldCase bool, inTable boo
 	case "set":
 		if ! swagger.IsFieldTypeUDT( parserOutput, fieldDetails.DbFieldCollectionType) {
 			text = "[]"
+			text =  text + basicMapCassandraTypeToGoType( debug, true, inTable, fieldName, fieldDetails.DbFieldCollectionType, typeName,   fieldDetails , parserOutput, dontUpdate )
+		} else {
+			fieldName = GetFieldName( debug, leaveCase, fieldName, dontUpdate)
+			text = text + MODELS
+			if ! inTable {
+				text = text + fieldName
+			} else {
+				text = text + typeName + fieldName
+			}
 		}
-
-		text = text + basicMapCassandraTypeToGoType( debug, true, inTable, fieldName, fieldDetails.DbFieldCollectionType, typeName,   fieldDetails , parserOutput, dontUpdate )
+		//text = text + basicMapCassandraTypeToGoType( debug, true, inTable, fieldName, fieldDetails.DbFieldCollectionType, typeName,   fieldDetails , parserOutput, dontUpdate )
 	case "map":
 		fieldName = GetFieldName( debug, leaveCase, fieldName, dontUpdate)
 		if inTable {
@@ -229,9 +237,10 @@ func mapFieldTypeToGoCSQLType( debug bool, fieldName string, leaveFieldCase bool
 		text = "int32"
 	case "uuid":
 		text = "string"
-	case "date": fallthrough
-	case "timeuuid":
+	case "date":
 		text = "strfmt.DateTime"
+	case "timeuuid":
+		text = "gocql.UUID"
 	case "float":
 		text = "float32"
 	case "list": fallthrough
@@ -239,9 +248,10 @@ func mapFieldTypeToGoCSQLType( debug bool, fieldName string, leaveFieldCase bool
 		if ! swagger.IsFieldTypeUDT( parserOutput, fieldDetails.DbFieldCollectionType) {
 			text = "[]*"
 		}
-		text = text + basicMapCassandraTypeToGoType( debug, true, true, fieldName, fieldDetails.DbFieldCollectionType, typeName,   fieldDetails , parserOutput, dontUpdate )
+		retType := basicMapCassandraTypeToGoType( debug, true, true, fieldName, fieldType, typeName,   fieldDetails , parserOutput, dontUpdate )
+		text = text + retType
 	default:
-		text = basicMapCassandraTypeToGoType( debug, true, true, fieldName, fieldType, typeName,   fieldDetails , parserOutput, dontUpdate )
+		text = basicMapCassandraTypeToGoType( debug, true, inTable, fieldName, fieldType, typeName,   fieldDetails , parserOutput, dontUpdate )
 	}
 
 	if debug { fmt.Printf("mapFieldTypeToGoCSQLType returning %s from field %s type %s\n", text, fieldName, fieldType ) }

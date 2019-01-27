@@ -45,7 +45,8 @@ func addStruct( debug bool, parserOutput parser.ParseOutput, dontUpdate bool, ou
 		for j := 0; j < v.TypeFields.FieldIndex ; j++ {
 			revisedFieldName := GetFieldName(debug, false, v.TypeFields.DbFieldDetails[j].DbFieldName , dontUpdate )
 			revisedType := GetFieldName( debug, false, v.TypeName,dontUpdate)
-			tmp := basicMapCassandraTypeToGoType( debug, true, false, revisedFieldName, v.TypeFields.DbFieldDetails[j].DbFieldType, revisedType, v.TypeFields.DbFieldDetails[j], parserOutput, dontUpdate  )
+			tmp := mapFieldTypeToGoCSQLType( debug,  revisedFieldName, true,false, v.TypeFields.DbFieldDetails[j].DbFieldType, revisedType, v.TypeFields.DbFieldDetails[j], parserOutput, dontUpdate  )
+			//debug bool, fieldName string, leaveFieldCase bool, inTable bool, fieldType string, typeName string, fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, dontUpdate bool
 			output.WriteString( "\n    " + revisedFieldName + " ")
 			output.WriteString( tmp   + " `" + `cql:"` + strings.ToLower( v.TypeFields.DbFieldDetails[j].DbFieldName ) + `"` +"`")
 		}
