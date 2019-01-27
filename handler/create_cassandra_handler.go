@@ -243,7 +243,8 @@ func createSelectString( debug bool, parserOutput parser.ParseOutput, timeVar st
 	tableName := GetFieldName(debug, false, parserOutput.TableDetails.TableName, false)
 	ret = ret + INDENT_1 + "  return " + OPERATIONS + "NewGet" + tableName + "BadRequest()" +  INDENT_1 + "}"
 	ret = ret + INDENT_1 + PAYLOAD + " := " + OPERATIONS + "NewGet" +  tableName + "OK()"
-	ret = ret + INDENT_1 + PAYLOAD + "." + PAYLOAD_STRUCT + " = make([]*models.Get" + tableName + "OKBodyItems,1)"
+	ret = ret + INDENT_1 + PAYLOAD + "." + PAYLOAD_STRUCT + " = make([]*" + MODELS + "Get" + tableName + "OKBodyItems,1)"
+	ret = ret + INDENT_1 + PAYLOAD + "." + PAYLOAD_STRUCT + "[0] = new(" + MODELS + "Get" + tableName + "OKBodyItems)"
 	ret = ret + INDENT_1 + PARAMS_RET + " := " + PAYLOAD + "." + PAYLOAD_STRUCT + "[0]"
 
 	return ret
@@ -279,8 +280,8 @@ func handleReturnedVar( debug bool, timeFound bool, inTable bool, typeIndex int 
 		if swagger.IsFieldTypeUDT( parserOutput, collectionType ) {
 			arrayType := collectionType
 			tmp_var := createTempVar( collectionType )
-			ret = INDENT_1 + tmp_var + ", ok := " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + ` "].([]map[string]interface{})`
-			ret = ret + INDENT_1 +  "if != ok {" + INDENT_1 + INDENT + `log.Fatal("handleReturnedVar() - failed to find entry for ` + strings.ToLower(fieldDetails.DbFieldName ) + `", ok )` + INDENT_1 + "}"
+			ret = INDENT_1 + tmp_var + ", ok := " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].([]map[string]interface{})`
+			ret = ret + INDENT_1 +  "if ! ok {" + INDENT_1 + INDENT + `log.Fatal("handleReturnedVar() - failed to find entry for ` + strings.ToLower(fieldDetails.DbFieldName ) + `", ok )` + INDENT_1 + "}"
 			if ! inTable {
 				arrayType = GetFieldName(debug, false, parserOutput.TypeDetails[typeIndex].TypeName, dontUpdate) + arrayType
 			}
@@ -331,6 +332,7 @@ func CreateCode( debug bool, generateDir string,  goPathForRepo string,  parserO
 	tmp := createSelectString( debug , parserOutput, tmpTimeVar, cassandraConsistencyRequired, overridePrimaryKeys, allowFiltering, dontUpdate, logExtraInfo, output )
 	output.WriteString( INDENT_1 + "if err := " + SESSION_VAR + ".Query(" + "`" + " SELECT " + tmp )
 	tmp = handleSelectReturn( debug, parserOutput, tmpTimeVar, dontUpdate )
+	tmp = tmp + INDENT_1 + "return operations.NewGet" + tmpName + "OK().WithPayload( " + PAYLOAD + "." + PAYLOAD_STRUCT + ")" + INDENT_1 + "}"
 	output.WriteString( tmp )
  
 

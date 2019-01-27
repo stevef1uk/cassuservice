@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	//"github.com/go-openapi/strfmt"
 	"github.com/stevef1uk/cassuservice/parser"
 	"github.com/stevef1uk/cassuservice/swagger"
 	"strconv"
@@ -352,10 +353,10 @@ func ProcessTime ( firstTime bool , indent string, timeVar string, fieldName str
 	ret = ret + indent + tmpV + " := " + timeVar + `[0:10] + "T" + ` + timeVar + `[11:19] + "." + ` + timeVar + "[20:22]"
 	ret = ret + indent + "if " + timeVar + "[22] == ' ' " + "{" +  indent + "  " + timeVar + " = " + tmpV  + ` + "0" + "Z" ` +
 		indent + `} else { ` + indent + "  "  + timeVar  + " = " +  tmpV + ` + "Z"` + indent + "}"
-	ret = ret + indent + tmpV2 + ", err" + equals + "strfmt.ParseDateTime(" + timeVar + ")"
+	ret = ret + indent + tmpV2 + ", _ " + equals + "strfmt.ParseDateTime(" + timeVar + ")"
 	ret = ret + indent + tmpV3 + " := " + tmpV2 + ".String()"
 
-	return ret, tmpV2
+	return ret, tmpV3
 }
 
 func findTypeDetails ( debug bool, typeName string, parserOutput parser.ParseOutput ) *parser.TypeDetails {
@@ -387,13 +388,14 @@ func setUpStruct ( debug bool,  theVar string, theType string,  parserOutput par
 func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName string, destFieldName string,  fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, dontUpdate bool  ) string {
 
 	arrayType := basicMapCassandraTypeToGoType(debug, false, inTable, fieldDetails.DbFieldName, fieldDetails.DbFieldCollectionType, "", fieldDetails, parserOutput, dontUpdate )
-	ret := inDent + destFieldName + " := " + "make([] " + arrayType + ", len(" + sourceFieldName + ") )"
+	ret := INDENT_1 + sourceFieldName + " = " +  SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].([]` + arrayType + ")"
+	ret = ret + inDent + destFieldName + " = " + "make([] " + arrayType + ", len(" + sourceFieldName + ") )"
 	ret = ret + inDent + "for i := 0; i < len(" + sourceFieldName + " ); i++ { "
 	switch arrayType {
 	case "float64":
-		ret = ret + inDent + INDENT + destFieldName + "[i] := " +  "float64(" + sourceFieldName + "[i])" + inDent + "}"
+		ret = ret + inDent + INDENT + destFieldName + "[i] = " +  "float64(" + sourceFieldName + "[i])" + inDent + "}"
 	case "int64":
-		ret = ret + inDent + INDENT + destFieldName + "[i] := " +  "int64(" + sourceFieldName + "[i])" + inDent + "}"
+		ret = ret + inDent + INDENT + destFieldName + "[i] = " +  "int64(" + sourceFieldName + "[i])" + inDent + "}"
 	default:
 		if debug {fmt.Printf("CopyArrayElements TYPE NOT MATCHED!!!!\n " )}
 	}
