@@ -239,7 +239,6 @@ func mapFieldTypeToGoCSQLType( debug bool, fieldName string, leaveFieldCase bool
 		if ! swagger.IsFieldTypeUDT( parserOutput, fieldDetails.DbFieldCollectionType) {
 			text = "[]*"
 		}
-
 		text = text + basicMapCassandraTypeToGoType( debug, true, true, fieldName, fieldDetails.DbFieldCollectionType, typeName,   fieldDetails , parserOutput, dontUpdate )
 	default:
 		text = basicMapCassandraTypeToGoType( debug, true, true, fieldName, fieldType, typeName,   fieldDetails , parserOutput, dontUpdate )
@@ -371,13 +370,17 @@ func findTypeDetails ( debug bool, typeName string, parserOutput parser.ParseOut
 	return ret
 }
 
-func setUpStruct ( debug bool,  theVar string, theType string,  parserOutput parser.ParseOutput  ) string {
-	ret := ""
+func setUpStruct ( debug bool, recursing bool,  theVar string, theType string,  parserOutput parser.ParseOutput, dontUpdate bool  ) string {
+
 	typeStruct := findTypeDetails( debug, theType, parserOutput )
-	ret = INDENT_1 + INDENT + "&" + theVar + ":=  {"
+	structName := GetFieldName(  debug, recursing, theType, false )
+	tmpStruct := createTempVar( structName )
+
+	ret := INDENT_1 + "for i, v := range " + theVar + " {" + INDENT_1 + INDENT + tmpStruct + " := &" + structName + "{"
 	for i := 0; i < typeStruct.TypeFields.FieldIndex; i++ {
 		fieldName := GetFieldName( debug, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldName, false)
-		ret = ret + INDENT_1 + INDENT + fieldName + ":" + "TODO!"
+		fieldType := mapFieldTypeToGoCSQLType( debug, fieldName, recursing, true, typeStruct.TypeFields.DbFieldDetails[i].DbFieldType, theType, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, dontUpdate  )
+		ret = ret + INDENT_1 + INDENT + INDENT + "v[" + fieldName + "].(" + fieldType + "),"
 	} 	
 
 

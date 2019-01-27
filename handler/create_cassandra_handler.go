@@ -253,7 +253,7 @@ func createSelectString( debug bool, parserOutput parser.ParseOutput, timeVar st
 
 
 
-func handleReturnedVar( debug bool, timeFound bool, inTable bool, typeIndex int , fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, timeVar string, dontUpdate bool ) (string, bool) {
+func handleReturnedVar( debug bool, recursing bool, timeFound bool, inTable bool, typeIndex int , fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, timeVar string, dontUpdate bool ) (string, bool) {
     ret := ""
 	fieldName := GetFieldName( debug, false, fieldDetails.DbFieldName, false)
 	switch ( strings.ToLower( fieldDetails.DbFieldType ) ) {
@@ -285,7 +285,7 @@ func handleReturnedVar( debug bool, timeFound bool, inTable bool, typeIndex int 
 			if ! inTable {
 				arrayType = GetFieldName(debug, false, parserOutput.TypeDetails[typeIndex].TypeName, dontUpdate) + arrayType
 			}
-			ret = ret + setUpStruct( debug, tmp_var, fieldDetails.DbFieldCollectionType, parserOutput)
+			ret = ret + setUpStruct( debug, recursing, tmp_var, fieldDetails.DbFieldCollectionType, parserOutput, dontUpdate )
 
 		} else {
 			ret = CopyArrayElements( debug, inTable, INDENT_1, fieldName, PARAMS_RET + "." + fieldName,  fieldDetails, parserOutput, dontUpdate  )
@@ -304,7 +304,7 @@ func handleSelectReturn( debug bool, parserOutput parser.ParseOutput, timeVar st
 	tmp := ""
 	timeFound := false
 	for i :=0; i < parserOutput.TableDetails.TableFields.FieldIndex; i++ {
-		tmp, timeFound = handleReturnedVar( debug, timeFound, true, 0, parserOutput.TableDetails.TableFields.DbFieldDetails[i], parserOutput, timeVar, dontUpdate )
+		tmp, timeFound = handleReturnedVar( debug, false, timeFound, true, 0, parserOutput.TableDetails.TableFields.DbFieldDetails[i], parserOutput, timeVar, dontUpdate )
 		ret = ret + tmp
 	}
 	return ret
