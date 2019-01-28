@@ -251,7 +251,62 @@ func createSelectString( debug bool, parserOutput parser.ParseOutput, timeVar st
 	return ret
 }
 
+func handleStructVarConversion(  debug bool, recursing bool, timeFound bool, theStructVar string, destVar string,  theType string,  fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, timeVar string, dontUpdate bool ) string {
 
+	ret := ""
+
+	fieldName := GetFieldName( debug, false, fieldDetails.DbFieldName, false)
+	sourceVar := theStructVar + "." +  fieldName
+	switch ( strings.ToLower( fieldDetails.DbFieldType ) ) {
+	case "int":
+		tmp_var := createTempVar( fieldName )
+		ret = ret + INDENT_1 + INDENT2 + tmp_var + " := int64(" + sourceVar + ")"
+		ret = ret + INDENT_1 + INDENT2 + destVar + " = &" + tmp_var
+	case "float":
+		tmp_var := createTempVar( fieldName )
+		ret = ret + INDENT_1 + INDENT2 + tmp_var + " := float64(" + sourceVar + ")"
+		ret = ret + INDENT_1 + INDENT2 + destVar + " = &" + tmp_var
+	case "date": fallthrough
+	case "timestamp": fallthrough
+	case "timeuuid":
+		tmp, tmp1 := ProcessTime( timeFound, INDENT_1, timeVar, sourceVar )
+		ret = ret + tmp
+		ret = ret  + INDENT_1 + INDENT2 + destVar + " = &" + tmp1
+	default:
+		ret = INDENT_1 + destVar + INDENT2 + " = &" + sourceVar
+
+	}
+	return ret
+}
+
+
+
+func setUpStruct ( debug bool, recursing bool,  timeFound bool, theVar string, theType string,  parserOutput parser.ParseOutput, timeVar string, dontUpdate bool  ) string {
+
+	typeStruct := findTypeDetails( debug, theType, parserOutput )
+	structName := GetFieldName(  debug, recursing, theType, false )
+	tmpStruct := createTempVar( structName )
+
+	ret := INDENT_1 + "for i, v := range " + theVar + " {" + INDENT_1 + INDENT + tmpStruct + " := &" + structName + "{"
+	for i := 0; i < typeStruct.TypeFields.FieldIndex; i++ {
+		fieldName := strings.ToLower(GetFieldName( debug, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldName, false))
+		fieldType := mapFieldTypeToGoCSQLType( debug, fieldName, recursing, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldType, structName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, dontUpdate  )
+		ret = ret + INDENT_1 + INDENT + INDENT + "v[" + fieldName + "].(" + fieldType + "),"
+	}
+	//ret = ret + INDENT_1 + "}"
+
+	// Now process each variable in order to set-up the Payload structure
+	for i := 0; i < typeStruct.TypeFields.FieldIndex; i++ {
+		fieldName := GetFieldName( debug, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldName, false)
+		payLoadVar := PARAMS_RET + "." + fieldName
+		tmp := handleStructVarConversion( debug, recursing, timeFound, tmpStruct, payLoadVar, typeStruct.TypeName, parserOutput.TableDetails.TableFields.DbFieldDetails[i], parserOutput, timeVar, dontUpdate )
+		ret = ret + INDENT2 + tmp
+	}
+
+	ret = ret + INDENT_1 + "}" + INDENT_1 + "}"
+
+	return ret
+}
 
 
 func handleReturnedVar( debug bool, recursing bool, timeFound bool, inTable bool, typeIndex int , fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, timeVar string, dontUpdate bool ) (string, bool) {
@@ -262,6 +317,11 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inTable bool
 		tmp_var := createTempVar( fieldName )
 		ret = ret + INDENT_1 + tmp_var + " := " +  SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(int)`
 		ret = ret + INDENT_1 + fieldName + " = int64(" + tmp_var + ")"
+		ret = ret + INDENT_1 + PARAMS_RET + "." + fieldName + " = &" + fieldName
+	case "float":
+		tmp_var := createTempVar( fieldName )
+		ret = ret + INDENT_1 + tmp_var + " := " +  SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(float32)`
+		ret = ret + INDENT_1 + fieldName + " = float64(" + tmp_var + ")"
 		ret = ret + INDENT_1 + PARAMS_RET + "." + fieldName + " = &" + fieldName
 	case "date": fallthrough
 	case "timestamp": fallthrough
@@ -286,7 +346,7 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inTable bool
 			if ! inTable {
 				arrayType = GetFieldName(debug, false, parserOutput.TypeDetails[typeIndex].TypeName, dontUpdate) + arrayType
 			}
-			ret = ret + setUpStruct( debug, recursing, tmp_var, fieldDetails.DbFieldCollectionType, parserOutput, dontUpdate )
+			ret = ret + setUpStruct( debug, recursing, timeFound, tmp_var, fieldDetails.DbFieldCollectionType, parserOutput, timeVar, dontUpdate )
 
 		} else {
 			ret = CopyArrayElements( debug, inTable, INDENT_1, fieldName, PARAMS_RET + "." + fieldName,  fieldDetails, parserOutput, dontUpdate  )
