@@ -269,11 +269,11 @@ func handleStructVarConversion(  debug bool, recursing bool, timeFound bool, the
 	case "date": fallthrough
 	case "timestamp": fallthrough
 	case "timeuuid":
-		tmp, tmp1 := ProcessTime( timeFound, INDENT_1, timeVar, sourceVar )
+		tmp, tmp1 := ProcessTime( timeFound, INDENT_1 + INDENT2, timeVar, sourceVar )
 		ret = ret + tmp
 		ret = ret  + INDENT_1 + INDENT2 + destVar + " = &" + tmp1
 	default:
-		ret = INDENT_1 + destVar + INDENT2 + " = &" + sourceVar
+		ret = INDENT_1 + INDENT2 + destVar + INDENT2 + " = &" + sourceVar
 
 	}
 	return ret
@@ -291,19 +291,19 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, theVar string, t
 	for i := 0; i < typeStruct.TypeFields.FieldIndex; i++ {
 		fieldName := strings.ToLower(GetFieldName( debug, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldName, false))
 		fieldType := mapFieldTypeToGoCSQLType( debug, fieldName, recursing, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldType, structName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, dontUpdate  )
-		ret = ret + INDENT_1 + INDENT + INDENT + "v[" + fieldName + "].(" + fieldType + "),"
+		ret = ret + INDENT_1 + INDENT2  + "v[" + fieldName + "].(" + fieldType + "),"
 	}
-	//ret = ret + INDENT_1 + "}"
+	ret = ret + INDENT_1 + INDENT2 + ")"
 
 	// Now process each variable in order to set-up the Payload structure
 	for i := 0; i < typeStruct.TypeFields.FieldIndex; i++ {
 		fieldName := GetFieldName( debug, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldName, false)
 		payLoadVar := PARAMS_RET + "." + fieldName
-		tmp := handleStructVarConversion( debug, recursing, timeFound, tmpStruct, payLoadVar, typeStruct.TypeName, parserOutput.TableDetails.TableFields.DbFieldDetails[i], parserOutput, timeVar, dontUpdate )
+		tmp := handleStructVarConversion( debug, recursing, timeFound, tmpStruct, payLoadVar, typeStruct.TypeName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, timeVar, dontUpdate )
 		ret = ret + INDENT2 + tmp
 	}
 
-	ret = ret + INDENT_1 + "}" + INDENT_1 + "}"
+	ret = ret + INDENT_1 + "}"
 
 	return ret
 }
@@ -343,6 +343,7 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inTable bool
 			tmp_var := createTempVar( collectionType )
 			ret = INDENT_1 + tmp_var + ", ok := " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].([]map[string]interface{})`
 			ret = ret + INDENT_1 +  "if ! ok {" + INDENT_1 + INDENT + `log.Fatal("handleReturnedVar() - failed to find entry for ` + strings.ToLower(fieldDetails.DbFieldName ) + `", ok )` + INDENT_1 + "}"
+			ret = ret + INDENT_1 + PARAMS_RET + "." + fieldName + " = make([]*" + MODELS + collectionType + ", len(" + tmp_var + ")"
 			if ! inTable {
 				arrayType = GetFieldName(debug, false, parserOutput.TypeDetails[typeIndex].TypeName, dontUpdate) + arrayType
 			}
