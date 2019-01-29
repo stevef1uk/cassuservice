@@ -55,70 +55,6 @@ func addStruct( debug bool, parserOutput parser.ParseOutput, dontUpdate bool, ou
 
 }
 
-/*
-func setUpArrayTypes(  debug bool, field parser.FieldDetails,  dontUpdate bool ) string {
-	ret := ""
-	tmpVar := createTempVar( field.DbFieldName)
-
-	if  swagger.IsFieldTypeATime( field.DbFieldType ) {
-		ret = ret + `
-        ` + tmpVar + " = strfmt.NewDateTime().String()" + `
-        ` + "_ = " + tmpVar + `
-		` + strings.ToLower(field.DbFieldName) + " = " + RAWRESULT + `["` + strings.ToLower(field.DbFieldName) + `"].([]` +
-			mapCassandraTypeToGoType( debug, field,false,   false, false ) +  `)
-		` + "payLoad." + Capitiseid( debug, field.DbFieldName, dontUpdate) + " = make([] string, len( payLoad." +strings.ToLower(field.DbFieldName) + ") )" + `
-		for i := 0; i < len(` + strings.ToLower(field.DbFieldName) + `); i++ {
-			payLoad.` + Capitiseid( debug, field.DbFieldName, dontUpdate) + "[i] = " + strings.ToLower(field.DbFieldName) + "[i].String()" + `
-		}`
-	} else {
-		if ( strings.ToLower(field.DbFieldType) == "decimal") {
-			ret = ret + `
-    payLoad.` + Capitiseid(debug, field.DbFieldName, dontUpdate) + " = make([]float64, len(" + strings.ToLower(field.DbFieldName) + ") )" + `
-    for i := 0; i < len( payLoad.` + strings.ToLower(field.DbFieldName) + `); i++ {
-        ` + tmpVar + ", err := strconv.ParseFloat( " + strings.ToLower(field.DbFieldName) + "[i].String(), 64 )" + `
-        if ( err != nil ) {
-            log.Println("error parsing decimal value for field %s\n",` + field.DbFieldName + `)
-        }
-` + `
-        payLoad.` + Capitiseid( debug, field.DbFieldName, dontUpdate) + "[i] = " + tmpVar + `
-    }`
-		} else {
-			ret = ret + `
-		` + strings.ToLower(field.DbFieldName) + " = " + RAWRESULT + `["` + strings.ToLower(field.DbFieldName) + `"].([]` + mapCassandraTypeToGoType( debug, field,false,   false, false ) + `)`
-			ret = ret + `
-		` + "payLoad." + Capitiseid(debug, field.DbFieldName, dontUpdate) + " = make([]" + mapCassandraTypeToGoType( true, field,false,   false, false ) + ",len(" + strings.ToLower(field.DbFieldName) + ") )" + `
-		for i := 0; i < len( payload.` + strings.ToLower(field.DbFieldName) + `); i++ {
-			payLoad.` + Capitiseid(debug,field.DbFieldName, dontUpdate) + "[i] = " + mapCassandraTypeToGoType( true, field,false,   false, false ) + "(" + strings.ToLower(field.DbFieldName) + "[i])" + `
-		}`
-		}
-	}
-	if debug { fmt.Printf("setUpArrayTypes returning %s\n", ret ) }
-	return ret
-}
-*/
-
-
-// Setup array types from gocql select result
-/*
-func retArrayTypes(debug bool, field parser.FieldDetails, dontUpdate bool ) string {
-	ret := ""
-	v :=  field
-	if ( v.DbFieldType == "map" ) {
-		ret = ret + "payLoad." + GetFieldName( debug, false, v.DbFieldName, dontUpdate ) + " = " + v.DbFieldName
-	} else {
-		switchValue := strings.ToLower( v.DbFieldCollectionType )
-		switch switchValue {
-		case "float", "int", "varint", "boolean", "uuid", "bigint", "counter", "decimal", "double", "text", "varchar", "ascii", "blob", "inet", swagger.DATE, swagger.TIMESTAMP, swagger.TIMEUUID :
-			//ret = setUpArrayTypes(  debug, v,  dontUpdate  )
-
-		default:
-			ret = ret + "payLoad." + CapitaliseSplitFieldName( debug, v.DbFieldName, dontUpdate ) + " = " + v.DbFieldName
-		}
-	}
-
-	return ret
-}
-*/
 
 func writeField( debug bool, parserOutput parser.ParseOutput, field parser.FieldDetails, dontUpdate bool, output  *os.File) {
 
@@ -176,16 +112,7 @@ func WriteVars(  debug bool, parserOutput parser.ParseOutput, goPathForRepo stri
 	}
 	output.WriteString( "\n" + INDENT_1 + SELECT_OUTPUT + " := map[string]interface{}{}\n")
 
-	/*
-	tableName := parserOutput.TableDetails.TableName
 
-	if endPointNameOverRide != "" {
-		tableName = endPointNameOverRide
-	}
-	tableName = GetFieldName( debug, false, tableName, false)
-	//output.WriteString( INDENT_1 + "ret := " + OPERATIONS + "NewGet" + tableName + "OK()\n" )
-	//output.WriteString( INDENT_1 + "ret." + PAYLOAD_STRUCT + "= " + OPERATIONS + "NewGet" + tableName + "OK()\n" )
-	*/
 	return tmpTimeVar
 }
 
