@@ -3,6 +3,8 @@ package handler
 import (
 	"fmt"
 	"github.com/stevef1uk/cassuservice/swagger"
+	"strconv"
+
 	//"fmt"
 	"github.com/stevef1uk/cassuservice/parser"
 	"os"
@@ -208,7 +210,7 @@ func handleStructVarConversion(  debug bool, recursing bool, timeFound bool, the
 
 
 
-func setUpStruct ( debug bool, recursing bool,  timeFound bool, theVar string, theType string,  parserOutput parser.ParseOutput, timeVar string, dontUpdate bool  ) string {
+func setUpStruct ( debug bool, recursing bool,  timeFound bool, destField string, theVar string, theType string,  parserOutput parser.ParseOutput, timeVar string, dontUpdate bool  ) string {
 
 	typeStruct := findTypeDetails( debug, theType, parserOutput )
 	structName := GetFieldName(  debug, recursing, theType, false )
@@ -225,8 +227,7 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, theVar string, t
 	// Now process each variable in order to set-up the Payload structure
 	for i := 0; i < typeStruct.TypeFields.FieldIndex; i++ {
 		fieldName := GetFieldName( debug, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldName, false)
-		payLoadVar := PARAMS_RET + "." + fieldName
-		tmp := handleStructVarConversion( debug, recursing, timeFound, tmpStruct, payLoadVar, typeStruct.TypeName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, timeVar, dontUpdate )
+		tmp := handleStructVarConversion( debug, recursing, timeFound, tmpStruct, destField + "[" + strconv.Itoa(i) + "]." + fieldName, typeStruct.TypeName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, timeVar, dontUpdate )
 		ret = ret + INDENT2 + tmp
 	}
 
@@ -268,13 +269,14 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inTable bool
 		if swagger.IsFieldTypeUDT( parserOutput, collectionType ) {
 			arrayType := collectionType
 			tmp_var := createTempVar( collectionType )
+			returnedVar := PARAMS_RET + "." + fieldName
 			ret = INDENT_1 + tmp_var + ", ok := " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].([]map[string]interface{})`
 			ret = ret + INDENT_1 +  "if ! ok {" + INDENT_1 + INDENT + `log.Fatal("handleReturnedVar() - failed to find entry for ` + strings.ToLower(fieldDetails.DbFieldName ) + `", ok )` + INDENT_1 + "}"
-			ret = ret + INDENT_1 + PARAMS_RET + "." + fieldName + " = make([]*" + MODELS + collectionType + ", len(" + tmp_var + ")"
+			ret = ret + INDENT_1 + returnedVar + " = make([]*" + MODELS + collectionType + ", len(" + tmp_var + ")"
 			if ! inTable {
 				arrayType = GetFieldName(debug, false, parserOutput.TypeDetails[typeIndex].TypeName, dontUpdate) + arrayType
 			}
-			ret = ret + setUpStruct( debug, recursing, timeFound, tmp_var, fieldDetails.DbFieldCollectionType, parserOutput, timeVar, dontUpdate )
+			ret = ret + setUpStruct( debug, recursing, timeFound, returnedVar, tmp_var, fieldDetails.DbFieldCollectionType, parserOutput, timeVar, dontUpdate )
 
 		} else {
 			ret = CopyArrayElements( debug, inTable, INDENT_1, fieldName, PARAMS_RET + "." + fieldName,  fieldDetails, parserOutput, dontUpdate  )
