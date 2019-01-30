@@ -69,6 +69,7 @@ func Search(params operations.Get{{.EXPORTPATH}}Params) middleware.Responder {
 	INDENT_1 = "\n    "
 	INDENT = "  "
 	INDENT2 = "    "
+	INDENT3 = "      "
 
 	SELECT_OUTPUT = "codeGenRawTableResult"
 	TMP_TIME_VAR_PREFIX = "cassuservice_tmp_time"

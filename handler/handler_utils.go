@@ -394,12 +394,12 @@ func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName
 	arrayType := basicMapCassandraTypeToGoType(debug, false, inTable, fieldDetails.DbFieldName, fieldDetails.DbFieldCollectionType, "", fieldDetails, parserOutput, dontUpdate, false )
 	ret := INDENT_1 + sourceFieldName + " = " +  SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].([]` + arrayType + ")"
 	ret = ret + inDent + destFieldName + " = " + "make([] " + arrayType + ", len(" + sourceFieldName + ") )"
-	ret = ret + inDent + "for i := 0; i < len(" + sourceFieldName + " ); i++ { "
+	ret = ret + inDent + "for j := 0; j < len(" + sourceFieldName + " ); j++ { "
 	switch arrayType {
 	case "float64":
-		ret = ret + inDent + INDENT + destFieldName + "[i] = " +  "float64(" + sourceFieldName + "[i])" + inDent + "}"
+		ret = ret + inDent + INDENT + destFieldName + "[j] = " +  "float64(" + sourceFieldName + "[j])" + inDent + "}"
 	case "int64":
-		ret = ret + inDent + INDENT + destFieldName + "[i] = " +  "int64(" + sourceFieldName + "[i])" + inDent + "}"
+		ret = ret + inDent + INDENT + destFieldName + "[j] = " +  "int64(" + sourceFieldName + "[j])" + inDent + "}"
 	default:
 		if debug {fmt.Printf("CopyArrayElements TYPE NOT MATCHED!!!!\n " )}
 	}
