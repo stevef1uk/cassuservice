@@ -405,3 +405,14 @@ func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName
 	}
 	return ret
 }
+
+
+func copyStruct( debug bool, sourceStruct string, destStruct string, theType string,typeDetails parser.TypeDetails, parserOutput parser.ParseOutput ) string  {
+	ret := ""
+
+	for i := 0; i < typeDetails.TypeFields.FieldIndex; i++ {
+
+	}
+	return ret
+}
+

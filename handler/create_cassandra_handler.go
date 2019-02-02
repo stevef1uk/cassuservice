@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/stevef1uk/cassuservice/swagger"
 	"strconv"
-
 	//"fmt"
 	"github.com/stevef1uk/cassuservice/parser"
 	"os"
@@ -191,15 +190,15 @@ func handleStructVarConversion(  debug bool, recursing bool, indexCounter int, t
 	case "int":
 		tmp_var := createTempVar( fieldName )
 		ret = ret + INDENT_1 + inDent + tmp_var + " := int64(" + sourceVar + ")"
-		ret = ret + INDENT_1 + inDent + destVar + " = &" + tmp_var
+		ret = ret + INDENT_1 + inDent + destVar + " = " + tmp_var
 	case "float":
 		tmp_var := createTempVar( fieldName )
 		ret = ret + INDENT_1 + inDent + tmp_var + " := float64(" + sourceVar + ")"
-		ret = ret + INDENT_1 + inDent + destVar + " = &" + tmp_var
+		ret = ret + INDENT_1 + inDent + destVar + " = " + tmp_var
 	case "date": fallthrough
 	case "timestamp": fallthrough
 	case "timeuuid":
-		tmp, tmp1 := ProcessTime( timeFound, INDENT_1 + inDent, timeVar, sourceVar )
+		tmp, tmp1 := ProcessTime( timeFound, INDENT_1 + inDent, timeVar, fieldName )
 		ret = ret + tmp
 		ret = ret  + INDENT_1 + inDent + destVar + " = &" + tmp1
 	case "set": fallthrough //
@@ -209,11 +208,14 @@ func handleStructVarConversion(  debug bool, recursing bool, indexCounter int, t
 		if swagger.IsFieldTypeUDT( parserOutput, collectionType ) {
 			ret = ret +  setUpStruct( debug ,true ,timeFound , inDent, destVar, sourceVar,  collectionType, parserOutput, timeVar, dontUpdate )
 		} else {
-			ret = "OOPS"
-			//ret = CopyArrayElements( debug, false, INDENT_1 + INDENT, tmp_var, tmp_var,  fieldDetails, parserOutput, dontUpdate  )
+			theType := GetFieldName(debug, recursing, theType, false )
+			//fieldType := mapFieldTypeToGoCSQLType( debug, fieldName, true, false, fieldDetails.DbFieldCollectionType, theType, fieldDetails, parserOutput, dontUpdate  )
+			ret = ret + INDENT_1 + inDent + destVar + " := make( [] * " + MODELS + theType + " len( " + sourceVar + ") )"
+			tmp_var := createTempVar( fieldName )
+			ret = CopyArrayElements( debug, false, INDENT_1 + INDENT, tmp_var, tmp_var,  fieldDetails, parserOutput, dontUpdate  )
 		}
 	default:
-		ret = INDENT_1 + inDent + destVar + " = &" + sourceVar
+		ret = INDENT_1 + inDent + destVar + " = " + sourceVar
 
 	}
 	return ret
@@ -229,14 +231,14 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, d
 	tmpStruct := createTempVar( structName )
 	iIndex := "i" + strconv.Itoa(indexCounter)
 
-	ret := INDENT_1 + inDent + "for " + iIndex +", _ := range " + theVar + " {" + INDENT_1 + inDent + INDENT + tmpStruct + " := &" + structName + "{"
+	ret := INDENT_1 + inDent + "for " + iIndex +", v := range " + theVar + " {" + INDENT_1 + inDent + INDENT + tmpStruct + " := &" + structName + "{"
 	for i := 0; i < typeStruct.TypeFields.FieldIndex; i++ {
-		fieldName := strings.ToLower(GetFieldName( debug, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldName, false))
-		fieldType := mapFieldTypeToGoCSQLType( debug, fieldName, recursing, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldType, structName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, dontUpdate  )
+		fieldName := GetFieldName( debug, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldName, dontUpdate)
+		fieldType := mapFieldTypeToGoCSQLType( debug, fieldName, true, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldType, structName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, dontUpdate  )
 		if recursing {
 			inDent = inDent + INDENT
 		}
-		ret = ret + INDENT_1 + inDent + INDENT2  + "v[" + fieldName + "].(" + fieldType + "),"
+		ret = ret + INDENT_1 + inDent + INDENT2  + `v["` + strings.ToLower(fieldName ) + `"].(` + fieldType + "),"
 	}
 	ret = ret + INDENT_1 + inDent + INDENT + "}"
 
@@ -288,7 +290,7 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inTable bool
 			returnedVar := PARAMS_RET + "." + fieldName
 			ret = INDENT_1 + tmp_var + ", ok := " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].([]map[string]interface{})`
 			ret = ret + INDENT_1 +  "if ! ok {" + INDENT_1 + INDENT + `log.Fatal("handleReturnedVar() - failed to find entry for ` + strings.ToLower(fieldDetails.DbFieldName ) + `", ok )` + INDENT_1 + "}"
-			ret = ret + INDENT_1 + returnedVar + " = make([]*" + MODELS + collectionType + ", len(" + tmp_var + ")"
+			ret = ret + INDENT_1 + returnedVar + " = make([]*" + MODELS + collectionType + ", len(" + tmp_var + "))"
 			if ! inTable {
 				arrayType = GetFieldName(debug, recursing, parserOutput.TypeDetails[typeIndex].TypeName, dontUpdate) + arrayType
 			}

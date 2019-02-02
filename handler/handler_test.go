@@ -105,12 +105,11 @@ func TestFieldName3(t *testing.T) {
 /*
 func TestSplice(t *testing.T) {
 
-	path := os.Getenv("GOPATH")  + "/src/github.com/stevef1uk/test3/"
+	path := os.Getenv("GOPATH")  + "/src/github.com/stevef1uk/test4/"
 	_ = path
 	ret6 :=  SpiceInHandler( false , path, "Employee", "" )
 	_ = ret6
 
 
 }
-
 */
