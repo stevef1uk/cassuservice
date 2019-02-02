@@ -356,13 +356,17 @@ func doINeedDecimal(  parserOutput parser.ParseOutput  ) bool {
 }
 
 
-func ProcessTime ( firstTime bool , indent string, timeVar string, fieldName string ) (string, string)  {
+func ProcessTime ( firstTime bool , indent string, timeVar string, typeName string, fieldName string ) (string, string)  {
 
 	equals := " = "
-	if firstTime {
+	/*if firstTime {
 		equals = " := "
+	}*/
+	equals = " := "
+	if typeName != "" {
+		typeName = typeName + "."
 	}
-	ret := indent + timeVar  + " = " + fieldName + ".String()"
+	ret := indent + timeVar  + " = " + typeName + fieldName + ".String()"
 	tmpV := createTempVar( fieldName )
 	tmpV2 := createTempVar( fieldName )
 	tmpV3 := createTempVar( fieldName )
@@ -390,12 +394,16 @@ func findTypeDetails ( debug bool, typeName string, parserOutput parser.ParseOut
 
 
 func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName string, destFieldName string,  fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, dontUpdate bool  ) string {
-
-	arrayType := basicMapCassandraTypeToGoType(debug, false, inTable, fieldDetails.DbFieldName, fieldDetails.DbFieldCollectionType, "", fieldDetails, parserOutput, dontUpdate, false )
-	ret := INDENT_1 + sourceFieldName + " = " +  SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].([]` + arrayType + ")"
-	ret = ret + inDent + destFieldName + " = " + "make([] " + arrayType + ", len(" + sourceFieldName + ") )"
+	equals := " := "
+	if inTable {
+		equals = " = "
+	}
+	arrayType := basicMapCassandraTypeToGoType(debug, false, inTable, fieldDetails.DbFieldName, fieldDetails.DbFieldCollectionType, "", fieldDetails, parserOutput, dontUpdate, true )
+	arrayTypeDest := basicMapCassandraTypeToGoType(debug, false, inTable, fieldDetails.DbFieldName, fieldDetails.DbFieldCollectionType, "", fieldDetails, parserOutput, dontUpdate, false )
+	ret := INDENT_1 + inDent + sourceFieldName + equals +  SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].([]` + arrayType + ")"
+	ret = ret + inDent + destFieldName + " = " + "make([] " + arrayTypeDest + ", len(" + sourceFieldName + ") )"
 	ret = ret + inDent + "for j := 0; j < len(" + sourceFieldName + " ); j++ { "
-	switch arrayType {
+	switch arrayTypeDest {
 	case "float64":
 		ret = ret + inDent + INDENT + destFieldName + "[j] = " +  "float64(" + sourceFieldName + "[j])" + inDent + "}"
 	case "int64":
