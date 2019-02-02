@@ -202,7 +202,7 @@ func handleStructVarConversion(  debug bool, recursing bool, indexCounter int, t
 		tmp, tmp1 := ProcessTime( timeFound, INDENT_1 + inDent, timeVar, sourceVar )
 		ret = ret + tmp
 		ret = ret  + INDENT_1 + inDent + destVar + " = &" + tmp1
-	case "set": fallthrough
+	case "set": fallthrough //
 	case "list":
 		//tmp_var := createTempVar( fieldName )
 		collectionType := GetFieldName(debug, recursing, fieldDetails.DbFieldCollectionType, dontUpdate )
