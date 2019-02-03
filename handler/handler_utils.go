@@ -395,9 +395,10 @@ func findTypeDetails ( debug bool, typeName string, parserOutput parser.ParseOut
 
 func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName string, destFieldName string,  fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, dontUpdate bool  ) string {
 	equals := " := "
-	if inTable {
+	/*if inTable {
 		equals = " = "
 	}
+	*/
 	arrayType := basicMapCassandraTypeToGoType(debug, false, inTable, fieldDetails.DbFieldName, fieldDetails.DbFieldCollectionType, "", fieldDetails, parserOutput, dontUpdate, true )
 	arrayTypeDest := basicMapCassandraTypeToGoType(debug, false, inTable, fieldDetails.DbFieldName, fieldDetails.DbFieldCollectionType, "", fieldDetails, parserOutput, dontUpdate, false )
 	ret := INDENT_1 + inDent + sourceFieldName + equals +  SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].([]` + arrayType + ")"
@@ -415,12 +416,19 @@ func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName
 }
 
 
-func copyStruct( debug bool, sourceStruct string, destStruct string, theType string,typeDetails parser.TypeDetails, parserOutput parser.ParseOutput ) string  {
-	ret := ""
+func copyStruct( debug bool, inDent string, recursing bool,  sourceStruct string, sourceField string, destStruct string ,typeDetails *parser.TypeDetails, dontUpdate bool  ) string  {
+	typeName := GetFieldName(debug, recursing, typeDetails.TypeName, dontUpdate )
+	ret := INDENT_1 + inDent + destStruct + " = &" + typeName + "{"
 
 	for i := 0; i < typeDetails.TypeFields.FieldIndex; i++ {
-
+		if i > 0 {
+			ret = ret + ","
+		}
+		//fieldType := basicMapCassandraTypeToGoType(debug, false, inTable, typeDetails.TypeFields.DbFieldDetails[i].DbFieldName, typeDetails.TypeFields.DbFieldDetails[i].DbFieldCollectionType, typeDetails.TypeName, typeDetails.TypeFields.DbFieldDetails[i], parserOutput, dontUpdate, false )
+		fieldName := GetFieldName(debug, recursing, typeDetails.TypeFields.DbFieldDetails[i].DbFieldName, dontUpdate )
+		ret = ret + inDent + fieldName + ":" + sourceStruct + "." + sourceField + "." + fieldName
 	}
+	ret = ret + "}"
 	return ret
 }
 
