@@ -301,9 +301,15 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent strin
 			ret = CopyArrayElements( debug, inTable, INDENT_1 + inDent, tmp_var, PARAMS_RET + "." + fieldName,  fieldDetails, parserOutput, dontUpdate  )
 		}
 	case "map" :
-
-		ret = INDENT_1 + inDent + PARAMS_RET + "." + fieldName + ", ok := " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].([]map[string]interface{})`
+		//mapType := GetFieldName(debug, recursing, fieldDetails.DbFieldMapType, dontUpdate )
+		//fieldDetails.DbFieldType = "string"
+		//mapTypeInGo := mapFieldTypeToGoCSQLType( debug, fieldName, recursing, inTable, fieldDetails.DbFieldType, "", fieldDetails, parserOutput, dontUpdate  )
+		tmp_var := createTempVar( fieldName )
+		mapTypeInGo := "string" // This will always be the case as the swagger generated for maps is always []map[string]string
+		ret = INDENT_1 + inDent + tmp_var + ", ok := " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].([]map[string]` + mapTypeInGo + ")"
 		ret = ret + INDENT_1 + inDent +  "if ! ok {" + INDENT_1 + INDENT + `log.Fatal("handleReturnedVar() - failed to find entry for ` + strings.ToLower(fieldDetails.DbFieldName ) + `", ok )` + INDENT_1 + "}"
+		ret = ret + CopyArrayElements( debug, inTable, INDENT_1 + inDent, tmp_var, PARAMS_RET + "." + fieldName,  fieldDetails, parserOutput, dontUpdate  )
+		//ret = INDENT_1  + inDent + PARAMS_RET + "." + fieldName + " = &" + fieldName
 	default:
 		ret = INDENT_1  + inDent + PARAMS_RET + "." + fieldName + " = &" + fieldName
 
