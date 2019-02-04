@@ -66,7 +66,7 @@ func writeField( debug bool, parserOutput parser.ParseOutput, field parser.Field
 		fieldType :=  mapTableTypeToGoType( debug, fieldName, collectionType, field.DbFieldCollectionType, field, parserOutput, dontUpdate )
 		if debug {fmt.Println("writeField name =", field.DbFieldName, " fieldType = ", fieldType) }
 		if strings.ToLower(fieldType ) == "map" {
-			output.WriteString( INDENT_1 + "var " + fieldName + " " +  fieldName )
+			output.WriteString( INDENT_1 + "var " + fieldName + " " +  fieldType )
 		} else {
 			if swagger.IsFieldTypeUDT( parserOutput, field.DbFieldCollectionType ) {
 				output.WriteString( INDENT_1 + "var " + fieldName + " " + fieldType )
@@ -79,6 +79,8 @@ func writeField( debug bool, parserOutput parser.ParseOutput, field parser.Field
 		if debug {fmt.Println("writeField name =", fieldName, " fieldType = ", fieldType) }
 		output.WriteString( INDENT_1 + "var " + fieldName + " " + fieldType )
 	}
+	// Not all vars used so handle any compilation errors
+	output.WriteString( INDENT_1 + "_ = " + fieldName  )
 }
 
 
@@ -260,6 +262,7 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, d
 
 
 func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent string, inTable bool, typeIndex int , fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, timeVar string, dontUpdate bool ) (string, bool) {
+	indexCounter++
     ret := ""
 	fieldName := GetFieldName( debug, false, fieldDetails.DbFieldName, false)
 	switch ( strings.ToLower( fieldDetails.DbFieldType ) ) {
@@ -301,15 +304,16 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent strin
 			ret = CopyArrayElements( debug, inTable, INDENT_1 + inDent, tmp_var, PARAMS_RET + "." + fieldName,  fieldDetails, parserOutput, dontUpdate  )
 		}
 	case "map" :
-		//mapType := GetFieldName(debug, recursing, fieldDetails.DbFieldMapType, dontUpdate )
-		//fieldDetails.DbFieldType = "string"
-		//mapTypeInGo := mapFieldTypeToGoCSQLType( debug, fieldName, recursing, inTable, fieldDetails.DbFieldType, "", fieldDetails, parserOutput, dontUpdate  )
+		indexCounter++
+		iIndex := "i" + strconv.Itoa(indexCounter)
 		tmp_var := createTempVar( fieldName )
 		mapTypeInGo := "string" // This will always be the case as the swagger generated for maps is always []map[string]string
-		ret = INDENT_1 + inDent + tmp_var + ", ok := " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].([]map[string]` + mapTypeInGo + ")"
+		ret = INDENT_1 + inDent + tmp_var + ", ok := " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(map[string]` + mapTypeInGo + ")"
 		ret = ret + INDENT_1 + inDent +  "if ! ok {" + INDENT_1 + INDENT + `log.Fatal("handleReturnedVar() - failed to find entry for ` + strings.ToLower(fieldDetails.DbFieldName ) + `", ok )` + INDENT_1 + "}"
-		ret = ret + CopyArrayElements( debug, inTable, INDENT_1 + inDent, tmp_var, PARAMS_RET + "." + fieldName,  fieldDetails, parserOutput, dontUpdate  )
-		//ret = INDENT_1  + inDent + PARAMS_RET + "." + fieldName + " = &" + fieldName
+		ret = ret + INDENT_1 + inDent +  PARAMS_RET + "." + fieldName + " = make(map[string]string,len(" + tmp_var + "))"
+		//ret = ret + CopyArrayElements( debug, inTable, INDENT_1 + inDent, tmp_var, PARAMS_RET + "." + fieldName,  fieldDetails, parserOutput, dontUpdate  )
+		ret = ret + INDENT_1 + inDent + "for " + iIndex +", v := range " + tmp_var + " {" + INDENT_1 + inDent + INDENT + PARAMS_RET + "." + fieldName  + "[" +  iIndex + "] = v"  +  INDENT_1 + inDent + "}"
+
 	default:
 		ret = INDENT_1  + inDent + PARAMS_RET + "." + fieldName + " = &" + fieldName
 
