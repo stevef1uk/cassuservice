@@ -232,21 +232,36 @@ var indexCounter int = 0
 func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, destField string, theVar string, theType string,  parserOutput parser.ParseOutput, timeVar string, dontUpdate bool  ) string {
 
 	indexCounter++
+	extraVars := ""
+	ret := ""
 	typeStruct := findTypeDetails( debug, theType, parserOutput )
 	structName := GetFieldName(  debug, recursing, theType, false )
 	tmpStruct := createTempVar( structName )
 	iIndex := "i" + strconv.Itoa(indexCounter)
 
-	ret := INDENT_1 + inDent + "for " + iIndex +", v := range " + theVar + " {" + INDENT_1 + inDent + INDENT + tmpStruct + " := &" + structName + "{"
+	loopStart := INDENT_1 + "for " + iIndex +", v := range " + theVar + " {"
+	loopAssignment := INDENT_1 + inDent + tmpStruct + " := &" + structName + "{"
 	for i := 0; i < typeStruct.TypeFields.FieldIndex; i++ {
-		fieldName := GetFieldName( debug, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldName, dontUpdate)
+		// fieldName := GetFieldName( debug, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldName, dontUpdate)
+		fieldName := strings.ToLower( typeStruct.TypeFields.DbFieldDetails[i].DbFieldName )
 		fieldType := mapFieldTypeToGoCSQLType( debug, fieldName, true, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldType, structName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, dontUpdate  )
 		if recursing {
 			inDent = inDent + INDENT
 		}
-		ret = ret + INDENT_1 + inDent + INDENT2  + `v["` + strings.ToLower(fieldName ) + `"].(` + fieldType + "),"
+		if ( typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType != "" && ( swagger.IsFieldTypeUDT( parserOutput, typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType ) ) )  || typeStruct.TypeFields.DbFieldDetails[i].DbFieldMapType != ""  {
+			// Deal with the more complex types
+			tmpVar := createTempVar( fieldName )
+			extraVars = extraVars +  INDENT_1 + inDent + tmpVar + ` := v["` + strings.ToLower(fieldName ) + `"].(map[string]interface{})`
+			extraVars = extraVars +  INDENT_1 + inDent + "for  j, z := range " + tmpVar + " {" + INDENT_1 + inDent  + INDENT2 + tmpStruct + "." + fieldName +  ".[j] = " + destField + "[j]." + fieldName + INDENT_1 + inDent + "}"
+
+			ret = ret + INDENT_1 + inDent + INDENT2  + tmpVar + ","
+
+		} else {
+			ret = ret + INDENT_1 + inDent + INDENT2  + `v["` + strings.ToLower(fieldName ) + `"].(` + fieldType + "),"
+		}
 	}
 	ret = ret + INDENT_1 + inDent + INDENT + "}"
+	ret = loopStart + INDENT_1 + extraVars + loopAssignment + INDENT_1 + ret
 
 	// Now process each variable in order to set-up the Payload structure
 	for i := 0; i < typeStruct.TypeFields.FieldIndex; i++ {

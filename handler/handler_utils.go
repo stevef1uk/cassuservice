@@ -141,7 +141,7 @@ func basicMapCassandraTypeToGoType( debug bool, leaveFieldCase bool, inTable boo
 	case "counter": fallthrough
 	case "varint":
 		if makeSmall {
-			text = "int32"
+			text = "int"
 		} else {
 			text = "int64"
 		}
@@ -241,7 +241,7 @@ func mapFieldTypeToGoCSQLType( debug bool, fieldName string, leaveFieldCase bool
 	switch strings.ToLower(fieldType) {
 	case "int": fallthrough
 	case "varint":
-		text = "int32"
+		text = "int"
 	case "uuid":
 		text = "string"
 	case "date":
