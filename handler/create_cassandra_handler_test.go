@@ -28,7 +28,7 @@ const (
     lastUpdatedAt TIMESTAMP,
     myfloat float,
     events set<int>,
-    mymap  map<int, text>,
+    mymap  map<text, text>,
     address_list set<frozen<simple>>
 );
 
@@ -41,7 +41,7 @@ CREATE TABLE demo.employee (
     second_ts TIMESTAMP,
     tevents set<int>,
     tmylist list<float>,
-    tmymap  map<int, text>,
+    tmymap  map<text, text>,
    PRIMARY KEY (id, mediate, second_ts )
  ) WITH CLUSTERING ORDER BY (mediate ASC, second_ts ASC)
 `

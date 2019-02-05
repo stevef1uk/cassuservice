@@ -253,7 +253,7 @@ func mapFieldTypeToGoCSQLType( debug bool, fieldName string, leaveFieldCase bool
 	case "list": fallthrough
 	case "set":
 		if ! swagger.IsFieldTypeUDT( parserOutput, fieldDetails.DbFieldCollectionType) {
-			text = "[]*"
+			text = "[]"
 		}
 		retType := basicMapCassandraTypeToGoType( debug, true, true, fieldName, fieldType, typeName,   fieldDetails , parserOutput, dontUpdate, true )
 		text = text + retType

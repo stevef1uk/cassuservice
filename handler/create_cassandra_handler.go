@@ -250,8 +250,32 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, d
 		}
 		if ( typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType != "" && ( swagger.IsFieldTypeUDT( parserOutput, typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType ) ) )  || typeStruct.TypeFields.DbFieldDetails[i].DbFieldMapType != ""  {
 			// Deal with the more complex types
+			/*
+			tmpType := ""
+			fieldType :=  mapTableTypeToGoType( debug, fieldName, fieldDetails.DbFieldCollectionType, parserOutput.TypeDetails[typeIndex].TypeName, fieldDetails, parserOutput, dontUpdate )
+			if swagger.IsFieldTypeUDT( parserOutput, fieldDetails.DbFieldCollectionType ) {
+				tmpType = fieldType
+			} else {
+				tmpType = "[]" + fieldType
+			}
+			ret = ret + INDENT_1 + inDent + tmp_var + "." + strings.ToLower(fieldName) +  " = make( + " + tmpType + ", len(" + tmp_var + ")"
+			*/
 			tmpVar := createTempVar( fieldName )
-			extraVars = extraVars +  INDENT_1 + inDent + tmpVar + ` := v["` + strings.ToLower(fieldName ) + `"].(map[string]interface{})`
+			// Note as there seems no way of mapping a Map type in Swagger to anything other than string:string we are a bit stuffed here!
+			if typeStruct.TypeFields.DbFieldDetails[i].DbFieldMapType != "" {
+				extraVars = extraVars +  INDENT_1 + inDent + tmpVar + ` := v["` + strings.ToLower(fieldName ) + `"].(map[string]string)`
+				tmpType := ""
+				_ = tmpType
+				fieldType :=  mapTableTypeToGoType( debug, fieldName, typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType, theType, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, dontUpdate )
+				if swagger.IsFieldTypeUDT( parserOutput, typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType ) {
+					tmpType = fieldType
+				} else {
+					tmpType = "[]" + fieldType
+				}
+			} else {
+				// Handle lists & sets here!
+			}
+
 			extraVars = extraVars +  INDENT_1 + inDent + "for  j, z := range " + tmpVar + " {" + INDENT_1 + inDent  + INDENT2 + tmpStruct + "." + fieldName +  ".[j] = " + destField + "[j]." + fieldName + INDENT_1 + inDent + "}"
 
 			ret = ret + INDENT_1 + inDent + INDENT2  + tmpVar + ","
