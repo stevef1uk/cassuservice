@@ -239,9 +239,14 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, d
 	tmpStruct := createTempVar( structName )
 	iIndex := "i" + strconv.Itoa(indexCounter)
 
-	loopStart := INDENT_1 + "for " + iIndex +", v := range " + theVar + " {"
+	if recursing {
+		inDent = inDent + INDENT2
+	}
+
+	loopStart := INDENT_1 + inDent + "for " + iIndex +", v := range " + theVar + " {"
 	loopAssignment := INDENT_1 + inDent + tmpStruct + " := &" + structName + "{"
 	for i := 0; i < typeStruct.TypeFields.FieldIndex; i++ {
+
 		// fieldName := GetFieldName( debug, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldName, dontUpdate)
 		fieldName := strings.ToLower( typeStruct.TypeFields.DbFieldDetails[i].DbFieldName )
 		fieldType := mapFieldTypeToGoCSQLType( debug, fieldName, true, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldType, structName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, dontUpdate  )
@@ -250,36 +255,19 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, d
 		}
 		if ( typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType != "" && ( swagger.IsFieldTypeUDT( parserOutput, typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType ) ) )  || typeStruct.TypeFields.DbFieldDetails[i].DbFieldMapType != ""  {
 			// Deal with the more complex types
-			/*
-			tmpType := ""
-			fieldType :=  mapTableTypeToGoType( debug, fieldName, fieldDetails.DbFieldCollectionType, parserOutput.TypeDetails[typeIndex].TypeName, fieldDetails, parserOutput, dontUpdate )
-			if swagger.IsFieldTypeUDT( parserOutput, fieldDetails.DbFieldCollectionType ) {
-				tmpType = fieldType
-			} else {
-				tmpType = "[]" + fieldType
-			}
-			ret = ret + INDENT_1 + inDent + tmp_var + "." + strings.ToLower(fieldName) +  " = make( + " + tmpType + ", len(" + tmp_var + ")"
-			*/
 			tmpVar := createTempVar( fieldName )
+			ret = ret + INDENT_1 + inDent + INDENT2  + tmpVar + ","
 			// Note as there seems no way of mapping a Map type in Swagger to anything other than string:string we are a bit stuffed here!
 			if typeStruct.TypeFields.DbFieldDetails[i].DbFieldMapType != "" {
 				extraVars = extraVars +  INDENT_1 + inDent + tmpVar + ` := v["` + strings.ToLower(fieldName ) + `"].(map[string]string)`
-				tmpType := ""
-				_ = tmpType
-				fieldType :=  mapTableTypeToGoType( debug, fieldName, typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType, theType, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, dontUpdate )
-				if swagger.IsFieldTypeUDT( parserOutput, typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType ) {
-					tmpType = fieldType
-				} else {
-					tmpType = "[]" + fieldType
-				}
 			} else {
 				// Handle lists & sets here!
+				//t := &parser.FieldDetails{ DbFieldName: fieldName, DbFieldType }
+				//fieldType :=  mapFieldTypeToGoCSQLType( debug, fieldName, true, true, typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType, structName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, dontUpdate  )
+				//extraVars = extraVars +  INDENT_1 + inDent + tmpVar + ` := v["` + strings.ToLower(fieldName ) + `"].(` + fieldType + ")"
+				extraVars = extraVars +  INDENT_1 + inDent + tmpVar + ` := v["` + strings.ToLower(fieldName ) + `"].(map[string]interface{})`
+				extraVars = extraVars + INDENT_1 + inDent + setUpStruct( debug,  true,  timeFound, inDent, "steve",  tmpVar, strings.ToLower(typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType),  parserOutput, timeVar, dontUpdate )
 			}
-
-			extraVars = extraVars +  INDENT_1 + inDent + "for  j, z := range " + tmpVar + " {" + INDENT_1 + inDent  + INDENT2 + tmpStruct + "." + fieldName +  ".[j] = " + destField + "[j]." + fieldName + INDENT_1 + inDent + "}"
-
-			ret = ret + INDENT_1 + inDent + INDENT2  + tmpVar + ","
-
 		} else {
 			ret = ret + INDENT_1 + inDent + INDENT2  + `v["` + strings.ToLower(fieldName ) + `"].(` + fieldType + "),"
 		}
