@@ -238,16 +238,18 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, d
 	structName := GetFieldName(  debug, recursing, theType, false )
 	tmpStruct := createTempVar( structName )
 	iIndex := "i" + strconv.Itoa(indexCounter)
+	vIndex := "v" + strconv.Itoa(indexCounter)
 
 	if recursing {
 		inDent = inDent + INDENT2
 	}
-
-	loopStart := INDENT_1 + inDent + "for " + iIndex +", v := range " + theVar + " {"
-	loopAssignment := INDENT_1 + inDent + tmpStruct + " := &" + structName + "{"
+	space := ""
+	if recursing {
+		space = inDent
+	}
+	loopStart := INDENT_1  + space + "for " + iIndex + ", " + vIndex + " := range " + theVar + " {"
+	loopAssignment := INDENT_1 + inDent  + tmpStruct + " := &" + structName + "{"
 	for i := 0; i < typeStruct.TypeFields.FieldIndex; i++ {
-
-		// fieldName := GetFieldName( debug, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldName, dontUpdate)
 		fieldName := strings.ToLower( typeStruct.TypeFields.DbFieldDetails[i].DbFieldName )
 		fieldType := mapFieldTypeToGoCSQLType( debug, fieldName, true, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldType, structName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, dontUpdate  )
 		if recursing {
@@ -256,17 +258,21 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, d
 		if ( typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType != "" && ( swagger.IsFieldTypeUDT( parserOutput, typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType ) ) )  || typeStruct.TypeFields.DbFieldDetails[i].DbFieldMapType != ""  {
 			// Deal with the more complex types
 			tmpVar := createTempVar( fieldName )
-			ret = ret + INDENT_1 + inDent + INDENT2  + tmpVar + ","
+			tmpVar1 := createTempVar( fieldName )
 			// Note as there seems no way of mapping a Map type in Swagger to anything other than string:string we are a bit stuffed here!
 			if typeStruct.TypeFields.DbFieldDetails[i].DbFieldMapType != "" {
+				ret = ret + INDENT_1 + inDent + INDENT2  + tmpVar + ","
 				extraVars = extraVars +  INDENT_1 + inDent + tmpVar + ` := v["` + strings.ToLower(fieldName ) + `"].(map[string]string)`
 			} else {
 				// Handle lists & sets here!
 				//t := &parser.FieldDetails{ DbFieldName: fieldName, DbFieldType }
 				//fieldType :=  mapFieldTypeToGoCSQLType( debug, fieldName, true, true, typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType, structName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, dontUpdate  )
 				//extraVars = extraVars +  INDENT_1 + inDent + tmpVar + ` := v["` + strings.ToLower(fieldName ) + `"].(` + fieldType + ")"
-				extraVars = extraVars +  INDENT_1 + inDent + tmpVar + ` := v["` + strings.ToLower(fieldName ) + `"].(map[string]interface{})`
-				extraVars = extraVars + INDENT_1 + inDent + setUpStruct( debug,  true,  timeFound, inDent, "steve",  tmpVar, strings.ToLower(typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType),  parserOutput, timeVar, dontUpdate )
+				ret = ret + INDENT_1 + inDent + INDENT2  + tmpVar1 + ","
+				indexCounter++
+				vIndex := "v" + strconv.Itoa(indexCounter)
+				extraVars = extraVars +  INDENT_1 + inDent + tmpVar + ":= " + vIndex + `["` + strings.ToLower(fieldName ) + `"].(map[string]interface{})`
+				extraVars = extraVars + INDENT_1 + inDent + setUpStruct( debug,  true,  timeFound, inDent, tmpVar1,  tmpVar, strings.ToLower(typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType),  parserOutput, timeVar, dontUpdate )
 			}
 		} else {
 			ret = ret + INDENT_1 + inDent + INDENT2  + `v["` + strings.ToLower(fieldName ) + `"].(` + fieldType + "),"
