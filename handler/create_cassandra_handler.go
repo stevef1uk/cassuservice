@@ -188,7 +188,7 @@ func handleStructVarConversion(  debug bool, recursing bool, indexCounter int, s
 
 	fieldName := GetFieldName( debug, false, fieldDetails.DbFieldName, false)
 	sourceVar := theStructVar + "." +  fieldName
-	if structAssignment {
+	if structAssignment || recursing {
 		sourceVar = theStructVar
 	}
 	switch ( strings.ToLower( fieldDetails.DbFieldType ) ) {
@@ -273,7 +273,8 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, d
 				ret = ret + INDENT_1 + inDent + INDENT2  + tmpVar1 + ","
 				typeName := GetFieldName(  debug, recursing, typeStruct.TypeName, false )
 				extraVars = extraVars +  INDENT_1 + inDent + tmpVar + ":= " + vIndex + `["` + strings.ToLower(fieldName ) + `"].([]map[string]interface{})`
-				tmpType := mapFieldTypeToGoCSQLType( debug, fieldName, true, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType, structName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, dontUpdate  )
+				tmpType := mapFieldTypeToGoCSQLType( debug, fieldName, true, true, typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType, structName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, dontUpdate  )
+				//tmpType := mapFieldTypeToGoCSQLType( debug, fieldName, true, true, typeStruct.TypeFields.DbFieldDetails[i]., structName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, dontUpdate  )
 				extraVars = extraVars +  INDENT_1 + inDent + tmpVar1 + ":= make(" + tmpType + ", len(" + tmpVar + ") )"
 				extraVars = extraVars + INDENT_1 + inDent + setUpStruct( debug,  true,  timeFound, inDent, tmpVar1,  tmpVar, strings.ToLower(typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType),  parserOutput, timeVar, dontUpdate )
 				structAssignment[i] = true
@@ -290,12 +291,12 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, d
 	for i := 0; i < typeStruct.TypeFields.FieldIndex; i++ {
 		fieldName := GetFieldName( debug, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldName, false)
 		tmpDest  := destField + "[" + iIndex + "]." + fieldName
-		if structAssignment[i] {
+		if structAssignment[i] || recursing {
 			if typeStruct.TypeFields.DbFieldDetails[i].DbFieldMapType == "" {
 				tmpDest = destField + "[" + iIndex + "]"
 			}
 		}
-		tmp := handleStructVarConversion( debug, recursing, indexCounter, structAssignment[i], timeFound, inDent, tmpStruct, tmpDest, typeStruct, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, timeVar, dontUpdate )
+		tmp := handleStructVarConversion( debug, recursing, indexCounter, structAssignment[i] || recursing, timeFound, inDent, tmpStruct, tmpDest, typeStruct, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, timeVar, dontUpdate )
 		ret = ret + inDent + INDENT2 + tmp
 	}
 
