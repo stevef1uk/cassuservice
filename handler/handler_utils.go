@@ -395,13 +395,13 @@ func findTypeDetails ( debug bool, typeName string, parserOutput parser.ParseOut
 
 func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName string, destFieldName string,  fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, dontUpdate bool  ) string {
 	equals := " := "
-	/*if inTable {
-		equals = " = "
-	}
-	*/
+	ret := ""
 	arrayType := basicMapCassandraTypeToGoType(debug, false, inTable, fieldDetails.DbFieldName, fieldDetails.DbFieldCollectionType, "", fieldDetails, parserOutput, dontUpdate, true )
 	arrayTypeDest := basicMapCassandraTypeToGoType(debug, false, inTable, fieldDetails.DbFieldName, fieldDetails.DbFieldCollectionType, "", fieldDetails, parserOutput, dontUpdate, false )
-	ret := INDENT_1 + inDent + sourceFieldName + equals +  SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].([]` + arrayType + ")"
+	if inTable {
+		ret = INDENT_1 + inDent + sourceFieldName + equals +  SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].([]` + arrayType + ")"
+	}
+
 	ret = ret + inDent + destFieldName + " = " + "make([] " + arrayTypeDest + ", len(" + sourceFieldName + ") )"
 	ret = ret + inDent + "for j := 0; j < len(" + sourceFieldName + " ); j++ { "
 	switch arrayTypeDest {
@@ -415,7 +415,7 @@ func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName
 	return ret
 }
 
-
+/*
 func copyStruct( debug bool, inDent string, recursing bool,  sourceStruct string, sourceField string, destStruct string ,typeDetails *parser.TypeDetails, dontUpdate bool  ) string  {
 	typeName := GetFieldName(debug, recursing, typeDetails.TypeName, dontUpdate )
 	ret := INDENT_1 + inDent + destStruct + " = &" + typeName + "{"
@@ -432,3 +432,4 @@ func copyStruct( debug bool, inDent string, recursing bool,  sourceStruct string
 	return ret
 }
 
+*/
