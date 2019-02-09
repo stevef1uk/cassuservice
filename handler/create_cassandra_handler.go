@@ -188,23 +188,13 @@ func assignToStruct( ) string {
 	return ret
 }
 // Function called to process a local UDT structure and copy into the go-swagger model's structure type for the UDT
-func handleStructVarConversion(  debug bool, recursing bool, indexCounter int, structAssignment bool, timeFound bool, inDent string, theStructVar string, destVar string,  theType * parser.TypeDetails,  fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, timeVar string, dontUpdate bool ) string {
+func handleStructVarConversion(  debug bool, recursing bool, indexCounter int, timeFound bool, inDent string, theStructVar string, destVar string,  theType * parser.TypeDetails,  fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, timeVar string, dontUpdate bool ) string {
 
 	ret := ""
 
 	fieldName := GetFieldName( debug, false, fieldDetails.DbFieldName, false)
 	sourceVar := theStructVar + "." +  fieldName
-	/*
-	if structAssignment {
-		// Now process each variable in order to set-up the Payload structure
-		for i := 0; i < theType.TypeFields.FieldIndex; i++ {
-			//fieldName := GetFieldName( debug, false, theType.TypeFields.DbFieldDetails[i].DbFieldName, false)
-			tmp := handleStructVarConversion( debug, false, indexCounter, false, timeFound, inDent, theStructVar, destVar, theType, theType.TypeFields.DbFieldDetails[i], parserOutput, timeVar, dontUpdate )
-			ret = ret + inDent + INDENT2 + tmp
-		}
-		return ret
-	}
-	*/
+
 	switch ( strings.ToLower( fieldDetails.DbFieldType ) ) {
 	case "int":
 		tmp_var := createTempVar( fieldName )
@@ -226,10 +216,6 @@ func handleStructVarConversion(  debug bool, recursing bool, indexCounter int, s
 		if swagger.IsFieldTypeUDT( parserOutput, collectionType ) {
 			ret = INDENT_1 + inDent + destVar + " = " + sourceVar
 		} else {
-			//theTypeName := GetFieldName(debug, recursing, theType.TypeName, false )
-			//tmp_var := createTempVar( fieldName )
-			//fieldType := mapFieldTypeToGoCSQLType( debug, fieldName, true, false, fieldDetails.DbFieldCollectionType, theType, fieldDetails, parserOutput, dontUpdate  )
-			//ret = ret + INDENT_1 + INDENT2 + inDent + tmp_var + " := make( [] * " + MODELS + theTypeName + " len( " + sourceVar + ") )"
 			ret = CopyArrayElements( debug, false, INDENT_1 + INDENT, theStructVar + "." + fieldName, destVar,  fieldDetails, parserOutput, dontUpdate  )
 		}
 	default:
@@ -280,14 +266,11 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, i
 			} else {
 				// Handle lists & sets here!
 				ret = ret + INDENT_1 + inDent + INDENT2  + tmpVar1 + ","
-				//typeName := GetFieldName(  debug, recursing, typeStruct.TypeName, false )
 				extraVars = extraVars +  INDENT_1 + inDent + tmpVar + ":= " + vIndex + `["` + strings.ToLower(fieldName ) + `"].([]map[string]interface{})`
 				tmpType := mapFieldTypeToGoCSQLType( debug, fieldName, true, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType, structName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, dontUpdate  )
-				//tmpType := mapFieldTypeToGoCSQLType( debug, fieldName, true, true, typeStruct.TypeFields.DbFieldDetails[i]., structName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, dontUpdate  )
 				extraVars = extraVars +  INDENT_1 + inDent + tmpVar1 + ":= make(" + tmpType + ", len(" + tmpVar + ") )"
 				extraVars = extraVars + INDENT_1 + inDent + setUpStruct( debug,  true,  timeFound, inDent, false, tmpVar1,  tmpVar, strings.ToLower(typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType),  parserOutput, timeVar, dontUpdate )
 				structAssignment[i] = true
-				//newStr =  INDENT_1 + inDent + destField + "[" + iIndex + "] = new (" + MODELS + typeName + ")"
 			}
 		} else {
 			ret = ret + INDENT_1 + inDent + INDENT2  + vIndex + `["` + strings.ToLower(fieldName ) + `"].(` + fieldType + "),"
@@ -310,7 +293,7 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, i
 				goto here
 			}
 		}
-		tmp = handleStructVarConversion(debug, recursing, indexCounter, structAssignment[i] || recursing, timeFound, inDent, tmpStruct, tmpDest, typeStruct, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, timeVar, dontUpdate)
+		tmp = handleStructVarConversion(debug, recursing, indexCounter, timeFound, inDent, tmpStruct, tmpDest, typeStruct, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, timeVar, dontUpdate)
 	here:
 		if i == 0 {
 			ret = ret + inDent + INDENT2 + addMake + tmp
