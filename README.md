@@ -11,7 +11,10 @@ The architecture approach is simple:
 
 My last approach for the parser was not to use a lex / yacc grammer but use regular expressions to identify the key data needed. This approach worked but produced code that was very hard to understand. Therefore, I have taken a differnet approach this time. I have written a simple FSM that contains states and is configured to look for regular exprerssions in each state and invoke functions to process the matches.
 
-Latest Status: FSM to parse Cassandra CQL written so (1) done. Also used the output of the parser to create the swagger data so (2) possible. Last time I used Go templates for the swagger creation, this time I used simple string concatenation.
+Latest Status: FSM to parse Cassandra CQL written so (1) done. Also used the output of the parser to create the swagger data is done. This time
+I have minimised the use of templates and used string concatenation.
+As of 9th Feb the work to generate the Cassandra handler is working in that the code generated compiles and returns the appropriate data from
+Cassandra. This is very early days, but promising as the only test example used UDTs that themselves use UDTs so recursion going on.
 
 
 
