@@ -15,8 +15,6 @@ import (
 
 
 func WriteHeaderPart( debug bool, parserOutput parser.ParseOutput, generateDir string, endPointNameOverRide string, dontUpdate bool, output  *os.File ) bool  {
-	//genString := getServiceName ( parserOutput.TableDetails.TableName, endPointNameOverRide )
-
 	doNeedTimeImports := doINeedTime(parserOutput )
 	needDecimalImports := doINeedDecimal(parserOutput )
 
@@ -31,9 +29,7 @@ func WriteHeaderPart( debug bool, parserOutput parser.ParseOutput, generateDir s
 	tmpData := &tableDetails{ generateDir, "", "",""}
 	WriteStringToFileWithTemplates(  COMMONIMPORTS + extraImports + IMPORTSEND , "codegen-get", output, &tmpData)
 
-
 	return doNeedTimeImports
-
 }
 
 
@@ -181,12 +177,6 @@ func createSelectString( debug bool, parserOutput parser.ParseOutput, timeVar st
 	return ret
 }
 
-
-func assignToStruct( ) string {
-	ret := ""
-
-	return ret
-}
 // Function called to process a local UDT structure and copy into the go-swagger model's structure type for the UDT
 func handleStructVarConversion(  debug bool, recursing bool, indexCounter int, timeFound bool, inDent string, theStructVar string, destVar string,  theType * parser.TypeDetails,  fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, timeVar string, dontUpdate bool ) string {
 
