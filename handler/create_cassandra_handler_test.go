@@ -23,8 +23,13 @@ const (
     CREATE TYPE demo.city (
     id int,
     citycode text,
+    cityname text,
+    test_int int,
+    lastUpdatedAt TIMESTAMP,
+    myfloat float,
     events set<int>,
     mymap  map<text, text>,
+    address_list set<frozen<simple>>
 );
 
 CREATE TABLE demo.employee (
@@ -33,10 +38,11 @@ CREATE TABLE demo.employee (
     my_List list<frozen<simple>>,
     name text,
     mediate TIMESTAMP,
+    second_ts TIMESTAMP,
     tevents set<int>,
     tmylist list<float>,
     tmymap  map<text, text>,
-   PRIMARY KEY (id, mediate)
+   PRIMARY KEY (id, mediate, second_ts )
  ) WITH CLUSTERING ORDER BY (mediate ASC, second_ts ASC)
 `
 	EXPECTED_OUTPUT_TEST1 = `

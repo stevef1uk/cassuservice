@@ -280,14 +280,14 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, i
 			} else {
 				// Handle lists & sets here!
 				ret = ret + INDENT_1 + inDent + INDENT2  + tmpVar1 + ","
-				typeName := GetFieldName(  debug, recursing, typeStruct.TypeName, false )
+				//typeName := GetFieldName(  debug, recursing, typeStruct.TypeName, false )
 				extraVars = extraVars +  INDENT_1 + inDent + tmpVar + ":= " + vIndex + `["` + strings.ToLower(fieldName ) + `"].([]map[string]interface{})`
 				tmpType := mapFieldTypeToGoCSQLType( debug, fieldName, true, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType, structName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, dontUpdate  )
 				//tmpType := mapFieldTypeToGoCSQLType( debug, fieldName, true, true, typeStruct.TypeFields.DbFieldDetails[i]., structName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, dontUpdate  )
 				extraVars = extraVars +  INDENT_1 + inDent + tmpVar1 + ":= make(" + tmpType + ", len(" + tmpVar + ") )"
 				extraVars = extraVars + INDENT_1 + inDent + setUpStruct( debug,  true,  timeFound, inDent, false, tmpVar1,  tmpVar, strings.ToLower(typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType),  parserOutput, timeVar, dontUpdate )
 				structAssignment[i] = true
-				newStr =  INDENT_1 + inDent + destField + "[" + iIndex + "] = new (" + MODELS + typeName + ")"
+				//newStr =  INDENT_1 + inDent + destField + "[" + iIndex + "] = new (" + MODELS + typeName + ")"
 			}
 		} else {
 			ret = ret + INDENT_1 + inDent + INDENT2  + vIndex + `["` + strings.ToLower(fieldName ) + `"].(` + fieldType + "),"
