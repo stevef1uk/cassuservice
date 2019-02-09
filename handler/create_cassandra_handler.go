@@ -222,17 +222,15 @@ func handleStructVarConversion(  debug bool, recursing bool, indexCounter int, s
 		ret = ret  + INDENT_1 + inDent + destVar + " = " + tmp1
 	case "set": fallthrough //
 	case "list":
-		//tmp_var := createTempVar( fieldName )
 		collectionType := GetFieldName(debug, recursing, fieldDetails.DbFieldCollectionType, dontUpdate )
-		//ret = ret + copyStruct( debug , inDent , recursing,  fieldName, returnedVar ,parserOutput.TypeDetails[typeIndex], dontUpdate  )
 		if swagger.IsFieldTypeUDT( parserOutput, collectionType ) {
-			// Assume dealt with already
+			ret = INDENT_1 + inDent + destVar + " = " + sourceVar
 		} else {
-			theTypeName := GetFieldName(debug, recursing, theType.TypeName, false )
-			tmp_var := createTempVar( fieldName )
+			//theTypeName := GetFieldName(debug, recursing, theType.TypeName, false )
+			//tmp_var := createTempVar( fieldName )
 			//fieldType := mapFieldTypeToGoCSQLType( debug, fieldName, true, false, fieldDetails.DbFieldCollectionType, theType, fieldDetails, parserOutput, dontUpdate  )
-			ret = ret + INDENT_1 + INDENT2 + inDent + tmp_var + " := make( [] * " + MODELS + theTypeName + " len( " + sourceVar + ") )"
-			ret = CopyArrayElements( debug, false, INDENT_1 + INDENT, tmp_var, destVar,  fieldDetails, parserOutput, dontUpdate  )
+			//ret = ret + INDENT_1 + INDENT2 + inDent + tmp_var + " := make( [] * " + MODELS + theTypeName + " len( " + sourceVar + ") )"
+			ret = CopyArrayElements( debug, false, INDENT_1 + INDENT, theStructVar + "." + fieldName, destVar,  fieldDetails, parserOutput, dontUpdate  )
 		}
 	default:
 		ret = INDENT_1 + inDent + destVar + " = " + sourceVar
