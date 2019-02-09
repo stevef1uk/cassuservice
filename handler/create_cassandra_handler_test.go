@@ -29,6 +29,7 @@ const (
 
 CREATE TABLE demo.employee (
     id int,
+    address_set set<frozen<city>>,
     my_List list<frozen<simple>>,
     name text,
     mediate TIMESTAMP,

@@ -297,21 +297,26 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, i
 	ret = loopStart + INDENT_1 + extraVars + loopAssignment + INDENT_1 + ret + INDENT_1 + newStr
 
 	// Now process each variable in order to set-up the Payload structure
+	tmp := ""
 	for i := 0; i < typeStruct.TypeFields.FieldIndex; i++ {
-		fieldName := GetFieldName( debug, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldName, false)
-		typeName := GetFieldName( debug, false, typeStruct.TypeName, false)
-		tmpDest  := destField + "[" + iIndex + "]." + fieldName
-		tmp := INDENT_1 + inDent + destField + "[" + iIndex + "] = &" + MODELS + typeName + "{}"
+		fieldName := GetFieldName(debug, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldName, false)
+		typeName := GetFieldName(debug, false, typeStruct.TypeName, false)
+		tmpDest := destField + "[" + iIndex + "]." + fieldName
+		addMake := INDENT_1 + inDent + destField + "[" + iIndex + "] = &" + MODELS + typeName + "{}"
 		if structAssignment[i] {
 			if typeStruct.TypeFields.DbFieldDetails[i].DbFieldMapType == "" && ! inTable {
 				tmpDest = destField + "[" + iIndex + "]"
-				tmp = tmp + INDENT_1 + inDent + tmpDest + " = " + tmpStruct
+				tmp = INDENT_1 + inDent + tmpDest + " = " + tmpStruct
 				goto here
 			}
 		}
-		tmp = tmp + handleStructVarConversion( debug, recursing, indexCounter, structAssignment[i] || recursing, timeFound, inDent, tmpStruct, tmpDest, typeStruct, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, timeVar, dontUpdate )
-		here:
-		ret = ret + inDent + INDENT2 + tmp
+		tmp = handleStructVarConversion(debug, recursing, indexCounter, structAssignment[i] || recursing, timeFound, inDent, tmpStruct, tmpDest, typeStruct, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, timeVar, dontUpdate)
+	here:
+		if i == 0 {
+			ret = ret + inDent + INDENT2 + addMake + tmp
+		} else {
+			ret = ret + inDent + INDENT2  + tmp
+		}
 	}
 
 	ret = ret + INDENT_1 + inDent + "}"
