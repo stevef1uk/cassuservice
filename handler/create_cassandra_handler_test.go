@@ -45,6 +45,35 @@ CREATE TABLE demo.employee (
    PRIMARY KEY (id, mediate, second_ts )
  ) WITH CLUSTERING ORDER BY (mediate ASC, second_ts ASC)
 `
+
+	CSQ_TEST2 = `
+
+    CREATE TABLE demo.accounts4 (
+    id int,
+    name text,
+    ascii1 ascii,
+    bint1 bigint,
+    blob1 blob,
+    bool1 boolean,
+    dec1 decimal,
+    double1 double,
+    flt1 float,
+    inet1 inet,
+    int1 int,
+    text1 text,
+    time1 timestamp,
+    time2 timeuuid,
+    mydate1 date,
+    uuid1 uuid,
+    varchar1 varchar,
+    events set<int>,
+    mylist list<float>,
+    myset set<text>,
+    adec list<decimal>,
+    PRIMARY KEY (id, name, time1)
+) WITH CLUSTERING ORDER BY (name ASC)
+`
+
 	EXPECTED_OUTPUT_TEST1 = `// GENERATED FILE so do not edit or will be overwritten upon next generate
 package data
 
@@ -209,50 +238,222 @@ func Search(params operations.GetEmployeeParams) middleware.Responder {
       retParams.MyList[i6] = &models.Simple{}
       retParams.MyList[i6].Dummy = tmp_Simple_16.Dummy
       }
-    retParams.Name = &Name
+    tmp_Name_17 := codeGenRawTableResult["name"].(string)
+    retParams.Name = &tmp_Name_17
     Mediate = codeGenRawTableResult["mediate"].(time.Time)
     tmp_cassuservice_tmp_time_0 = Mediate.String()
-    tmp_Mediate_17 := tmp_cassuservice_tmp_time_0[0:10] + "T" + tmp_cassuservice_tmp_time_0[11:19] + "." + tmp_cassuservice_tmp_time_0[20:22]
+    tmp_Mediate_18 := tmp_cassuservice_tmp_time_0[0:10] + "T" + tmp_cassuservice_tmp_time_0[11:19] + "." + tmp_cassuservice_tmp_time_0[20:22]
     if tmp_cassuservice_tmp_time_0[22] == ' ' {
-      tmp_cassuservice_tmp_time_0 = tmp_Mediate_17 + "0" + "Z" 
+      tmp_cassuservice_tmp_time_0 = tmp_Mediate_18 + "0" + "Z" 
     } else { 
-      tmp_cassuservice_tmp_time_0 = tmp_Mediate_17 + "Z"
+      tmp_cassuservice_tmp_time_0 = tmp_Mediate_18 + "Z"
     }
-    tmp_Mediate_18, _  := strfmt.ParseDateTime(tmp_cassuservice_tmp_time_0)
-    tmp_Mediate_19 := tmp_Mediate_18.String()
-    retParams.Mediate = &tmp_Mediate_19
+    tmp_Mediate_19, _  := strfmt.ParseDateTime(tmp_cassuservice_tmp_time_0)
+    tmp_Mediate_20 := tmp_Mediate_19.String()
+    retParams.Mediate = &tmp_Mediate_20
     SecondTs = codeGenRawTableResult["second_ts"].(time.Time)
     tmp_cassuservice_tmp_time_0 = SecondTs.String()
-    tmp_SecondTs_20 := tmp_cassuservice_tmp_time_0[0:10] + "T" + tmp_cassuservice_tmp_time_0[11:19] + "." + tmp_cassuservice_tmp_time_0[20:22]
+    tmp_SecondTs_21 := tmp_cassuservice_tmp_time_0[0:10] + "T" + tmp_cassuservice_tmp_time_0[11:19] + "." + tmp_cassuservice_tmp_time_0[20:22]
     if tmp_cassuservice_tmp_time_0[22] == ' ' {
-      tmp_cassuservice_tmp_time_0 = tmp_SecondTs_20 + "0" + "Z" 
+      tmp_cassuservice_tmp_time_0 = tmp_SecondTs_21 + "0" + "Z" 
     } else { 
-      tmp_cassuservice_tmp_time_0 = tmp_SecondTs_20 + "Z"
+      tmp_cassuservice_tmp_time_0 = tmp_SecondTs_21 + "Z"
     }
-    tmp_SecondTs_21, _  := strfmt.ParseDateTime(tmp_cassuservice_tmp_time_0)
-    tmp_SecondTs_22 := tmp_SecondTs_21.String()
-    retParams.SecondTs = &tmp_SecondTs_22
+    tmp_SecondTs_22, _  := strfmt.ParseDateTime(tmp_cassuservice_tmp_time_0)
+    tmp_SecondTs_23 := tmp_SecondTs_22.String()
+    retParams.SecondTs = &tmp_SecondTs_23
     
-    tmp_Tevents_23 := codeGenRawTableResult["tevents"].([]int)
-    retParams.Tevents = make([] int64, len(tmp_Tevents_23) )
-    for j := 0; j < len(tmp_Tevents_23 ); j++ { 
-      retParams.Tevents[j] = int64(tmp_Tevents_23[j])
+    tmp_Tevents_24 := codeGenRawTableResult["tevents"].([]int)
+    retParams.Tevents = make([] int64, len(tmp_Tevents_24) )
+    for j := 0; j < len(tmp_Tevents_24 ); j++ { 
+      retParams.Tevents[j] = int64(tmp_Tevents_24[j])
     }
     
-    tmp_Tmylist_24 := codeGenRawTableResult["tmylist"].([]float32)
-    retParams.Tmylist = make([] float64, len(tmp_Tmylist_24) )
-    for j := 0; j < len(tmp_Tmylist_24 ); j++ { 
-      retParams.Tmylist[j] = float64(tmp_Tmylist_24[j])
+    tmp_Tmylist_25 := codeGenRawTableResult["tmylist"].([]float32)
+    retParams.Tmylist = make([] float64, len(tmp_Tmylist_25) )
+    for j := 0; j < len(tmp_Tmylist_25 ); j++ { 
+      retParams.Tmylist[j] = float64(tmp_Tmylist_25[j])
     }
-    tmp_Tmymap_25, ok := codeGenRawTableResult["tmymap"].(map[string]string)
+    tmp_Tmymap_26, ok := codeGenRawTableResult["tmymap"].(map[string]string)
     if ! ok {
       log.Fatal("handleReturnedVar() - failed to find entry for tmymap", ok )
     }
-    retParams.Tmymap = make(map[string]string,len(tmp_Tmymap_25))
-    for i13, v := range tmp_Tmymap_25 {
+    retParams.Tmymap = make(map[string]string,len(tmp_Tmymap_26))
+    for i13, v := range tmp_Tmymap_26 {
       retParams.Tmymap[i13] = v
     }
     return operations.NewGetEmployeeOK().WithPayload( payLoad.Payload)
+    }`
+
+	EXPECTED_OUTPUT_TEST2 = `// GENERATED FILE so do not edit or will be overwritten upon next generate
+package data
+
+import (
+    "github.com/stevef1uk/test4/models"
+    "github.com/stevef1uk/test4/restapi/operations"
+    middleware "github.com/go-openapi/runtime/middleware"
+    "github.com/gocql/gocql"
+    "os"
+    "log"
+    "time"
+     strfmt "github.com/go-openapi/strfmt"
+    "gopkg.in/inf.v0"
+    "strconv"
+)
+
+
+var cassuservice_session *gocql.Session
+
+func SetUp() {
+  var err error
+  log.Println("Tring to connect to Cassandra database using ", os.Getenv("CASSANDRA_SERVICE_HOST"))
+  cluster := gocql.NewCluster(os.Getenv("CASSANDRA_SERVICE_HOST"))
+  cluster.Keyspace = "demo"
+  cluster.Consistency = gocql.One
+  cassuservice_session, err = cluster.CreateSession()
+  if ( err != nil ) {
+    log.Fatal("Have you remembered to set the env var $CASSANDRA_SERVICE_HOST as connection to Cannandra failed with error = ", err)
+  } else {
+    log.Println("Yay! Connection to Cannandra established")
+  }
+}
+
+func Stop() {
+    log.Println("Shutting down the service handler")
+  cassuservice_session.Close()
+}
+
+func Search(params operations.GetAccounts4Params) middleware.Responder {
+
+    var ID int64
+    _ = ID
+    var Name string
+    _ = Name
+    var Ascii1 string
+    _ = Ascii1
+    var Bint1 int64
+    _ = Bint1
+    var Blob1 string
+    _ = Blob1
+    var Bool1 bool
+    _ = Bool1
+    var Dec1 *inf.Dec
+    _ = Dec1
+    var Double1 float64
+    _ = Double1
+    var Flt1 float64
+    _ = Flt1
+    var Inet1 string
+    _ = Inet1
+    var Int1 int64
+    _ = Int1
+    var Text1 string
+    _ = Text1
+    var Time1 time.Time
+    _ = Time1
+    var Time2 time.Time
+    _ = Time2
+    var Mydate1 time.Time
+    _ = Mydate1
+    var Uuid1 string
+    _ = Uuid1
+    var Varchar1 string
+    _ = Varchar1
+    var Events []int64
+    _ = Events
+    var Mylist []float64
+    _ = Mylist
+    var Myset []string
+    _ = Myset
+    var Adec []*inf.Dec
+    _ = Adec
+    tmp_cassuservice_tmp_time_26 := strfmt.NewDateTime().String()
+
+    codeGenRawTableResult := map[string]interface{}{}
+
+    Time1,_ = time.Parse(time.RFC3339,params.Time1.String() ) 
+    if err := cassuservice_session.Query(`+"`"+` SELECT id, name, ascii1, bint1, blob1, bool1, dec1, double1, flt1, inet1, int1, text1, time1, time2, mydate1, uuid1, varchar1, events, mylist, myset, adec FROM accounts4 WHERE id = ? and name = ? and time1 = ? `+"`"+`,params.ID,params.Name,Time1).Consistency(gocql.One).MapScan(codeGenRawTableResult); err != nil {
+      log.Println("No data? ", err)
+      return operations.NewGetAccounts4BadRequest()
+    }
+    payLoad := operations.NewGetAccounts4OK()
+    payLoad.Payload = make([]*models.GetAccounts4OKBodyItems,1)
+    payLoad.Payload[0] = new(models.GetAccounts4OKBodyItems)
+    retParams := payLoad.Payload[0]
+    tmp_ID_27 := codeGenRawTableResult["id"].(int)
+    ID = int64(tmp_ID_27)
+    retParams.ID = &ID
+    retParams.Name = &Name
+    retParams.Ascii1 = &Ascii1
+    retParams.Bint1 = &Bint1
+    retParams.Blob1 = &Blob1
+    retParams.Bool1 = &Bool1
+    retParams.Dec1 = &Dec1
+    retParams.Double1 = &Double1
+    tmp_Flt1_28 := codeGenRawTableResult["flt1"].(float32)
+    Flt1 = float64(tmp_Flt1_28)
+    retParams.Flt1 = &Flt1
+    retParams.Inet1 = &Inet1
+    tmp_Int1_29 := codeGenRawTableResult["int1"].(int)
+    Int1 = int64(tmp_Int1_29)
+    retParams.Int1 = &Int1
+    retParams.Text1 = &Text1
+    Time1 = codeGenRawTableResult["time1"].(time.Time)
+    tmp_cassuservice_tmp_time_26 = Time1.String()
+    tmp_Time1_30 := tmp_cassuservice_tmp_time_26[0:10] + "T" + tmp_cassuservice_tmp_time_26[11:19] + "." + tmp_cassuservice_tmp_time_26[20:22]
+    if tmp_cassuservice_tmp_time_26[22] == ' ' {
+      tmp_cassuservice_tmp_time_26 = tmp_Time1_30 + "0" + "Z" 
+    } else { 
+      tmp_cassuservice_tmp_time_26 = tmp_Time1_30 + "Z"
+    }
+    tmp_Time1_31, _  := strfmt.ParseDateTime(tmp_cassuservice_tmp_time_26)
+    tmp_Time1_32 := tmp_Time1_31.String()
+    retParams.Time1 = &tmp_Time1_32
+    Time2 = codeGenRawTableResult["time2"].(time.Time)
+    tmp_cassuservice_tmp_time_26 = Time2.String()
+    tmp_Time2_33 := tmp_cassuservice_tmp_time_26[0:10] + "T" + tmp_cassuservice_tmp_time_26[11:19] + "." + tmp_cassuservice_tmp_time_26[20:22]
+    if tmp_cassuservice_tmp_time_26[22] == ' ' {
+      tmp_cassuservice_tmp_time_26 = tmp_Time2_33 + "0" + "Z" 
+    } else { 
+      tmp_cassuservice_tmp_time_26 = tmp_Time2_33 + "Z"
+    }
+    tmp_Time2_34, _  := strfmt.ParseDateTime(tmp_cassuservice_tmp_time_26)
+    tmp_Time2_35 := tmp_Time2_34.String()
+    retParams.Time2 = &tmp_Time2_35
+    Mydate1 = codeGenRawTableResult["mydate1"].(time.Time)
+    tmp_cassuservice_tmp_time_26 = Mydate1.String()
+    tmp_Mydate1_36 := tmp_cassuservice_tmp_time_26[0:10] + "T" + tmp_cassuservice_tmp_time_26[11:19] + "." + tmp_cassuservice_tmp_time_26[20:22]
+    if tmp_cassuservice_tmp_time_26[22] == ' ' {
+      tmp_cassuservice_tmp_time_26 = tmp_Mydate1_36 + "0" + "Z" 
+    } else { 
+      tmp_cassuservice_tmp_time_26 = tmp_Mydate1_36 + "Z"
+    }
+    tmp_Mydate1_37, _  := strfmt.ParseDateTime(tmp_cassuservice_tmp_time_26)
+    tmp_Mydate1_38 := tmp_Mydate1_37.String()
+    retParams.Mydate1 = &tmp_Mydate1_38
+    retParams.Uuid1 = &Uuid1
+    retParams.Varchar1 = &Varchar1
+    
+    tmp_Events_39 := codeGenRawTableResult["events"].([]int)
+    retParams.Events = make([] int64, len(tmp_Events_39) )
+    for j := 0; j < len(tmp_Events_39 ); j++ { 
+      retParams.Events[j] = int64(tmp_Events_39[j])
+    }
+    
+    tmp_Mylist_40 := codeGenRawTableResult["mylist"].([]float32)
+    retParams.Mylist = make([] float64, len(tmp_Mylist_40) )
+    for j := 0; j < len(tmp_Mylist_40 ); j++ { 
+      retParams.Mylist[j] = float64(tmp_Mylist_40[j])
+    }
+    
+    tmp_Myset_41 := codeGenRawTableResult["myset"].([]string)
+    retParams.Myset = make([] string, len(tmp_Myset_41) )
+    for j := 0; j < len(tmp_Myset_41 ); j++ { 
+    
+    tmp_Adec_42 := codeGenRawTableResult["adec"].([]*inf.Dec)
+    retParams.Adec = make([] *inf.Dec, len(tmp_Adec_42) )
+    for j := 0; j < len(tmp_Adec_42 ); j++ { 
+    return operations.NewGetAccounts4OK().WithPayload( payLoad.Payload)
     }`
 )
 
@@ -315,11 +516,21 @@ func performCreateTest1( debug bool, test string, cql string, expected string , 
 
 func Test1(t *testing.T) {
 	performCreateTest1(true, "Test1", CSQ_TEST1, EXPECTED_OUTPUT_TEST1, t )
-	/*
+
 	path := os.Getenv("GOPATH")  + "/src/github.com/stevef1uk/test4/"
 	ret6 :=  SpiceInHandler( false , path, "Employee", "" )
 	_ = ret6
-	*/
+
+}
+
+
+func Test2(t *testing.T) {
+	performCreateTest1(true, "Test1", CSQ_TEST2, EXPECTED_OUTPUT_TEST2, t )
+
+	path := os.Getenv("GOPATH")  + "/src/github.com/stevef1uk/test4/"
+	ret6 :=  SpiceInHandler( false , path, "Accounts4", "" )
+	_ = ret6
+	
 }
 
 

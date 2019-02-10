@@ -13,7 +13,7 @@ func addDefinitions( debug bool, output string, parseOutput  parser.ParseOutput 
 
 	for i :=0;  i < tableDetails.TableFields.FieldIndex; i++ {
 		if  tableDetails.TableFields.DbFieldDetails[i].DbFieldMapType != "" ||
-			tableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType != "" ||
+			(tableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType != "" && IsFieldTypeUDT(parseOutput, tableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType) ) ||
 			IsFieldTypeUDT( parseOutput, tableDetails.TableFields.DbFieldDetails[i].DbFieldType ) {
 			defsRequired = true
 		}

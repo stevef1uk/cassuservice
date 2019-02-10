@@ -37,9 +37,10 @@ import (
     "time"
      strfmt "github.com/go-openapi/strfmt"`
 
+	// "gopkg.in/inf.v0"
+	//"strconv"
 	IMPORTDEC = `
-    "gopkg.in/inf.v0"
-    "strconv"`
+	`
 
 	HEADER =`
 var ` + SESSION_VAR + ` *gocql.Session

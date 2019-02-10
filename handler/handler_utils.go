@@ -153,9 +153,10 @@ func basicMapCassandraTypeToGoType( debug bool, leaveFieldCase bool, inTable boo
 			text = "time.Time"
 	case "boolean":
 		text = "bool"
-	case "decimal":
-		text = "*inf.Dec" // this is in the gopkg.in/inf.v0 package
+	//case "decimal":
+		//text = "*inf.Dec" // this is in the gopkg.in/inf.v0 package
 	case "float": fallthrough
+	case "decimal": fallthrough
 	case "double":
 		if makeSmall {
 			text = "float32"
@@ -286,7 +287,7 @@ func existsTimeField( fieldDetails parser.FieldDetails  ) bool {
 	return ret
 }
 
-
+/*
 func existsFieldType( fieldDetails parser.FieldDetails, fieldType string  ) bool {
 	ret := false
 	
@@ -299,8 +300,18 @@ func existsFieldType( fieldDetails parser.FieldDetails, fieldType string  ) bool
 		}
 	return ret
 }
+*/
 
+func existsFieldType( fieldDetails parser.FieldDetails, fieldType string  ) bool {
+	ret := false
 
+	if  ( ( strings.ToLower( fieldDetails.DbFieldType ) == fieldType ) ||
+		( strings.ToLower( fieldDetails.DbFieldCollectionType ) == fieldType ) ||
+		(  strings.ToLower( fieldDetails.DbFieldMapType ) == fieldType ) ) {
+		ret = true
+	}
+	return ret
+}
 
 
 // Scan through fields and UDT fields to see if a type contained is a time type. Return true if a field is a time field
@@ -411,6 +422,7 @@ func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName
 		ret = ret + inDent + INDENT + destFieldName + "[j] = " +  "int64(" + sourceFieldName + "[j])" + inDent + "}"
 	default:
 		if debug {fmt.Printf("CopyArrayElements TYPE NOT MATCHED!!!!\n " )}
+		ret = ret + inDent + INDENT + destFieldName + "[j] = " + sourceFieldName + "[j]" + inDent + "}"
 	}
 	return ret
 }

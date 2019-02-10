@@ -303,16 +303,34 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent strin
     ret := ""
 	fieldName := GetFieldName( debug, false, fieldDetails.DbFieldName, false)
 	switch ( strings.ToLower( fieldDetails.DbFieldType ) ) {
+	case "boolean":
+		tmp_var := createTempVar( fieldName )
+		ret = ret + INDENT_1 + inDent + tmp_var + " := " +  SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(bool)`
+		ret = ret + INDENT_1 + inDent + PARAMS_RET + "." + fieldName + " = &" + tmp_var
 	case "int":
 		tmp_var := createTempVar( fieldName )
 		ret = ret + INDENT_1 + inDent + tmp_var + " := " +  SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(int)`
 		ret = ret + INDENT_1 + inDent + fieldName + " = int64(" + tmp_var + ")"
 		ret = ret + INDENT_1 + inDent + PARAMS_RET + "." + fieldName + " = &" + fieldName
-	case "float":
+	case "bigint":
+		tmp_var := createTempVar( fieldName )
+		ret = ret + INDENT_1 + inDent + tmp_var + " := " +  SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(int64)`
+		ret = ret + INDENT_1 + inDent + PARAMS_RET + "." + fieldName + " = &" + tmp_var
+	case "float": fallthrough
+	case "decimal":
 		tmp_var := createTempVar( fieldName )
 		ret = ret + INDENT_1 + inDent + tmp_var + " := " +  SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(float32)`
 		ret = ret + INDENT_1 + inDent + fieldName + " = float64(" + tmp_var + ")"
 		ret = ret + INDENT_1 + inDent + PARAMS_RET + "." + fieldName + " = &" + fieldName
+	case "text":
+		tmp_var := createTempVar( fieldName )
+		ret = ret + INDENT_1 + inDent + tmp_var + " := " +  SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(string)`
+		ret = ret + INDENT_1 + inDent + PARAMS_RET + "." + fieldName  + " = &" + tmp_var
+	case "blob":
+		tmp_var := createTempVar( fieldName )
+		ret = ret + INDENT_1 + inDent + tmp_var + " := " +  SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].([]uint8)`
+		ret = ret + INDENT_1 + inDent + fieldName + " = string(" + tmp_var + ")"
+		ret = ret + INDENT_1 + inDent + PARAMS_RET + "." + fieldName  + " = " + fieldName
 	case "date": fallthrough
 	case "timestamp": fallthrough
 	case "timeuuid":
