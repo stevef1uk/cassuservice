@@ -19,7 +19,7 @@ Cassandra. This is very early days, but promising as the only test example used 
 
 Known issues:
 
-The functonality of the Cassandra MAP type is very limited. This tool can only cope with maps if they are defined as map<text,text> this is simply becasue their seems to be no way of modelling the map type in Swagger. I have used the addionalProperties arroach and hard coded this to a string. For now if maps are used that are not of this trivial form the generated code handler will need to be modified manually.
+The functonality of this tool to support the Cassandra MAP type is very limited. This tool can only cope with maps if they are defined as map<text,text>; this is simply becasue there seems to be no way of modelling the map type in Swagger! I have used the addionalProperties arroach and hard coded this to a string. For now if maps are used that are not of this trivial form the generated code handler will need to be modified manually.
 
 
 The first test for the genration uses the following schema, so not trivial!
