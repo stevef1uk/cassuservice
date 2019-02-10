@@ -44,8 +44,7 @@ CREATE TABLE demo.accounts4 (
     myset set<text>,
     adec list<decimal>,
     PRIMARY KEY (id, name, time1)
-)WITH CLUSTERING ORDER BY (name ASC)
-		` )
+)WITH CLUSTERING ORDER BY (name ASC)`)
 
 	ret1 := swagger.CreateSwagger( false, ret )
 	println("Swagger=\n")

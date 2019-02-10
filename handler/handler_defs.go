@@ -32,14 +32,16 @@ import (
 	IMPORTSEND = `
 )
 `
-
+// strfmt "github.com/go-openapi/strfmt"
 	IMPORTSTIMESTAMP = `
     "time"
-     strfmt "github.com/go-openapi/strfmt"`
+     `
 
 	// "gopkg.in/inf.v0"
 	//"strconv"
 	IMPORTDEC = `
+	"gopkg.in/inf.v0"
+	"strconv"
 	`
 
 	HEADER =`

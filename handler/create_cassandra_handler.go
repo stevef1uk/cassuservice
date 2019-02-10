@@ -107,7 +107,7 @@ func WriteVars(  debug bool, parserOutput parser.ParseOutput, goPathForRepo stri
 
 	if doNeedTimeImports {
 		tmpTimeVar = createTempVar( TMP_TIME_VAR_PREFIX )
-		output.WriteString( INDENT_1 + tmpTimeVar + " := strfmt.NewDateTime().String()" )
+		//output.WriteString( INDENT_1 + tmpTimeVar + " := strfmt.NewDateTime().String()" )
 	}
 	output.WriteString( "\n" + INDENT_1 + SELECT_OUTPUT + " := map[string]interface{}{}\n")
 
@@ -197,9 +197,12 @@ func handleStructVarConversion(  debug bool, recursing bool, indexCounter int, t
 	case "date": fallthrough
 	case "timestamp": fallthrough
 	case "timeuuid":
-		tmp, tmp1 := ProcessTime( timeFound, INDENT_1 + inDent, timeVar, theStructVar,  fieldName )
-		ret = ret + tmp
-		ret = ret  + INDENT_1 + inDent + destVar + " = " + tmp1
+		tmp_var := createTempVar( fieldName )
+		//tmp, tmp1 := ProcessTime( timeFound, INDENT_1 + inDent, timeVar, theStructVar,  fieldName )
+		//ret = ret + tmp
+		//ret = ret  + INDENT_1 + inDent + destVar + " = " + tmp1
+		ret = ret + INDENT_1 + inDent + tmp_var + " := " + sourceVar + ".String()"
+		ret = ret + INDENT_1 + inDent + destVar + " = " + tmp_var
 	case "set": fallthrough //
 	case "list":
 		collectionType := GetFieldName(debug, recursing, fieldDetails.DbFieldCollectionType, dontUpdate )
@@ -316,12 +319,16 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent strin
 		tmp_var := createTempVar( fieldName )
 		ret = ret + INDENT_1 + inDent + tmp_var + " := " +  SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(int64)`
 		ret = ret + INDENT_1 + inDent + PARAMS_RET + "." + fieldName + " = &" + tmp_var
-	case "float": fallthrough
-	case "decimal":
+	case "float":
 		tmp_var := createTempVar( fieldName )
 		ret = ret + INDENT_1 + inDent + tmp_var + " := " +  SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(float32)`
 		ret = ret + INDENT_1 + inDent + fieldName + " = float64(" + tmp_var + ")"
 		ret = ret + INDENT_1 + inDent + PARAMS_RET + "." + fieldName + " = &" + fieldName
+	case "decimal":
+		tmp_var := createTempVar( fieldName )
+		ret = ret + INDENT_1 + inDent + fieldName + " = " +  SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(*inf.Dec)`
+		ret = ret + INDENT_1 + inDent + tmp_var + ",_ := " + "strconv.ParseFloat(" + fieldName + ".String(), 64 )"
+		ret = ret + INDENT_1 + inDent + PARAMS_RET + "." + fieldName + " = &" + tmp_var
 	case "text":
 		tmp_var := createTempVar( fieldName )
 		ret = ret + INDENT_1 + inDent + tmp_var + " := " +  SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(string)`
@@ -330,15 +337,27 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent strin
 		tmp_var := createTempVar( fieldName )
 		ret = ret + INDENT_1 + inDent + tmp_var + " := " +  SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].([]uint8)`
 		ret = ret + INDENT_1 + inDent + fieldName + " = string(" + tmp_var + ")"
-		ret = ret + INDENT_1 + inDent + PARAMS_RET + "." + fieldName  + " = " + fieldName
+		ret = ret + INDENT_1 + inDent + PARAMS_RET + "." + fieldName  + " = &" + fieldName
 	case "date": fallthrough
-	case "timestamp": fallthrough
-	case "timeuuid":
+	case "timestamp":
 		timeFound = true
+		tmp_var := createTempVar( fieldName )
 		ret = ret + INDENT_1 + inDent + fieldName + " = " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(time.Time)`
-		tmp, tmp1 := ProcessTime( timeFound, INDENT_1, timeVar, "", fieldName )
-		ret = ret + tmp
-		ret = ret  + INDENT_1 + inDent + PARAMS_RET + "." + fieldName + " = &" + tmp1
+		ret = ret + INDENT_1 + inDent + tmp_var + " := " + fieldName + ".String()"
+		//tmp, tmp1 := ProcessTime( timeFound, INDENT_1, timeVar, "", fieldName )
+		//ret = ret + tmp
+		//ret = ret  + INDENT_1 + inDent + PARAMS_RET + "." + fieldName + " = &" + tmp1
+		ret = ret  + INDENT_1 + inDent + PARAMS_RET + "." + fieldName + " = &" + tmp_var
+	case "timeuuid":
+		tmp_var := createTempVar( fieldName )
+		ret = ret + INDENT_1 + inDent + fieldName + " = " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(gocql.UUID)`
+		ret = ret + INDENT_1 + inDent + tmp_var + " := " + fieldName + ".String()"
+		ret = ret  + INDENT_1 + inDent + PARAMS_RET + "." + fieldName + " = &" + tmp_var
+	case "uuid":
+		tmp_var := createTempVar( fieldName )
+		ret = ret + INDENT_1 + inDent + tmp_var + " := " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(gocql.UUID)`
+		ret = ret + INDENT_1 + inDent + fieldName + " = " + tmp_var + ".String()"
+		ret = ret  + INDENT_1 + inDent + PARAMS_RET + "." + fieldName + " = &" + fieldName
 	case "set": fallthrough
 	case "list":
 		collectionType := GetFieldName(debug, recursing, fieldDetails.DbFieldCollectionType, dontUpdate )
@@ -393,7 +412,8 @@ func handleSelectReturn( debug bool, parserOutput parser.ParseOutput, timeVar st
 
 // Entry point
 func CreateCode( debug bool, generateDir string,  goPathForRepo string,  parserOutput parser.ParseOutput, cassandraConsistencyRequired string, endPointNameOverRide string, overridePrimaryKeys int, allowFiltering bool, dontUpdate bool, logExtraInfo bool   ) {
-
+	indexCounter = 0
+	counter = 0
 	output := CreateFile( debug, generateDir, "/data" )
 	defer output.Close()
 

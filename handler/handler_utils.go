@@ -148,21 +148,23 @@ func basicMapCassandraTypeToGoType( debug bool, leaveFieldCase bool, inTable boo
 	case "uuid":
 		text = "string"
 	case "date": fallthrough
-	case "timeuuid": fallthrough
 	case "timestamp":
-			text = "time.Time"
+		text = "time.Time"
+	case "timeuuid":
+		text = "gocql.UUID"
 	case "boolean":
 		text = "bool"
 	//case "decimal":
 		//text = "*inf.Dec" // this is in the gopkg.in/inf.v0 package
 	case "float": fallthrough
-	case "decimal": fallthrough
 	case "double":
 		if makeSmall {
 			text = "float32"
 		} else {
 			text = "float64"
 		}
+	case "decimal":
+		text = "*inf.Dec"
 	case "text":
 		text = "string"
 	case "varchar":
@@ -378,6 +380,7 @@ func ProcessTime ( firstTime bool , indent string, timeVar string, typeName stri
 		typeName = typeName + "."
 	}
 	ret := indent + timeVar  + " = " + typeName + fieldName + ".String()"
+
 	tmpV := createTempVar( fieldName )
 	tmpV2 := createTempVar( fieldName )
 	tmpV3 := createTempVar( fieldName )
@@ -386,6 +389,8 @@ func ProcessTime ( firstTime bool , indent string, timeVar string, typeName stri
 		indent + `} else { ` + indent + "  "  + timeVar  + " = " +  tmpV + ` + "Z"` + indent + "}"
 	ret = ret + indent + tmpV2 + ", _ " + equals + "strfmt.ParseDateTime(" + timeVar + ")"
 	ret = ret + indent + tmpV3 + " := " + tmpV2 + ".String()"
+
+
 
 	return ret, tmpV3
 }
@@ -409,17 +414,28 @@ func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName
 	ret := ""
 	arrayType := basicMapCassandraTypeToGoType(debug, false, inTable, fieldDetails.DbFieldName, fieldDetails.DbFieldCollectionType, "", fieldDetails, parserOutput, dontUpdate, true )
 	arrayTypeDest := basicMapCassandraTypeToGoType(debug, false, inTable, fieldDetails.DbFieldName, fieldDetails.DbFieldCollectionType, "", fieldDetails, parserOutput, dontUpdate, false )
+	if arrayType == "*inf.Dec" {
+		arrayTypeDest = "float64"
+	}
 	if inTable {
 		ret = INDENT_1 + inDent + sourceFieldName + equals +  SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].([]` + arrayType + ")"
 	}
 
 	ret = ret + inDent + destFieldName + " = " + "make([] " + arrayTypeDest + ", len(" + sourceFieldName + ") )"
 	ret = ret + inDent + "for j := 0; j < len(" + sourceFieldName + " ); j++ { "
+
+	if arrayType == "*inf.Dec" {
+		arrayTypeDest = arrayType
+	}
 	switch arrayTypeDest {
 	case "float64":
 		ret = ret + inDent + INDENT + destFieldName + "[j] = " +  "float64(" + sourceFieldName + "[j])" + inDent + "}"
 	case "int64":
 		ret = ret + inDent + INDENT + destFieldName + "[j] = " +  "int64(" + sourceFieldName + "[j])" + inDent + "}"
+	case "*inf.Dec":
+		tmp_var := createTempVar( sourceFieldName )
+		ret = ret + inDent + INDENT + tmp_var + ",_ := " +  "strconv.ParseFloat(" + sourceFieldName + "[j].String(), 64 )"
+		ret = ret + inDent + INDENT + destFieldName + "[j] = " +  tmp_var +  inDent + "}"
 	default:
 		if debug {fmt.Printf("CopyArrayElements TYPE NOT MATCHED!!!!\n " )}
 		ret = ret + inDent + INDENT + destFieldName + "[j] = " + sourceFieldName + "[j]" + inDent + "}"
