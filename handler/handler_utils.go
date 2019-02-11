@@ -414,9 +414,15 @@ func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName
 	ret := ""
 	arrayType := basicMapCassandraTypeToGoType(debug, false, inTable, fieldDetails.DbFieldName, fieldDetails.DbFieldCollectionType, "", fieldDetails, parserOutput, dontUpdate, true )
 	arrayTypeDest := basicMapCassandraTypeToGoType(debug, false, inTable, fieldDetails.DbFieldName, fieldDetails.DbFieldCollectionType, "", fieldDetails, parserOutput, dontUpdate, false )
-	if arrayType == "*inf.Dec" {
+
+	switch arrayType {
+	case "*inf.Dec":
 		arrayTypeDest = "float64"
+	case "gocql.UUID": fallthrough
+	case "init8":
+		arrayTypeDest = "string"
 	}
+
 	if inTable {
 		ret = INDENT_1 + inDent + sourceFieldName + equals +  SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].([]` + arrayType + ")"
 	}
@@ -424,9 +430,13 @@ func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName
 	ret = ret + inDent + destFieldName + " = " + "make([] " + arrayTypeDest + ", len(" + sourceFieldName + ") )"
 	ret = ret + inDent + "for j := 0; j < len(" + sourceFieldName + " ); j++ { "
 
-	if arrayType == "*inf.Dec" {
+	switch arrayType {
+	case "*inf.Dec": fallthrough
+	case "gocql.UUID":
+	case "uint8":
 		arrayTypeDest = arrayType
 	}
+
 	switch arrayTypeDest {
 	case "float64":
 		ret = ret + inDent + INDENT + destFieldName + "[j] = " +  "float64(" + sourceFieldName + "[j])" + inDent + "}"
