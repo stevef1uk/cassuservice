@@ -436,6 +436,12 @@ func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName
 		tmp_var := createTempVar( sourceFieldName )
 		ret = ret + inDent + INDENT + tmp_var + ",_ := " +  "strconv.ParseFloat(" + sourceFieldName + "[j].String(), 64 )"
 		ret = ret + inDent + INDENT + destFieldName + "[j] = " +  tmp_var +  inDent + "}"
+	case "uint": fallthrough
+	case "time.Time": fallthrough
+	case "gocql.UUID":
+		tmp_var := createTempVar( sourceFieldName )
+		ret = ret + inDent + INDENT + tmp_var + " := string(" + sourceFieldName + "[j] )"
+		ret = ret + inDent + INDENT + destFieldName + "[j] = " +  tmp_var +  inDent + "}"
 	default:
 		if debug {fmt.Printf("CopyArrayElements TYPE NOT MATCHED!!!!\n " )}
 		ret = ret + inDent + INDENT + destFieldName + "[j] = " + sourceFieldName + "[j]" + inDent + "}"
