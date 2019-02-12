@@ -98,7 +98,7 @@ func WriteVars(  debug bool, parserOutput parser.ParseOutput, goPathForRepo stri
 			// Process UDT
 			fieldName := GetFieldName(debug, false, v.DbFieldName, dontUpdate)
 			fieldType := GetFieldName(debug, false, v.DbFieldType, false)
-			output.WriteString( INDENT_1 + fieldName + " := &" + fieldType  + "{}" )
+			output.WriteString( INDENT_1 + fieldName + " := &" + fieldType  + "{}" + INDENT_1 + "_ = " +  fieldName )
 
 		} else {
 			if debug {fmt.Println("WriteVars writing field") }
@@ -361,7 +361,7 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent strin
 		ret = ret  + INDENT_1 + inDent + PARAMS_RET + "." + fieldName + " = &" + fieldName
 	case "set": fallthrough
 	case "list":
-		collectionType := GetFieldName(debug, recursing, fieldDetails.DbFieldCollectionType, true )
+		collectionType := GetFieldName(debug, recursing, fieldDetails.DbFieldCollectionType, false )
 		if swagger.IsFieldTypeUDT( parserOutput, collectionType ) {
 			arrayType := collectionType
 			tmp_var := createTempVar( collectionType )
@@ -394,12 +394,12 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent strin
 		if swagger.IsFieldTypeUDT( parserOutput, fieldDetails.DbFieldType ) {
 			tmp_var := createTempVar( fieldDetails.DbFieldName )
 			tmp_var1 := createTempVar( fieldDetails.DbFieldName )
-			theType := GetFieldName(debug, recursing, fieldDetails.DbFieldType, true )
+			theType := GetFieldName(debug, recursing, fieldDetails.DbFieldType, false )
 			ret = INDENT_1 + inDent + tmp_var + ", ok := " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].([]map[string]interface{})`
-			ret = ret + INDENT_1 + inDent + tmp_var1 + " = make([]*" + MODELS + theType + ", len(" + tmp_var + "))"
+			ret = ret + INDENT_1 + inDent + tmp_var1 + " := make([]*" + MODELS + theType + ", len(" + tmp_var + "))"
 			ret = ret + INDENT_1 + inDent +  "if ! ok {" + INDENT_1 + INDENT + `log.Fatal("handleReturnedVar() - failed to find entry for ` + strings.ToLower(fieldDetails.DbFieldName ) + `", ok )` + INDENT_1 + "}"
 			ret = ret + setUpStruct( debug, recursing, timeFound, INDENT, inTable,  tmp_var1 , tmp_var, fieldDetails.DbFieldType, parserOutput, timeVar, dontUpdate )
-			ret = ret + INDENT_1 + inDent +  PARAMS_RET + "." + fieldName + " = &" +  tmp_var1 + "[0]"
+			ret = ret + INDENT_1 + inDent +  PARAMS_RET + "." + fieldName + " = " +  tmp_var1 + "[0]"
 		} else {
 			ret = INDENT_1  + inDent + PARAMS_RET + "." + fieldName + " = &" + fieldName
 		}

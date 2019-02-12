@@ -75,13 +75,15 @@ CREATE TABLE demo.employee (
 `
 
 	CSQ_TEST3 = `
+CREATE TYPE demo.simple (
+       dummy text
+    );
 
-    CREATE TABLE demo.accounts4 (
-    id int,
-	events set<timeuuid>,
-    PRIMARY KEY (id)
-) WITH CLUSTERING ORDER BY (id ASC)`
-
+CREATE TABLE demo.employee1 (
+    id int PRIMARY KEY,
+    tSimple simple
+) WITH CLUSTERING ORDER BY (name ASC)
+`
 
 /*
 type City struct {
@@ -447,6 +449,9 @@ func Search(params operations.GetAccounts4Params) middleware.Responder {
     }
     return operations.NewGetAccounts4OK().WithPayload( payLoad.Payload)
     }`
+
+	EXPECTED_OUTPUT_TEST3 = `
+`
 )
 
 func performCreateTest1( debug bool, test string, cql string, expected string , t *testing.T ) {
@@ -487,6 +492,7 @@ func performCreateTest1( debug bool, test string, cql string, expected string , 
 	tmpbytes := byteSlice[0:numBytesRead]
 	s := string(tmpbytes[:])
 /*
+
 	if (len(expected) != len(s) ) {
 		t.Errorf("Read %d bytes expected %d bytes\n", len(s), len(expected) )
 	}
@@ -527,11 +533,15 @@ func Test2(t *testing.T) {
 	*/
 }
 
-
 func Test3(t *testing.T) {
-	performCreateTest1(true, "Test1", CSQ_TEST3, EXPECTED_OUTPUT_TEST2, t )
+	performCreateTest1(true, "Test1", CSQ_TEST3, EXPECTED_OUTPUT_TEST3, t )
+
+		path := os.Getenv("GOPATH")  + "/src/github.com/stevef1uk/test4/"
+		ret6 :=  SpiceInHandler( false , path, "Employee1", "" )
+		_ = ret6
 
 }
+
 
 /*
 CSQ_TEST1 = `
