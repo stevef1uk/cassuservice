@@ -97,7 +97,8 @@ func WriteVars(  debug bool, parserOutput parser.ParseOutput, goPathForRepo stri
 			if debug {fmt.Println("WriteVars Found UDT = ", v.DbFieldType)}
 			// Process UDT
 			fieldName := GetFieldName(debug, false, v.DbFieldName, dontUpdate)
-			output.WriteString( INDENT_1 + fieldName + " := &" + strings.ToLower( v.DbFieldType ) + "{}" )
+			fieldType := GetFieldName(debug, false, v.DbFieldType, false)
+			output.WriteString( INDENT_1 + fieldName + " := &" + fieldType  + "{}" )
 
 		} else {
 			if debug {fmt.Println("WriteVars writing field") }
@@ -360,7 +361,7 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent strin
 		ret = ret  + INDENT_1 + inDent + PARAMS_RET + "." + fieldName + " = &" + fieldName
 	case "set": fallthrough
 	case "list":
-		collectionType := GetFieldName(debug, recursing, fieldDetails.DbFieldCollectionType, dontUpdate )
+		collectionType := GetFieldName(debug, recursing, fieldDetails.DbFieldCollectionType, true )
 		if swagger.IsFieldTypeUDT( parserOutput, collectionType ) {
 			arrayType := collectionType
 			tmp_var := createTempVar( collectionType )
@@ -390,7 +391,19 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent strin
 		ret = ret + INDENT_1 + inDent + "for " + iIndex +", v := range " + tmp_var + " {" + INDENT_1 + inDent + INDENT + PARAMS_RET + "." + fieldName  + "[" +  iIndex + "] = v"  +  INDENT_1 + inDent + "}"
 
 	default:
-		ret = INDENT_1  + inDent + PARAMS_RET + "." + fieldName + " = &" + fieldName
+		if swagger.IsFieldTypeUDT( parserOutput, fieldDetails.DbFieldType ) {
+			tmp_var := createTempVar( fieldDetails.DbFieldName )
+			tmp_var1 := createTempVar( fieldDetails.DbFieldName )
+			theType := GetFieldName(debug, recursing, fieldDetails.DbFieldType, true )
+			ret = INDENT_1 + inDent + tmp_var + ", ok := " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].([]map[string]interface{})`
+			ret = ret + INDENT_1 + inDent + tmp_var1 + " = make([]*" + MODELS + theType + ", len(" + tmp_var + "))"
+			ret = ret + INDENT_1 + inDent +  "if ! ok {" + INDENT_1 + INDENT + `log.Fatal("handleReturnedVar() - failed to find entry for ` + strings.ToLower(fieldDetails.DbFieldName ) + `", ok )` + INDENT_1 + "}"
+			ret = ret + setUpStruct( debug, recursing, timeFound, INDENT, inTable,  tmp_var1 , tmp_var, fieldDetails.DbFieldType, parserOutput, timeVar, dontUpdate )
+			ret = ret + INDENT_1 + inDent +  PARAMS_RET + "." + fieldName + " = &" +  tmp_var1 + "[0]"
+		} else {
+			ret = INDENT_1  + inDent + PARAMS_RET + "." + fieldName + " = &" + fieldName
+		}
+
 
 	}
     return ret, timeFound
