@@ -76,7 +76,9 @@ CREATE TABLE demo.employee (
 
 	CSQ_TEST3 = `
 CREATE TYPE demo.simple (
-       dummy text
+       id int,
+       dummy text,
+       mediate TIMESTAMP
     );
 
 CREATE TABLE demo.employee1 (

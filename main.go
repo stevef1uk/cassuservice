@@ -21,13 +21,15 @@ func main() {
 // //mylist list<float>,
 		ret := parser.ParseText( debug, parser.Setup, parser.Reset,`
 CREATE TYPE demo.simple (
-       dummy text
+       id int,
+       dummy text,
+       mediate TIMESTAMP
     );
 
 CREATE TABLE demo.employee1 (
     id int PRIMARY KEY,
     tSimple simple
-)WITH CLUSTERING ORDER BY (name ASC)`)
+) WITH CLUSTERING ORDER BY (name ASC)`)
 
 	ret1 := swagger.CreateSwagger( false, ret )
 	println("Swagger=\n")
