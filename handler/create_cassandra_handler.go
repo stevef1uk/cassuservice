@@ -250,6 +250,7 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, i
 		if recursing {
 			inDent = inDent + INDENT
 		}
+
 		if ( typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType != "" && ( swagger.IsFieldTypeUDT( parserOutput, typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType ) ) )  || typeStruct.TypeFields.DbFieldDetails[i].DbFieldMapType != ""  {
 			// Deal with the more complex types
 			tmpVar := createTempVar( fieldName )
@@ -481,7 +482,7 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent strin
 			ret_struct := createTempVar( fieldDetails.DbFieldName )
 			local_struct := createTempVar( fieldDetails.DbFieldName )
 			theType := GetFieldName(debug, recursing, fieldDetails.DbFieldType, false )
-			ret = INDENT_1 + inDent + tmp_var + ", ok := " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].([]map[string]interface{})`
+			ret = INDENT_1 + inDent + tmp_var + ", ok := " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(map[string]interface{})`
 			ret = ret + INDENT_1 + inDent + ret_struct + " := &" + MODELS + theType + "{}"
 			ret = ret + INDENT_1 + inDent +  "if ! ok {" + INDENT_1 + INDENT + `log.Fatal("handleReturnedVar() - failed to find entry for ` + strings.ToLower(fieldDetails.DbFieldName ) + `", ok )` + INDENT_1 + "}"
 			ret = ret + setUpStruct( debug, recursing, timeFound, "", inTable,  tmp_var, ret_struct , local_struct, fieldDetails.DbFieldType, parserOutput, timeVar, dontUpdate )

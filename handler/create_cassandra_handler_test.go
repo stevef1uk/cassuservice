@@ -87,6 +87,23 @@ CREATE TABLE demo.employee1 (
 ) WITH CLUSTERING ORDER BY (name ASC)
 `
 
+	CSQ_TEST4= `
+CREATE TYPE demo.simple (
+       id int,
+       dummy text,
+       mediate TIMESTAMP
+    );
+
+CREATE TYPE demo.trivial (
+       id int,
+       eStruct  set<frozen<simple>>
+    );
+
+CREATE TABLE demo.employee1 (
+    id int PRIMARY KEY,
+    tSimple trivial
+) WITH CLUSTERING ORDER BY (name ASC)
+`
 /*
 type City struct {
     ID int `+"`"+`cql:"id"`+"`"+`
@@ -515,7 +532,7 @@ func performCreateTest1( debug bool, test string, cql string, expected string , 
 
 
 func Test1(t *testing.T) {
-	//performCreateTest1(true, "Test1", CSQ_TEST1, EXPECTED_OUTPUT_TEST1, t )
+	performCreateTest1(true, "Test1", CSQ_TEST1, EXPECTED_OUTPUT_TEST1, t )
 /*
 	path := os.Getenv("GOPATH")  + "/src/github.com/stevef1uk/test4/"
 	ret6 :=  SpiceInHandler( false , path, "Employee", "" )
@@ -527,7 +544,7 @@ func Test1(t *testing.T) {
 
 
 func Test2(t *testing.T) {
-	//performCreateTest1(true, "Test1", CSQ_TEST2, EXPECTED_OUTPUT_TEST2, t )
+	performCreateTest1(true, "Test1", CSQ_TEST2, EXPECTED_OUTPUT_TEST2, t )
 /*
 	path := os.Getenv("GOPATH")  + "/src/github.com/stevef1uk/test4/"
 	ret6 :=  SpiceInHandler( false , path, "Accounts4", "" )
@@ -536,12 +553,12 @@ func Test2(t *testing.T) {
 }
 
 func Test3(t *testing.T) {
-	performCreateTest1(true, "Test1", CSQ_TEST3, EXPECTED_OUTPUT_TEST3, t )
-
+	//performCreateTest1(true, "Test1", CSQ_TEST4, EXPECTED_OUTPUT_TEST3, t )
+/*
 		path := os.Getenv("GOPATH")  + "/src/github.com/stevef1uk/test4/"
 		ret6 :=  SpiceInHandler( false , path, "Employee1", "" )
 		_ = ret6
-
+*/
 }
 
 
