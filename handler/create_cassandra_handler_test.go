@@ -469,8 +469,89 @@ func Search(params operations.GetAccounts4Params) middleware.Responder {
     return operations.NewGetAccounts4OK().WithPayload( payLoad.Payload)
     }`
 
-	EXPECTED_OUTPUT_TEST3 = `
-`
+	EXPECTED_OUTPUT_TEST3 = `// GENERATED FILE so do not edit or will be overwritten upon next generate
+package data
+
+import (
+    "github.com/stevef1uk/test4/models"
+    "github.com/stevef1uk/test4/restapi/operations"
+    middleware "github.com/go-openapi/runtime/middleware"
+    "github.com/gocql/gocql"
+    "os"
+    "log"
+    "time"
+     
+)
+
+type Simple struct {
+    ID int `+"`"+`cql:"id"`+"`"+`
+     Dummy string `+"`"+`cql:"dummy"`+"`"+`
+    Mediate time.Time `+"`"+`cql:"mediate"`+"`"+`
+}
+
+
+var cassuservice_session *gocql.Session
+
+func SetUp() {
+  var err error
+  log.Println("Tring to connect to Cassandra database using ", os.Getenv("CASSANDRA_SERVICE_HOST"))
+  cluster := gocql.NewCluster(os.Getenv("CASSANDRA_SERVICE_HOST"))
+  cluster.Keyspace = "demo"
+  cluster.Consistency = gocql.One
+  cassuservice_session, err = cluster.CreateSession()
+  if ( err != nil ) {
+    log.Fatal("Have you remembered to set the env var $CASSANDRA_SERVICE_HOST as connection to Cannandra failed with error = ", err)
+  } else {
+    log.Println("Yay! Connection to Cannandra established")
+  }
+}
+
+func Stop() {
+    log.Println("Shutting down the service handler")
+  cassuservice_session.Close()
+}
+
+func Search(params operations.GetEmployee1Params) middleware.Responder {
+
+    var ID int64
+    _ = ID
+    Tsimple := &Simple{}
+    _ = Tsimple
+
+    codeGenRawTableResult := map[string]interface{}{}
+
+    if err := cassuservice_session.Query(`+"`"+` SELECT id, tsimple FROM employee1 WHERE id = ? `+"`"+`,params.ID).Consistency(gocql.One).MapScan(codeGenRawTableResult); err != nil {
+      log.Println("No data? ", err)
+      return operations.NewGetEmployee1BadRequest()
+    }
+    payLoad := operations.NewGetEmployee1OK()
+    payLoad.Payload = make([]*models.GetEmployee1OKBodyItems,1)
+    payLoad.Payload[0] = new(models.GetEmployee1OKBodyItems)
+    retParams := payLoad.Payload[0]
+    tmp_ID_1 := codeGenRawTableResult["id"].(int)
+    ID = int64(tmp_ID_1)
+    retParams.ID = &ID
+    tmp_TSIMPLE_2, ok := codeGenRawTableResult["tsimple"].(map[string]interface{})
+    tmp_TSIMPLE_3 := &models.Simple{}
+    if ! ok {
+      log.Fatal("handleReturnedVar() - failed to find entry for tsimple", ok )
+    }
+    
+    tmp_Simple_5 := &Simple{
+    
+        tmp_TSIMPLE_2["id"].(int),
+        tmp_TSIMPLE_2["dummy"].(string),
+        tmp_TSIMPLE_2["mediate"].(time.Time),
+      }
+        
+    tmp_ID_6 := int64(tmp_Simple_5.ID)
+    tmp_TSIMPLE_3.ID = tmp_ID_6    
+    tmp_TSIMPLE_3.Dummy = tmp_Simple_5.Dummy    
+    tmp_Mediate_7 := tmp_Simple_5.Mediate.String()
+    tmp_TSIMPLE_3.Mediate = tmp_Mediate_7
+    retParams.Tsimple = tmp_TSIMPLE_3
+    return operations.NewGetEmployee1OK().WithPayload( payLoad.Payload)
+    }`
 )
 
 func performCreateTest1( debug bool, test string, cql string, expected string , t *testing.T ) {
@@ -553,7 +634,7 @@ func Test2(t *testing.T) {
 }
 
 func Test3(t *testing.T) {
-	//performCreateTest1(true, "Test1", CSQ_TEST4, EXPECTED_OUTPUT_TEST3, t )
+	performCreateTest1(true, "Test1", CSQ_TEST3, EXPECTED_OUTPUT_TEST3, t )
 /*
 		path := os.Getenv("GOPATH")  + "/src/github.com/stevef1uk/test4/"
 		ret6 :=  SpiceInHandler( false , path, "Employee1", "" )
