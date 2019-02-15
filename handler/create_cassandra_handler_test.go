@@ -487,7 +487,7 @@ import (
 
 type Simple struct {
     ID int `+"`"+`cql:"id"`+"`"+`
-     Dummy string `+"`"+`cql:"dummy"`+"`"+`
+    Dummy string `+"`"+`cql:"dummy"`+"`"+`
     Mediate time.Time `+"`"+`cql:"mediate"`+"`"+`
 }
 
@@ -741,7 +741,7 @@ func Test2(t *testing.T) {
 	path := os.Getenv("GOPATH")  + "/src/github.com/stevef1uk/test4/"
 	ret6 :=  SpiceInHandler( false , path, "Accounts4", "" )
 	_ = ret6
-	*/
+*/
 }
 
 func Test3(t *testing.T) {
@@ -755,11 +755,11 @@ func Test3(t *testing.T) {
 
 func Test4(t *testing.T) {
 	performCreateTest1(true, "Test1", CSQ_TEST4, EXPECTED_OUTPUT_TEST4, t )
-
+/*
 			path := os.Getenv("GOPATH")  + "/src/github.com/stevef1uk/test4/"
 			ret6 :=  SpiceInHandler( false , path, "Employee1", "" )
 			_ = ret6
-
+*/
 }
 /*
 CSQ_TEST1 = `

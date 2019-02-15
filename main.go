@@ -20,23 +20,31 @@ func main() {
 
 // //mylist list<float>,
 		ret := parser.ParseText( true, parser.Setup, parser.Reset,`
-CREATE TYPE demo.simple1(
+CREATE TABLE demo.accounts4 (
     id int,
-    citycode text
-);
-
-
-CREATE TYPE demo.simple (
-       id int,
-       dummy text,
-       mediate TIMESTAMP,
-       eStruct  set <frozen <simple1>>,
-    );
-
-CREATE TABLE demo.employee1 (
-    id int PRIMARY KEY,
-    tSimple  simple
-) WITH CLUSTERING ORDER BY (name ASC)`)
+    name text,
+    ascii1 ascii,
+    bint1 bigint,
+    blob1 blob,
+    bool1 boolean,
+    dec1 decimal,
+    double1 double,
+    flt1 float,
+    inet1 inet,
+    int1 int,
+    text1 text,
+    time1 timestamp,
+    time2 timeuuid,
+    mydate1 date,
+    uuid1 uuid,
+    varchar1 varchar,
+    events set<int>,
+    mylist list<float>,
+    myset set<text>,
+    adec list<decimal>,
+    PRIMARY KEY (id, name, time1)
+) WITH CLUSTERING ORDER BY (name ASC)
+` )
 
 	ret1 := swagger.CreateSwagger( false, ret )
 	println("Swagger=\n")

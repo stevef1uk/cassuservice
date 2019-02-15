@@ -432,7 +432,7 @@ func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName
 
 	switch arrayType {
 	case "*inf.Dec": fallthrough
-	case "gocql.UUID":
+	case "gocql.UUID": fallthrough
 	case "uint8":
 		arrayTypeDest = arrayType
 	}
