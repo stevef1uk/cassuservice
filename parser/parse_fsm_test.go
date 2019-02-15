@@ -309,7 +309,7 @@ CREATE TABLE demo.pisp_submissions_per_id (
 	`)
 
 	if expected.TableSpace != "DEMO" {
-		t.Errorf("Tablespace incorrect, got: %s, want: %s.", expected.TableSpace, "TEST")
+		t.Errorf("Tablespace incorrect, got: %s, want: %s.", expected.TableSpace, "DEMO")
 	}
 	if expected.TypeIndex != 3 {
 		t.Errorf("TypeIndex incorrect, got: %d, want: %d.", expected.TypeIndex, 3)
@@ -347,3 +347,62 @@ CREATE TABLE demo.pisp_submissions_per_id (
 	}
 }
 
+func TestSimpleFrozen(t *testing.T) {
+
+	expected := ParseText(false, Setup, Reset, `
+CREATE TYPE demo.simple1(
+    id int,
+    citycode text
+);
+
+
+CREATE TYPE demo.simple (
+       id int,
+       dummy text,
+       mediate TIMESTAMP,
+       eStruct  set <frozen <simple1>>,
+    );
+
+CREATE TABLE demo.employee1 (
+    id int PRIMARY KEY,
+    tSimple  frozen <simple>
+) WITH CLUSTERING ORDER BY (name ASC) ;
+	`)
+
+	if expected.TableSpace != "DEMO" {
+		t.Errorf("Tablespace incorrect, got: %s, want: %s.", expected.TableSpace, "DEMO")
+	}
+	if expected.TypeIndex != 2 {
+		t.Errorf("TypeIndex incorrect, got: %d, want: %d.", expected.TypeIndex, 2)
+	}
+	if expected.TypeDetails[0].TypeName != "SIMPLE1" {
+		t.Errorf("TypeName incorrect, got: %s, want: %s.", expected.TypeDetails[0].TypeName, "SIMPLE")
+	}
+	if expected.TypeDetails[0].TypeFields.FieldIndex != 2 {
+		t.Errorf("FieldIndex incorrect, got: %d, want: %d.", expected.TypeDetails[0].TypeFields.FieldIndex, 2)
+	}
+	if expected.TypeDetails[1].TypeName != "SIMPLE" {
+		t.Errorf("TypeName incorrect, got: %s, want: %s.", expected.TypeDetails[1].TypeName, "SIMPLE")
+	}
+	if expected.TypeDetails[1].TypeFields.FieldIndex != 4 {
+		t.Errorf("FieldIndex incorrect, got: %d, want: %d.", expected.TypeDetails[1].TypeFields.FieldIndex, 4)
+	}
+	if expected.TableDetails.TableName != "EMPLOYEE1" {
+		t.Errorf("TableName incorrect, got: %s, want: %s.", expected.TableDetails.TableName, "EMPLOYEE1")
+	}
+	if expected.TableDetails.PkIndex != 1 {
+		t.Errorf("PkIndex incorrect, got: %d, want: %d.", expected.TableDetails.PkIndex, 1)
+	}
+	if expected.TableDetails.TableFields.FieldIndex != 2 {
+		t.Errorf("PkIndex incorrect, got: %d, want: %d.", expected.TableDetails.TableFields.FieldIndex, 2)
+	}
+	if expected.TableDetails.DbPKFields[0] != "ID" {
+		t.Errorf("DbPKFields[0] incorrect, got: %s, want: %s.", expected.TableDetails.DbPKFields[0], "ID")
+	}
+	if expected.TableDetails.TableFields.DbFieldDetails[0].DbFieldName != "ID" {
+		t.Errorf(".DbFieldDetails[0].DbFieldName incorrect, got: %s, want: %s.", expected.TableDetails.TableFields.DbFieldDetails[0].DbFieldName, "ID")
+	}
+	if expected.TableDetails.TableFields.DbFieldDetails[1].DbFieldName != "TSIMPLE" {
+		t.Errorf("DbFieldDetails[1].DbFieldName  incorrect, got: %s, want: %s.", expected.TableDetails.TableFields.DbFieldDetails[1].DbFieldName, "TSIMPLE")
+	}
+}

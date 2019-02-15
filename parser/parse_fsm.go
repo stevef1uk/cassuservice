@@ -49,6 +49,8 @@ func Setup( debug bool ) {
 			{`\s*PRIMARY\s+`, notePrimary, primaryKey, 0, new(regexp.Regexp)},
 			// To handle text like: address_set list<frozen<city>>,
 			{`\s*(\w+)\s+(\w+)\s*<\s*(\w+)\s*<\s*(\w+)\s*>>,?`, processSimpleFrozenField, tableField, 0, new(regexp.Regexp)},
+			// TO handle a simple UTD field that can only occur in a table e.g. tSimple  frozen <simple>
+			{`\s*(\w+)\s+(\w+)\s*<\s*(\w+)\s*>,?`, processSimpleFrozenField, tableField, 0, new(regexp.Regexp)},
 			// To handle text like: address_set map<text, frozen <city>>,
 			{`\s*(\w+)\s+(\w+)\s*<\s*(\w+),\s*\w+\s*\w+\s*<\s*(\w+)\s*>>,?`, processMapFrozenField, tableField, 0, new(regexp.Regexp)},
 			// To handle normal table / type fields

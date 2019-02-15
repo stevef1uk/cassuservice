@@ -8,7 +8,7 @@ import (
 )
 
 // Set debug flag to true to output logging information to stdout
-var debug = false
+var debug = true
 
 func main() {
 
@@ -19,16 +19,23 @@ func main() {
 	//parser.Setup()
 
 // //mylist list<float>,
-		ret := parser.ParseText( debug, parser.Setup, parser.Reset,`
+		ret := parser.ParseText( true, parser.Setup, parser.Reset,`
+CREATE TYPE demo.simple1(
+    id int,
+    citycode text
+);
+
+
 CREATE TYPE demo.simple (
        id int,
        dummy text,
-       mediate TIMESTAMP
+       mediate TIMESTAMP,
+       eStruct  set <frozen <simple1>>,
     );
 
 CREATE TABLE demo.employee1 (
     id int PRIMARY KEY,
-    tSimple simple
+    tSimple  simple
 ) WITH CLUSTERING ORDER BY (name ASC)`)
 
 	ret1 := swagger.CreateSwagger( false, ret )
