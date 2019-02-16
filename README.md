@@ -14,6 +14,7 @@ I have updated the main.go file to perform the abive steps in one one.
 Stp 1: Export the Cassandra DDL into a file e.g. t.cql. This file needs to only contain the types (if any) and table definition for a single table. The best way to do this is from cqlsh and usse the describe table command.
 
 A very simple example t.cql is as follows:
+
     CREATE TYPE demo.simple (
            id int,
            dummy text,
@@ -31,7 +32,9 @@ Step 2:
 
 Execute the main program using the following minimal set of flags:
 
-go run main.go -file=/Users/stevef/Source_Code/go/src/github.com/stevef1uk/test4/t.cql -goPackageName=github.com/stevef1uk/test4 -dirToGenerateIn=/Users/stevef/Source_Code/go/src/github.com/stevef1uk/test4
+go run main.go -file=/Users/stevef/Source_Code/go/src/github.com/stevef1uk/test4/t.cql \
+               -goPackageName=github.com/stevef1uk/test4 \
+               -dirToGenerateIn=/Users/stevef/Source_Code/go/src/github.com/stevef1uk/test4
 
 The -debug-true flag will help debug any issues
 
