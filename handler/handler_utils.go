@@ -17,7 +17,7 @@ import (
 )
 
 // Function to create a file that will contain the Cassandra handler code
-func CreateFile( debug bool, pathPrefix string, dir string ) *os.File {
+func CreateFile( debug bool, pathPrefix string, dir string, fileName string ) *os.File {
 
 	// Create the directory if not already there
 	fulldirName := pathPrefix  + dir
@@ -31,7 +31,7 @@ func CreateFile( debug bool, pathPrefix string, dir string ) *os.File {
 			}
 		}
 	}
-	fullFileName := fulldirName + "/" + MAINFILE
+	fullFileName := fulldirName + "/" + fileName
 	if debug { fmt.Println("Generated file name  = ", fullFileName )}
 	// Save previous generated file
 	os.Rename( fullFileName, fullFileName+".old")

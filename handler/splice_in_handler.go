@@ -102,7 +102,7 @@ func SpiceInHandler( debug bool, generatedCodePath string, tableName string, end
 	reader := bufio.NewReader(os.Stdin)
 	if debug { fmt.Println("Parsing input read = ", handlerString)}
 
-for {
+	for {
 		text, err := reader.ReadString('\n')
 		if ( err != nil ) {
 			if debug {fmt.Println("Err = ", err) }

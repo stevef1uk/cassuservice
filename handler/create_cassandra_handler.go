@@ -160,7 +160,7 @@ func createSelectString( debug bool, parserOutput parser.ParseOutput, timeVar st
 
 	consistency := "gocql.One"
 	if cassandraConsistencyRequired != "" {
-		consistency = strings.ToLower(cassandraConsistencyRequired)
+		consistency = cassandraConsistencyRequired
 	}
 
 	ret = ret + " FROM " + strings.ToLower( parserOutput.TableDetails.TableName) + whereClause +  "`," + varsClause + ")"
@@ -514,7 +514,7 @@ func handleSelectReturn( debug bool, parserOutput parser.ParseOutput, timeVar st
 func CreateCode( debug bool, generateDir string,  goPathForRepo string,  parserOutput parser.ParseOutput, cassandraConsistencyRequired string, endPointNameOverRide string, overridePrimaryKeys int, allowFiltering bool, dontUpdate bool, logExtraInfo bool   ) {
 	indexCounter = 0
 	counter = 0
-	output := CreateFile( debug, generateDir, "/data" )
+	output := CreateFile( debug, generateDir, "/data", MAINFILE )
 	defer output.Close()
 
 

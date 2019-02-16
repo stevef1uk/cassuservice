@@ -5,203 +5,67 @@ import (
 	"github.com/stevef1uk/cassuservice/handler"
 	"github.com/stevef1uk/cassuservice/parser"
 	"github.com/stevef1uk/cassuservice/swagger"
+	"io/ioutil"
+	"os"
+	"os/exec"
+)
+import "fmt"
+
+const (
+	SWAGGER_FILE = "swagger.txt"
 )
 
-// Set debug flag to true to output logging information to stdout
-var debug = true
 
 func main() {
 
-	debugPtr := flag.Bool("debug", false, "Set flag to true to write trace information to stdout")
+	allowFilteringPtr := flag.Bool("allowFiltering", false, "Set flag true to add Allow Filtering on Select queries")
+	consistencyPtr := flag.String( "consistency", "gocql.One", "Set required Cassandra Read Consistency level, default = gocql.One")
+	debugPtr := flag.Bool("debug", false, "set -debug=true to debug code")
+	endPointPtr := flag.String( "endPoint", "", "Set to override the endpoint for uService, which will be by default the table name")
+	filePtr := flag.String("file", "", "set file to the full path of the Cassandra DDL file to process")
+	goPackageNamePtr := flag.String("goPackageName", "", "set goPackageName to the desired Go package name e.g. github.com/stevef1uk/test4 (this is used to create the import statements in the generated code) ")
+	primaryKeysPtr := flag.Int( "numberOfPrimaryKeys", 0, "Set to override the number of primary key fields to use for the select, defaults to that of the table definition")
+	logNoDataPtr := flag.Bool("logNoData", true, "Set logNoData to false to supress logging of No Data & any error message from the select")
+	outputPtr := flag.String("dirToGenerateIn", "/tmp", "set dirToGenerateIn to the full path of the directory where the output of swagger is defaults to /tmp")
+	pathNamePtr := flag.String("pathNamePtr", "", "if auto patching of configure_simple.go isn't working set pathNamePtr to the full path of the directory where the output of swagger is")
+	dontUpdateFieldPtr := flag.Bool("idLeave", false, "Set flag true to prevent trailing id values in fields being capitalised e.g. Mid will not be changed to MID")
+	//swaggerPtr := flag.String("swagger", "/usr/local/bin/swagger", "set swagger to full path name of swagger program from: https://github.com/go-swagger/go-swagger, defaults to /usr/local/bin")
+    //_ = swaggerPtr
 
-	flag.Parse()
-	debug = *debugPtr
-	//parser.Setup()
+    flag.Parse()
 
-// //mylist list<float>,
-		ret := parser.ParseText( true, parser.Setup, parser.Reset,`
-CREATE TABLE demo.accounts4 (
-    id int,
-    name text,
-    ascii1 ascii,
-    bint1 bigint,
-    blob1 blob,
-    bool1 boolean,
-    dec1 decimal,
-    double1 double,
-    flt1 float,
-    inet1 inet,
-    int1 int,
-    text1 text,
-    time1 timestamp,
-    time2 timeuuid,
-    mydate1 date,
-    uuid1 uuid,
-    varchar1 varchar,
-    events set<int>,
-    mylist list<float>,
-    myset set<text>,
-    adec list<decimal>,
-    PRIMARY KEY (id, name, time1)
-) WITH CLUSTERING ORDER BY (name ASC)
-` )
+	b, err := ioutil.ReadFile(*filePtr)
+	if err != nil {
+		fmt.Print(err)
+		os.Exit(1)
+	}
+	input := string(b)
+	parse1 := parser.ParseText( *debugPtr, parser.Setup, parser.Reset, input )
 
-	ret1 := swagger.CreateSwagger( false, ret )
-	println("Swagger=\n")
-	println(ret1)
+	swagger := swagger.CreateSwagger( *debugPtr, parse1 )
 
-	ret2 := handler.Capitiseid( false, "Id", false )
-	println(ret2)
-	_ = ret2;
-/*
-	 ret := parser.ParseText( debug, parser.Setup, parser.Reset, `
-       CREATE TYPE demo.city (
-	       id int,
-	       citycode text,
-	       cityname text
-	   );
+	pathName := os.Getenv("GOPATH")  + "/src/" + *goPackageNamePtr
+	if *pathNamePtr != "" {
+		pathName = *pathNamePtr
+	}
+	swaggerFile := handler.CreateFile( *debugPtr , pathName , "", SWAGGER_FILE )
+	err = ioutil.WriteFile(swaggerFile.Name(), []byte(swagger), 0666)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 
-	   		CREATE TABLE demo.employee (
-	       id int PRIMARY KEY,
-	       address_map map<text, frozen <city>>,
-	       address_list list<frozen<city>>,
-	       address_set set<frozen<city>>,
-	       name text
-	   ) WITH CLUSTERING ORDER BY (name DESC);
-	   	` )
+	handler.CreateCode( *debugPtr, *outputPtr, *goPackageNamePtr, parse1,  *consistencyPtr,  *endPointPtr, *primaryKeysPtr,  *allowFilteringPtr , *dontUpdateFieldPtr , *logNoDataPtr   )
 
-	ret1 := swagger.CreateSwagger( true, ret )
-	println("Swagger=\n")
-	println(ret1)
-*/
+	os.Setenv("PATH", "/usr/bin:/sbin:/usr/local/bin:/bin")
+	command := "swagger"
+	args := []string{"generate", "server", "-f", pathName + "/" + SWAGGER_FILE, "-t", pathName }
+	if err := exec.Command(command, args...).Run(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 
-/*
-	ret := parser.ParseText( debug, parser.Setup, parser.Reset, `
-CREATE TYPE demo.debtor_agent (
-  schemeName text,
-  identification text
-);
-
-
-
-CREATE TYPE demo.debtor_account (
-  schemeName text,
-  identification text,
-  name text,
-  secondaryIdentification text
-);
-
-
-CREATE TYPE demo.creditor_agent (
-  schemeName text,
-  identification text
-);
-CREATE TABLE demo.pisp_submissions_per_id (
-	submissionId uuid,
-	timeBucket text,
-	debtorAgent debtor_agent,
-	debtorAccount debtor_account,
-	creditorAgent creditor_agent,
-	lastUpdatedAt timestamp,
-	PRIMARY KEY (submissionId, lastUpdatedAt)
-) WITH CLUSTERING ORDER BY (lastUpdatedAt DESC)
-
-` )
-	ret1 := swagger.CreateSwagger( true, ret )
-	println("Swagger=\n")
-	println(ret1)
-
-*/
-
-/*
-	ret :=  parser.ParseText(debug, parser.Setup, parser.Reset,`
-CREATE TABLE demo.accounts4 (
-    id int,
-    name text,
-    ascii1 ascii,
-    bint1 bigint,
-    blob1 blob,
-    bool1 boolean,
-    counter1 counter,
-    dec1 decimal,
-    double1 double,
-    flt1 float,
-    inet1 inet,
-    int1 int,
-    text1 text,
-    time1 timestamp,
-    time2 timeuuid,
-    uuid1 uuid,
-    varchar1 varchar,
-    events set<int>,
-    mylist list<float>,
-    myset set<text>,
-    mymap  map<int, text>,
-    PRIMARY KEY (id, name, time1)
-) WITH CLUSTERING ORDER BY (name ASC)`)
-
-	ret1 := swagger.CreateSwagger( true, ret )
-	println("Swagger=\n")
-	println(ret1)
-
-*/
-
-/*
-CREATE TYPE demo.simple (
-   dummy text
-);
-
-CREATE TYPE demo.city (
-    id int,
-    citycode text,
-    cityname text,
-    test_int int,
-    lastUpdatedAt TIMESTAMP,
-    myfloat float
-    events set<int>,
-    mymap  map<text, text>
-    address_list set<frozen<simple>>,
-);
-
-CREATE TABLE demo.employee (
-    id int,
-    address_set set<frozen<city>>,
-    my_List list<frozen<simple>>,
-    name text,
-    mediate TIMESTAMP,
-    second_ts date,
-    tevents set<int>,
-    tmylist list<float>
-    tmymap  map<text, text>
-   PRIMARY KEY (id, mediate, second_ts )
- ) WITH CLUSTERING ORDER BY (mediate ASC, second_ts ASC)
- */
+	tableName := handler.GetFieldName(  *debugPtr, false, parse1.TableDetails.TableName, *dontUpdateFieldPtr )
+	ret := handler.SpiceInHandler( false , pathName, tableName, *endPointPtr )
+	_ = ret
 }
-
-/*
-CREATE TABLE demo.accounts4 (
-
-    id int,
-    name text,
-    ascii1 ascii,
-    bint1 bigint,
-    blob1 blob,
-    bool1 boolean,
-    dec1 decimal,
-    double1 double,
-    flt1 float,
-    inet1 inet,
-    int1 int,
-    text1 text,
-    time1 timestamp,
-    time2 timeuuid,
-    mydate1 date,
-    uuid1 uuid,
-    varchar1 varchar,
-    events set<int>,
-    mylist list<float>,
-    myset set<text>,
-    adec list<decimal>,
-    PRIMARY KEY (id, name, time1)
-)WITH CLUSTERING ORDER BY (name ASC)
- */

@@ -45,7 +45,7 @@ func TestFieldName(t *testing.T) {
 
 func TestFieldName2(t *testing.T) {
 
-	ret1 := CreateFile(true, "/tmp", "/tmp")
+	ret1 := CreateFile(true, "/tmp", "/tmp", MAINFILE)
 	ret1.Close()
 
 	/*
