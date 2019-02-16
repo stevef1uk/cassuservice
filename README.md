@@ -38,11 +38,16 @@ go run main.go -file=/Users/stevef/Source_Code/go/src/github.com/stevef1uk/test4
 
 The -debug-true flag will help debug any issues
 
+The path names will need to be adjusted to where you want the generated microservice to be where you want it created on you machine
+
 Then to run the generated microservice run:
 
 cd Users/stevef/Source_Code/go/src/github.com/stevef1uk/test4
+
 export CASSANDRA_SERVICE_HOST=127.0.0.1
+
 epxort PORT=5000
+
 go run cmd/simple-server/main.go 
 
 In order for this command to work the environment variable CASSANDRA_SERVICE_HOST needs to set to the host name(s) of the Cassandra cluster. 
