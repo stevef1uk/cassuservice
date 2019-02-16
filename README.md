@@ -70,3 +70,39 @@ Known issues:
 
 The functonality of this tool to support the Cassandra MAP type is very limited. This tool can only cope with maps if they are defined as map<text,text>; this is simply becasue there seems to be no way of modelling the map type in Swagger! I have used the addionalProperties arroach and hard coded this to a string. For now if maps are used that are not of this trivial form the generated code handler will need to be modified manually.
 
+A more complex example:
+
+ CREATE TYPE demo.simple (
+       dummy text
+    );
+
+    CREATE TYPE demo.city (
+    id int,
+    citycode text,
+    cityname text,
+    test_int int,
+    lastUpdatedAt TIMESTAMP,
+    myfloat float,
+    events set<int>,
+    mymap  map<text, text>,
+    address_list set<frozen<simple>>
+);
+
+CREATE TABLE demo.employee (
+    id int,
+    address_set set<frozen<city>>,
+    my_List list<frozen<simple>>,
+    name text,
+    mediate TIMESTAMP,
+    second_ts TIMESTAMP,
+    tevents set<int>,
+    tmylist list<float>,
+    tmymap  map<text, text>,
+   PRIMARY KEY (id, mediate, second_ts )
+ ) WITH CLUSTERING ORDER BY (mediate ASC, second_ts ASC)
+
+
+
+insert into employee ( id, mediate, second_ts, name,  my_list, address_set  ) values (1, '2018-02-17T13:01:05.000Z', '1999-12-01T23:21:59.123Z', 'steve', [{dummy:'fred'}], {{id:1, mymap:{'a':'fred'}, citycode:'Peef',lastupdatedat:'2019-02-18T14:02:06.000Z',address_list:{{dummy:'foobar'}},events:{1,2,3} }} ) ;
+
+curl -X GET "http://127.0.0.1:5000/v1/employee?id=1&mediate=2018-02-17T13:01:05.000Z&second_ts=1999-12-01T23:21:59.123Z"
