@@ -6,12 +6,12 @@ I originally wrote equivalent code whilst at my last employer as an exercise to 
 The architecture approach is simple:
 
 1. Parse Cassandra DDL to create a swagger file
-2. Use go-swagger to generate the RESTful server
+2. Use go-swagger to generate the RESTful server, see: https://github.com/go-swagger/go-swagger
 3. Parse Cassandra DDL to create the Cassandra handler and wire it into the RESTful server.
 
-I have updated the main.go file to perform the abive steps in one one.
+I have updated the main.go file to perform the above steps in one.
 
-Stp 1: Export the Cassandra DDL into a file e.g. t.cql. This file needs to only contain the types (if any) and table definition for a single table. The best way to do this is from cqlsh and usse the describe table command.
+Step 1: Export the Cassandra DDL into a file e.g. t.cql. This file needs to only contain the types (if any) and table definition for a single table. The best way to do this is from cqlsh and use the describe table command.
 
 A very simple example t.cql is as follows:
 
