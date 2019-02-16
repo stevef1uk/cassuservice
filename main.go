@@ -21,7 +21,7 @@ func main() {
 	allowFilteringPtr := flag.Bool("allowFiltering", false, "Set flag true to add Allow Filtering on Select queries")
 	consistencyPtr := flag.String( "consistency", "gocql.One", "Set required Cassandra Read Consistency level, default = gocql.One")
 	debugPtr := flag.Bool("debug", false, "set -debug=true to debug code")
-	endPointPtr := flag.String( "endPoint", "", "Set to override the endpoint for uService, which will be by default the table name")
+	endPointPtr := flag.String( "endPoint", "", "Set to override the endpoint for uService, which will be by default the table name. Not yet working!")
 	filePtr := flag.String("file", "", "set file to the full path of the Cassandra DDL file to process")
 	goPackageNamePtr := flag.String("goPackageName", "", "set goPackageName to the desired Go package name e.g. github.com/stevef1uk/test4 (this is used to create the import statements in the generated code) ")
 	primaryKeysPtr := flag.Int( "numberOfPrimaryKeys", 0, "Set to override the number of primary key fields to use for the select, defaults to that of the table definition")
