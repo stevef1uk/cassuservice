@@ -9,7 +9,8 @@ The architecture approach is simple:
 2. Use go-swagger to generate the RESTful server, see: https://github.com/go-swagger/go-swagger
 3. Parse Cassandra DDL to create the Cassandra handler and wire it into the RESTful server.
 
-I have updated the main.go file to perform the above steps in one.
+Prerequisites:
+I have updated the main.go file to perform the above steps in one. However, on my machine I have run the 'swagger generate server -f t.cql' command before and then followed the instrctions to run 'go get -u X' as instructed, which will need to be done one manually to load the required packages. I have also installed gocql see: https://github.com/gocql/gocql as the generated Cassandra handler uses this.
 
 Step 1: Export the Cassandra DDL into a file e.g. t.cql. This file needs to only contain the types (if any) and table definition for a single table. The best way to do this is from cqlsh and use the describe table command.
 
@@ -38,7 +39,7 @@ go run main.go -file=/Users/stevef/Source_Code/go/src/github.com/stevef1uk/test4
 
 The -debug-true flag will help debug any issues
 
-The path names will need to be adjusted to where you want the generated microservice to be where you want it created on you machine
+The path names will need to be adjusted to where you want the generated microservice to be where you want it created on your machine
 
 Then to run the generated microservice run:
 
@@ -51,7 +52,7 @@ epxort PORT=5000
 go run cmd/simple-server/main.go 
 
 In order for this command to work the environment variable CASSANDRA_SERVICE_HOST needs to set to the host name(s) of the Cassandra cluster. 
-Setting the PORT environmnet variable will make it easier to test 
+Setting the PORT environment variable will make it easier to test 
 
 For the example above the command to test it is:
 
