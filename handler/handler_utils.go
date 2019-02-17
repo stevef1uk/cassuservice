@@ -68,33 +68,30 @@ func GetFieldName(  debug bool, leaveCase bool, fieldName string, dontUpdate boo
 
 
 // Function that renames fields to match that performed for some reason by go-swagger in its generated framework code
+// Go-Swagger turns any field that starts with 'id' into ID and this is true for Table names, but not for Types for the first id, but if one has id_id it does produce IdID
+// The first character is always capitalised
 func Capitiseid( debug bool, fieldName string, dontUpdate bool ) string {
 
 	var ret string = ""
 	if debug { fmt.Printf("Capitiseid entry field  = %s, len = %d\n ",fieldName, len(fieldName) ) }
 
-	if dontUpdate && len(fieldName ) > 2 {
-		ret = fieldName
-		if debug { fmt.Printf("Capitiseid told not to update\n ") }
-	} else {
-		runes := []rune(fieldName[:])
-		last := len( runes  ) - 1
+	runes := []rune(fieldName[:])
+	last := len( runes  ) - 1
 
-		for i := 0; i < last ; i++   {
-				//if debug { fmt.Printf("Capitiseid i   = %d\n ",i ) }
-				if ! ( ( i == 0 ) || ( i == last -1 ) ) {
-					continue;
-				}
-				//if debug { fmt.Printf("Capitiseid [0] = %q, [1] = %q\n ", runes[i], runes[i+1]) }
-				if (runes[i] == rune('i') || runes[i] == rune('I')) && (runes[i+1] == rune('d') || runes[i+1] == rune('D')) {
-					if debug { fmt.Printf("Capitiseid match at i= %d\n ", i)}
-					runes[i] = rune('I')
-					runes[i+1] = rune('D')
-				}
-			}
-			ret = string(runes)
+	if last <= 1 {
+		if last == 0 {
+			return strings.ToUpper(string(runes[0]))
 		}
+	}
 
+	if ! dontUpdate {
+		if (runes[0] == rune('i') || runes[0] == rune('I')) && (runes[1] == rune('d') || runes[1] == rune('D')) {
+			runes[0] = rune('I')
+			runes[1] = rune('D')
+		}
+	}
+
+	ret = strings.ToUpper(string(runes[0])) + string(runes[1:])
 	if debug {fmt.Printf("Capitiseid returning field  = %s\n ", ret)}
 	return ret
 }
@@ -108,7 +105,7 @@ debug = false
 
 	if fieldName == ""{
 		ret = fieldName
-		if debug { fmt.Printf("CapitaliseSplitFieldName told not to update\n ") }
+		if debug { fmt.Printf("CapitaliseSplitFieldName fieldName empty\n ") }
 	} else {
 		tmpFields := strings.Split(fieldName, "_" )
 		if debug {fmt.Printf("CapitaliseSplitFieldName tmpFields  = %q\n ", tmpFields)}

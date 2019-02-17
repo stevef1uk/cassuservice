@@ -7,13 +7,20 @@ import (
 
 func TestFieldName(t *testing.T) {
 
-	ret := Capitiseid(false, "id", false)
+
+	ret := Capitiseid(false, "i", false)
+	if ret != "I" {
+		t.Errorf("Expected I got %s", ret)
+	}
+
+
+	ret = Capitiseid(false, "id", false)
 	if ret != "ID" {
 		t.Errorf("Expected ID got %s", ret)
 	}
 
 	ret = Capitiseid(false, "id", true)
-	if ret != "ID" {
+	if ret != "Id" {
 		t.Errorf("Expected id got %s", ret)
 	}
 
@@ -23,8 +30,8 @@ func TestFieldName(t *testing.T) {
 	}
 
 	ret = Capitiseid(false, "Mid", false)
-	if ret != "MID" {
-		t.Errorf("Expected MID got %s", ret)
+	if ret != "Mid" {
+		t.Errorf("Expected Mid got %s", ret)
 	}
 
 	ret = Capitiseid(false, "Id", false)
@@ -43,13 +50,19 @@ func TestFieldName(t *testing.T) {
 	}
 
 	ret = Capitiseid(false, "aid", false)
-	if ret != "aID" {
-		t.Errorf("Expected id got %s", ret)
+	if ret != "Aid" {
+		t.Errorf("Expected Aid got %s", ret)
 	}
 
-	ret = Capitiseid(false, "aid1", false)
-	if ret != "aid1" {
-		t.Errorf("Expected aid1 got %s", ret)
+	ret = Capitiseid(false, "aid", true)
+	if ret != "Aid" {
+		t.Errorf("Expected Aid got %s", ret)
+	}
+
+
+	ret = Capitiseid(false, "aid_id", false)
+	if ret != "Aid_id" {
+		t.Errorf("Expected Aid_id got %s", ret)
 	}
 }
 
@@ -94,7 +107,7 @@ func TestFieldName3(t *testing.T) {
 	}
 
 	ret5 = CapitaliseSplitFieldName(false, "id", true)
-	if ret5 != "ID" {
+	if ret5 != "Id" {
 		t.Errorf("Expected ID got %s", ret5)
 	}
 
@@ -102,13 +115,13 @@ func TestFieldName3(t *testing.T) {
 	if ret5 != "Steve" {
 		t.Errorf("Expected Steve got %s", ret5)
 	}
-	ret5 = CapitaliseSplitFieldName(false, "my_id_twoid", false)
+	ret5 = CapitaliseSplitFieldName(false, "my_id_two_id", false)
 	if ret5 != "MyIDTwoID" {
-		t.Errorf("Expected MyIDTwoID got :%s:", ret5)
+		t.Errorf("Expected MyIDTwoid got :%s:", ret5)
 	}
-	ret5 = CapitaliseSplitFieldName(false, "my_id_twoid", true)
-	if ret5 != "my_id_twoid" {
-		t.Errorf("Expected MyIDTwoID got :%s:", ret5)
+	ret5 = CapitaliseSplitFieldName(false, "my_id_two_id", true)
+	if ret5 != "MyIdTwoId" {
+		t.Errorf("Expected MyIdTwoId got :%s:", ret5)
 	}
 }
 
