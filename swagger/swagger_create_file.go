@@ -261,12 +261,17 @@ func addParametersAndResponses( debug bool, output string, parseOutput  parser.P
 
 // Main function to generate a string containing a swagger file
 
-func CreateSwagger( debug bool, parseOutput parser.ParseOutput ) string {
+func CreateSwagger( debug bool, parseOutput parser.ParseOutput, endPointOveride string  ) string {
 	retSwagger := HEADER
+
+	tableName := strings.ToLower(parseOutput.TableDetails.TableName)
+	if endPointOveride != "" {
+		tableName = strings.ToLower(endPointOveride)
+	}
 
 	//Add tablename & get string
 	retSwagger = retSwagger + `
-  ` + "/" + strings.ToLower(parseOutput.TableDetails.TableName) + ":" + `
+  ` + "/" + tableName + ":" + `
     get: 
       summary: Retrieve some records from the Cassandra table 
       description: Returns rows from the Cassandra table

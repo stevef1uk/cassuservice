@@ -21,15 +21,14 @@ func main() {
 	allowFilteringPtr := flag.Bool("allowFiltering", false, "Set flag true to add Allow Filtering on Select queries")
 	consistencyPtr := flag.String( "consistency", "gocql.One", "Set required Cassandra Read Consistency level, default = gocql.One")
 	debugPtr := flag.Bool("debug", false, "set -debug=true to debug code")
-	endPointPtr := flag.String( "endPoint", "", "Set to override the endpoint for uService, which will be by default the table name. Not yet working!")
+	endPointPtr := flag.String( "endPoint", "", "Set to override the endpoint for uService, which will be by default the table name.")
 	filePtr := flag.String("file", "", "set file to the full path of the Cassandra DDL file to process")
 	goPackageNamePtr := flag.String("goPackageName", "", "set goPackageName to the desired Go package name e.g. github.com/stevef1uk/test4 (this is used to create the import statements in the generated code) ")
 	primaryKeysPtr := flag.Int( "numberOfPrimaryKeys", 0, "Set to override the number of primary key fields to use for the select, defaults to that of the table definition")
 	logNoDataPtr := flag.Bool("logNoData", true, "Set logNoData to false to supress logging of No Data & any error message from the select")
 	outputPtr := flag.String("dirToGenerateIn", "/tmp", "set dirToGenerateIn to the full path of the directory where the output of swagger is defaults to /tmp")
 	pathNamePtr := flag.String("pathNamePtr", "", "if auto patching of configure_simple.go isn't working set pathNamePtr to the full path of the directory where the output of swagger is")
-	//dontUpdateFieldPtr := flag.Bool("idLeave", false, "Set flag true to prevent trailing id values in fields being capitalised e.g. Mid will not be changed to MID")
-	//swaggerPtr := flag.String("swagger", "/usr/local/bin/swagger", "set swagger to full path name of swagger program from: https://github.com/go-swagger/go-swagger, defaults to /usr/local/bin")
+
     //_ = swaggerPtr
 
     flag.Parse()
@@ -42,7 +41,7 @@ func main() {
 	input := string(b)
 	parse1 := parser.ParseText( *debugPtr, parser.Setup, parser.Reset, input )
 
-	swagger := swagger.CreateSwagger( *debugPtr, parse1 )
+	swagger := swagger.CreateSwagger( *debugPtr, parse1, *endPointPtr )
 
 	pathName := os.Getenv("GOPATH")  + "/src/" + *goPackageNamePtr
 	if *pathNamePtr != "" {

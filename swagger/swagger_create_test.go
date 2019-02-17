@@ -93,7 +93,7 @@ definitions:
 	   ) WITH CLUSTERING ORDER BY (name DESC);
 	   	` )
 
-	ret1 := CreateSwagger( true, ret )
+	ret1 := CreateSwagger( true, ret, "" )
 
 	if expectedOutput != ret1 {
 
@@ -223,7 +223,7 @@ CREATE TABLE demo.pisp_submissions_per_id (
 ) WITH CLUSTERING ORDER BY (lastUpdatedAt DESC)
 `)
 
-	ret1 := CreateSwagger( true, ret )
+	ret1 := CreateSwagger( true, ret, "" )
 	if expectedOutput != ret1 {
 
 		if len(expectedOutput) != len(ret1) {
@@ -387,7 +387,7 @@ CREATE TABLE demo.accounts4 (
 ) WITH CLUSTERING ORDER BY (name ASC)
 ` )
 
-	ret1 := CreateSwagger( true, ret )
+	ret1 := CreateSwagger( true, ret, "" )
 	if expectedOutput != ret1 {
 
 		if len(expectedOutput) != len(ret1) {
@@ -458,7 +458,7 @@ CREATE TABLE demo.accounts (
 ) WITH CLUSTERING ORDER BY (name ASC)
 ` )
 
-	ret1 := CreateSwagger( true, ret )
+	ret1 := CreateSwagger( true, ret, "" )
 	if expectedOutput != ret1 {
 
 		if len(expectedOutput) != len(ret1) {
@@ -591,7 +591,7 @@ CREATE TABLE demo.employee (
  ) WITH CLUSTERING ORDER BY (mediate ASC, second_ts ASC)
 ` )
 
-	ret1 := CreateSwagger( true, ret )
+	ret1 := CreateSwagger( true, ret, "" )
 	if expectedOutput != ret1 {
 
 		if len(expectedOutput) != len(ret1) {
@@ -619,7 +619,7 @@ schemes:
 host: localhost
 basePath: /v1
 paths:
-  /employee:
+  /testing:
     get: 
       summary: Retrieve some records from the Cassandra table 
       description: Returns rows from the Cassandra table
@@ -761,7 +761,7 @@ CREATE TABLE demo.employee (
    PRIMARY KEY (id, mediate, second_ts )
  ) WITH CLUSTERING ORDER BY (mediate ASC, second_ts ASC)
 ` )
-	ret1 := CreateSwagger( true, ret )
+	ret1 := CreateSwagger( true, ret, "testing" )
 	if expectedOutput != ret1 {
 
 		if len(expectedOutput) != len(ret1) {

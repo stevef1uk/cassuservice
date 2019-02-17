@@ -129,7 +129,7 @@ func buildSelectParams ( debug bool, parserOutput parser.ParseOutput )  string {
 }
 
 
-func createSelectString( debug bool, parserOutput parser.ParseOutput, timeVar string, cassandraConsistencyRequired string,  overridePrimaryKeys int, allowFiltering bool, logExtraInfo bool, output  *os.File )  string {
+func createSelectString( debug bool, parserOutput parser.ParseOutput, tableName string,  timeVar string, cassandraConsistencyRequired string,  overridePrimaryKeys int, allowFiltering bool, logExtraInfo bool, output  *os.File )  string {
 
 	ret := buildSelectParams( debug, parserOutput )
 	// First build primary key conditions
@@ -163,12 +163,12 @@ func createSelectString( debug bool, parserOutput parser.ParseOutput, timeVar st
 		consistency = cassandraConsistencyRequired
 	}
 
-	ret = ret + " FROM " + strings.ToLower( parserOutput.TableDetails.TableName) + whereClause +  "`," + varsClause + ")"
+	ret = ret + " FROM " + strings.ToLower( parserOutput.TableDetails.TableName ) + whereClause +  "`," + varsClause + ")"
 	ret = ret + ".Consistency(" + consistency + ").MapScan(codeGenRawTableResult); err != nil {"
 	if logExtraInfo {
 		ret = ret + INDENT_1 + `  log.Println("No data? ", err)`
 	}
-	tableName := GetFieldName(debug, false, parserOutput.TableDetails.TableName, false)
+	tableName = GetFieldName(debug, false, tableName, false)
 	ret = ret + INDENT_1 + "  return " + OPERATIONS + "NewGet" + tableName + "BadRequest()" +  INDENT_1 + "}"
 	ret = ret + INDENT_1 + PAYLOAD + " := " + OPERATIONS + "NewGet" +  tableName + "OK()"
 	ret = ret + INDENT_1 + PAYLOAD + "." + PAYLOAD_STRUCT + " = make([]*" + MODELS + "Get" + tableName + "OKBodyItems,1)"
@@ -511,25 +511,24 @@ func handleSelectReturn( debug bool, parserOutput parser.ParseOutput, timeVar st
 
 
 // Entry point
-func CreateCode( debug bool, generateDir string,  goPathForRepo string,  parserOutput parser.ParseOutput, cassandraConsistencyRequired string, endPointNameOverRide string, overridePrimaryKeys int, allowFiltering bool, logExtraInfo bool   ) {
+func CreateCode( debug bool, generateDir string,  goPathForRepo string,  parserOutput parser.ParseOutput, cassandraConsistencyRequired string, endPointNameOveride string, overridePrimaryKeys int, allowFiltering bool, logExtraInfo bool   ) {
 	indexCounter = 0
 	counter = 0
 	output := CreateFile( debug, generateDir, "/data", MAINFILE )
 	defer output.Close()
 
 
-	doNeedTimeImports := WriteHeaderPart( debug, parserOutput, goPathForRepo, endPointNameOverRide, false, output )
+	doNeedTimeImports := WriteHeaderPart( debug, parserOutput, goPathForRepo, endPointNameOveride, false, output )
 	addStruct( debug, parserOutput, output )
 	// Write out the static part of the header
 	tmpName := GetFieldName(debug, false, parserOutput.TableDetails.TableName, false)
-	if endPointNameOverRide != "" {
-		tmpName = GetFieldName( debug, false, endPointNameOverRide, false)
+	if endPointNameOveride != "" {
+		tmpName = GetFieldName( debug, false, endPointNameOveride, false)
 	}
-	tmpData := &tableDetails{ generateDir, strings.ToLower(parserOutput.TableSpace), strings.ToLower(parserOutput.TableDetails.TableName), tmpName}
+	tmpData := &tableDetails{ generateDir, strings.ToLower(parserOutput.TableSpace), tmpName, tmpName}
 	WriteStringToFileWithTemplates(  "\n" + HEADER, "header", output, &tmpData)
-	//output.WriteString( "\n" + HEADER)
-	tmpTimeVar := WriteVars( debug, parserOutput, goPathForRepo, doNeedTimeImports, endPointNameOverRide, output )
-	tmp := createSelectString( debug , parserOutput, tmpTimeVar, cassandraConsistencyRequired, overridePrimaryKeys, allowFiltering, logExtraInfo, output )
+	tmpTimeVar := WriteVars( debug, parserOutput, goPathForRepo, doNeedTimeImports, endPointNameOveride, output )
+	tmp := createSelectString( debug , parserOutput, tmpName, tmpTimeVar, cassandraConsistencyRequired, overridePrimaryKeys, allowFiltering, logExtraInfo, output )
 	output.WriteString( INDENT_1 + "if err := " + SESSION_VAR + ".Query(" + "`" + " SELECT " + tmp )
 	tmp = handleSelectReturn( debug, parserOutput, tmpTimeVar )
 	tmp = tmp + INDENT_1 + "return operations.NewGet" + tmpName + "OK().WithPayload( " + PAYLOAD + "." + PAYLOAD_STRUCT + ")" + INDENT_1 + "}"
