@@ -30,8 +30,8 @@ func TestFieldName(t *testing.T) {
 	}
 
 	ret = Capitiseid(false, "Mid", false)
-	if ret != "MID" {
-		t.Errorf("Expected MID got %s", ret)
+	if ret != "Mid" {
+		t.Errorf("Expected Mid got %s", ret)
 	}
 
 	ret = Capitiseid(false, "Id", false)
@@ -50,8 +50,8 @@ func TestFieldName(t *testing.T) {
 	}
 
 	ret = Capitiseid(false, "aid", false)
-	if ret != "AID" {
-		t.Errorf("Expected AID got %s", ret)
+	if ret != "Aid" {
+		t.Errorf("Expected Aid got %s", ret)
 	}
 
 	ret = Capitiseid(false, "aid", true)
@@ -61,8 +61,8 @@ func TestFieldName(t *testing.T) {
 
 
 	ret = Capitiseid(false, "aid_id", false)
-	if ret != "Aid_ID" {
-		t.Errorf("Expected Aid_ID got %s", ret)
+	if ret != "Aid_id" {
+		t.Errorf("Expected Aid_id got %s", ret)
 	}
 }
 
