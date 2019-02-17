@@ -40,7 +40,7 @@ func addStruct( debug bool, parserOutput parser.ParseOutput, dontUpdate bool, ou
 		v := parserOutput.TypeDetails[i]
 		output.WriteString( "\ntype " + GetFieldName( debug, false, v.TypeName,dontUpdate)  + " struct {")
 		for j := 0; j < v.TypeFields.FieldIndex ; j++ {
-			revisedFieldName := GetFieldName(debug, false, v.TypeFields.DbFieldDetails[j].DbFieldName , dontUpdate )
+			revisedFieldName := GetFieldName(debug, false, v.TypeFields.DbFieldDetails[j].OrigFieldName , dontUpdate )
 			revisedType := GetFieldName( debug, false, v.TypeName,dontUpdate)
 			tmp := mapFieldTypeToGoCSQLType( debug,  revisedFieldName, true,false, v.TypeFields.DbFieldDetails[j].DbFieldType, revisedType, v.TypeFields.DbFieldDetails[j], parserOutput, dontUpdate  )
 			//debug bool, fieldName string, leaveFieldCase bool, inTable bool, fieldType string, typeName string, fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, dontUpdate bool
@@ -55,7 +55,7 @@ func addStruct( debug bool, parserOutput parser.ParseOutput, dontUpdate bool, ou
 
 func writeField( debug bool, parserOutput parser.ParseOutput, field parser.FieldDetails, dontUpdate bool, output  *os.File) {
 
-	fieldName := GetFieldName( debug, false, field.DbFieldName, dontUpdate)
+	fieldName := GetFieldName( debug, false, field.OrigFieldName, dontUpdate)
 
 	if field.DbFieldCollectionType != "" {
 		collectionType := GetFieldName(debug, false, field.DbFieldCollectionType, false )
@@ -96,7 +96,7 @@ func WriteVars(  debug bool, parserOutput parser.ParseOutput, goPathForRepo stri
 		if swagger.IsFieldTypeUDT(parserOutput, v.DbFieldType) {
 			if debug {fmt.Println("WriteVars Found UDT = ", v.DbFieldType)}
 			// Process UDT
-			fieldName := GetFieldName(debug, false, v.DbFieldName, dontUpdate)
+			fieldName := GetFieldName(debug, false, v.OrigFieldName, dontUpdate)
 			fieldType := GetFieldName(debug, false, v.DbFieldType, false)
 			output.WriteString( INDENT_1 + fieldName + " := &" + fieldType  + "{}" + INDENT_1 + "_ = " +  fieldName )
 
@@ -148,7 +148,7 @@ func createSelectString( debug bool, parserOutput parser.ParseOutput, timeVar st
 		}
 		whereClause = whereClause + strings.ToLower( v.DbFieldName ) + " = ? "
 
-		fieldName := GetFieldName(debug, false, v.DbFieldName, dontUpdate)
+		fieldName := GetFieldName(debug, false, v.OrigFieldName, dontUpdate)
 		if swagger.IsFieldTypeATime( v.DbFieldType) {
 			// Need to parse the received parameter
 			output.WriteString( INDENT_1 + fieldName + ",_ = time.Parse(time.RFC3339,params." + fieldName + ".String() ) ")
@@ -183,7 +183,7 @@ func handleStructVarConversion(  debug bool, recursing bool, indexCounter int, t
 
 	ret := ""
 
-	fieldName := GetFieldName( debug, false, fieldDetails.DbFieldName, false)
+	fieldName := GetFieldName( debug, false, fieldDetails.OrigFieldName, false)
 	sourceVar := theStructVar + "." +  fieldName
 
 	switch ( strings.ToLower( fieldDetails.DbFieldType ) ) {
@@ -278,7 +278,7 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, i
 	// Now process each variable in order to set-up the Payload structure
 	tmp := ""
 	for i := 0; i < typeStruct.TypeFields.FieldIndex; i++ {
-		fieldName := GetFieldName(debug, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldName, false)
+		fieldName := GetFieldName(debug, false, typeStruct.TypeFields.DbFieldDetails[i].OrigFieldName, false)
 		//typeName := GetFieldName(debug, false, typeStruct.TypeName, false)
 		tmpDest := destField + "." + fieldName
 		//addMake := INDENT_1 + inDent + destField +  = &" + MODELS + typeName + "{}"
@@ -361,7 +361,7 @@ func setUpStructs ( debug bool, recursing bool,  timeFound bool, inDent string, 
 	// Now process each variable in order to set-up the Payload structure
 	tmp := ""
 	for i := 0; i < typeStruct.TypeFields.FieldIndex; i++ {
-		fieldName := GetFieldName(debug, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldName, false)
+		fieldName := GetFieldName(debug, false, typeStruct.TypeFields.DbFieldDetails[i].OrigFieldName, false)
 		typeName := GetFieldName(debug, false, typeStruct.TypeName, false)
 		tmpDest := destField + "[" + iIndex + "]." + fieldName
 		addMake := INDENT_1 + inDent + destField + "[" + iIndex + "] = &" + MODELS + typeName + "{}"
@@ -390,7 +390,7 @@ func setUpStructs ( debug bool, recursing bool,  timeFound bool, inDent string, 
 func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent string, inTable bool, typeIndex int , fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, timeVar string, dontUpdate bool ) (string, bool) {
 	indexCounter++
     ret := ""
-	fieldName := GetFieldName( debug, false, fieldDetails.DbFieldName, false)
+	fieldName := GetFieldName( debug, false, fieldDetails.OrigFieldName, dontUpdate)
 	switch ( strings.ToLower( fieldDetails.DbFieldType ) ) {
 	case "boolean":
 		tmp_var := createTempVar( fieldName )

@@ -5,7 +5,7 @@ import "strings"
 // The following set of functions are called by the FSM processing logic when a regex match is made
 
 
-func processTable(debug bool, p []string, regRow fsmRow) bool {
+func processTable(debug bool, p []string, f []string,  regRow fsmRow) bool {
 	ret := false
 	if debug { println( "Parsing new Table" ) }
 	parseOutput.TableSpace = p[1]
@@ -15,7 +15,7 @@ func processTable(debug bool, p []string, regRow fsmRow) bool {
 	return ret
 }
 
-func processType(debug bool, p []string, regRow fsmRow) bool {
+func processType(debug bool, p []string, f []string, regRow fsmRow) bool {
 	ret := false
 	if debug { println( "Parsing new Type" ) }
 	for i, v := range p {
@@ -28,7 +28,7 @@ func processType(debug bool, p []string, regRow fsmRow) bool {
 	return ret
 }
 
-func processTableField(debug bool, p []string, regRow fsmRow ) bool {
+func processTableField(debug bool, p []string, f []string, regRow fsmRow ) bool {
 	ret := false
 	var fieldDetails *FieldDetails
 	var index int
@@ -50,6 +50,7 @@ func processTableField(debug bool, p []string, regRow fsmRow ) bool {
 	}
 
 	fieldDetails.DbFieldName = p[1]
+	fieldDetails.OrigFieldName = f[1]
 	fieldDetails.DbFieldType = p[2]
 	if p[3] != "" {
 		fieldDetails.DbFieldCollectionType = p[3]
@@ -63,7 +64,7 @@ func processTableField(debug bool, p []string, regRow fsmRow ) bool {
 }
 
 // As primary key string identified return true so that the real function to process a primary key will be called
-func notePrimary(debug bool, p []string, regRow fsmRow) bool {
+func notePrimary(debug bool, p []string, f []string, regRow fsmRow) bool {
 	ret := true
 	if debug { println("Found Primary Key") }
 	theFSM.state = regRow.nextState
@@ -71,7 +72,7 @@ func notePrimary(debug bool, p []string, regRow fsmRow) bool {
 }
 
 // This function handles the PRIMARY KEY (id, name) form
-func processPrimary(debug bool, p []string, regRow fsmRow) bool {
+func processPrimary(debug bool, p []string, f []string, regRow fsmRow) bool {
 	ret := false
 	if debug { println("Parsing normal PRIMARY KEY line") }
 
@@ -102,19 +103,19 @@ func copyStringArrayToSubSstring (debug bool, p []string, pattern string ) [] st
 }
 
 // This function processes the id int PRIMARY KEY form
-func processPrimaryInLine(debug bool, p []string, regRow fsmRow) bool {
+func processPrimaryInLine(debug bool, p []string, f []string,  regRow fsmRow) bool {
 	ret := false
 	if debug { println("Parsing field PRIMARY KEY annotation") }
 	if debug { println(p[0], " - Storing", p[1]) }
 	parseOutput.TableDetails.DbPKFields[parseOutput.TableDetails.PkIndex] = p[1]
 	parseOutput.TableDetails.PkIndex = parseOutput.TableDetails.PkIndex + 1
 
-	processTableField( debug, copyStringArrayToSubSstring(debug,p,PRIMARY_STRING), regRow)
+	processTableField( debug, copyStringArrayToSubSstring(debug,p ,PRIMARY_STRING), f, regRow)
 	theFSM.state = tableField // Force searching for other fields
 	return ret
 }
 
-func procNil(debug bool, p []string, regRow fsmRow) bool {
+func procNil(debug bool, p []string, f []string, regRow fsmRow) bool {
 	ret := false
 	parseOutput.TypeIndex = parseOutput.TypeIndex + 1
 	theFSM.state = regRow.nextState // Force searching for other fields
@@ -122,19 +123,19 @@ func procNil(debug bool, p []string, regRow fsmRow) bool {
 }
 
 
-func processSimpleFrozenField(debug bool, p []string, regRow fsmRow) bool {
+func processSimpleFrozenField(debug bool, p []string, f []string, regRow fsmRow) bool {
 	ret := false
 	if debug { println("Processing Simple Frozen Field") }
-	processTableField( debug, copyStringArrayToSubSstring(debug,p,FROZEN), regRow)
+	processTableField( debug, copyStringArrayToSubSstring(debug,p,FROZEN), f, regRow)
 	theFSM.state = tableField // Force searching for other fields
 	return ret
 }
 
-func processMapFrozenField(debug bool, p []string, regRow fsmRow) bool {
+func processMapFrozenField(debug bool, p []string, f []string, regRow fsmRow) bool {
 	ret := false
 	if debug { println("Processing Map Frozen Field") }
 
-	processSimpleFrozenField( debug, p, regRow)
+	processSimpleFrozenField( debug, p, f, regRow)
 	theFSM.state = tableField // Force searching for other fields
 	return ret
 }

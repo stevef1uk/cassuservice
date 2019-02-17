@@ -9,37 +9,47 @@ func TestFieldName(t *testing.T) {
 
 	ret := Capitiseid(false, "id", false)
 	if ret != "ID" {
-		t.Errorf("Expencted ID got %s", ret)
+		t.Errorf("Expected ID got %s", ret)
 	}
 
 	ret = Capitiseid(false, "id", true)
-	if ret != "id" {
-		t.Errorf("Expencted id got %s", ret)
+	if ret != "ID" {
+		t.Errorf("Expected id got %s", ret)
+	}
+
+	ret = Capitiseid(false, "Mid", true)
+	if ret != "Mid" {
+		t.Errorf("Expected Mid got %s", ret)
+	}
+
+	ret = Capitiseid(false, "Mid", false)
+	if ret != "MID" {
+		t.Errorf("Expected MID got %s", ret)
 	}
 
 	ret = Capitiseid(false, "Id", false)
 	if ret != "ID" {
-		t.Errorf("Expencted id got %s", ret)
+		t.Errorf("Expected id got %s", ret)
 	}
 
 	ret = Capitiseid(false, "iD", false)
 	if ret != "ID" {
-		t.Errorf("Expencted id got %s", ret)
+		t.Errorf("Expected id got %s", ret)
 	}
 
 	ret = Capitiseid(false, "ID", false)
 	if ret != "ID" {
-		t.Errorf("Expencted id got %s", ret)
+		t.Errorf("Expected id got %s", ret)
 	}
 
 	ret = Capitiseid(false, "aid", false)
 	if ret != "aID" {
-		t.Errorf("Expencted id got %s", ret)
+		t.Errorf("Expected id got %s", ret)
 	}
 
 	ret = Capitiseid(false, "aid1", false)
 	if ret != "aid1" {
-		t.Errorf("Expencted aid1 got %s", ret)
+		t.Errorf("Expected aid1 got %s", ret)
 	}
 }
 
@@ -84,8 +94,8 @@ func TestFieldName3(t *testing.T) {
 	}
 
 	ret5 = CapitaliseSplitFieldName(false, "id", true)
-	if ret5 != "id" {
-		t.Errorf("Expected id got %s", ret5)
+	if ret5 != "ID" {
+		t.Errorf("Expected ID got %s", ret5)
 	}
 
 	ret5 = CapitaliseSplitFieldName(false, "steve", false)

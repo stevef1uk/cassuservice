@@ -18,7 +18,7 @@ const (
 // State, Parser String, Next State
 type fsmRow struct {
 	expression string
-	proc       func(bool, []string, fsmRow) bool
+	proc       func(bool, []string, [] string, fsmRow) bool
 	nextState  string
 	index      int
 	reg        *regexp.Regexp
@@ -88,9 +88,10 @@ func Reset() {
 }
 
 
-func parseLine(debug bool, text string) bool {
+func parseLine(debug bool, text string, origText string) bool {
 
 	ret := false
+	var fields []string
 
 	// Find RegEx to use based upon FSM state
 	var rows [] fsmRow = theFSM.rows[theFSM.state]
@@ -98,7 +99,15 @@ func parseLine(debug bool, text string) bool {
 	for _, j := range rows {
 		result := j.reg.FindStringSubmatch(text)
 		if result != nil {
-			if j.proc != nil && j.proc(debug, result, j) { parseLine( debug, text ) } // Recurse if proc returns true
+			indexes := j.reg.FindStringSubmatchIndex(text)
+			for i :=0; i  < len(indexes ); i++ {
+				if ( i % 2 == 0 ) ||indexes[i] < 0 {
+					continue
+				}
+				fields = append( fields, origText[indexes[i-1]:indexes[i]])
+			}
+
+			if j.proc != nil && j.proc(debug, result, fields, j) { parseLine( debug, text, origText ) } // Recurse if proc returns true
 			break // Only allow one RegEx match within an FSM state
 		}
 	}
@@ -119,7 +128,7 @@ func ParseText(debug bool, setUp func( bool), reset func(),  text string) ParseO
 			if debug { println("I am out of here!") }
 			break
 		}
-		parseLine(debug, strings.ToUpper(v))
+		parseLine(debug, strings.ToUpper(v), v)
 	}
 	reset()
 	if debug { println("Finished ParseText") }

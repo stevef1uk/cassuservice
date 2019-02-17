@@ -56,11 +56,11 @@ func getServiceName ( tableName, endPointNameOverRide string ) string {
 
 
 func GetFieldName(  debug bool, leaveCase bool, fieldName string, dontUpdate bool ) string {
-	name := ""
-	if leaveCase {
-		name = fieldName
-	} else {
-		name = strings.ToLower(fieldName)
+	name := fieldName
+	if ! leaveCase {
+		if ! dontUpdate {
+			name = strings.ToLower(fieldName)
+		}
 	}
 	return CapitaliseSplitFieldName( debug, name, dontUpdate )
 }
@@ -73,7 +73,7 @@ func Capitiseid( debug bool, fieldName string, dontUpdate bool ) string {
 	var ret string = ""
 	if debug { fmt.Printf("Capitiseid entry field  = %s, len = %d\n ",fieldName, len(fieldName) ) }
 
-	if dontUpdate {
+	if dontUpdate && len(fieldName ) > 2 {
 		ret = fieldName
 		if debug { fmt.Printf("Capitiseid told not to update\n ") }
 	} else {
@@ -106,7 +106,7 @@ debug = false
 	var ret string = ""
 	if debug { fmt.Printf("CapitaliseSplitFieldName entry field  = %s, len = %d\n ",fieldName, len(fieldName) ) }
 
-	if dontUpdate  || fieldName == ""{
+	if fieldName == ""{
 		ret = fieldName
 		if debug { fmt.Printf("CapitaliseSplitFieldName told not to update\n ") }
 	} else {
