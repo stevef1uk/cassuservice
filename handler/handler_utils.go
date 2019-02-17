@@ -58,9 +58,7 @@ func getServiceName ( tableName, endPointNameOverRide string ) string {
 func GetFieldName(  debug bool, leaveCase bool, fieldName string, dontUpdate bool ) string {
 	name := fieldName
 	if ! leaveCase {
-		if ! dontUpdate {
-			name = strings.ToLower(fieldName)
-		}
+		name = strings.ToLower(fieldName)
 	}
 	return CapitaliseSplitFieldName( debug, name, dontUpdate )
 }
@@ -85,9 +83,18 @@ func Capitiseid( debug bool, fieldName string, dontUpdate bool ) string {
 	}
 
 	if ! dontUpdate {
-		if (runes[0] == rune('i') || runes[0] == rune('I')) && (runes[1] == rune('d') || runes[1] == rune('D')) {
-			runes[0] = rune('I')
-			runes[1] = rune('D')
+		for i := 0; i < last; i++ {
+			if ! ((i == 0) || (i == last-1)) {
+				continue;
+			}
+			//if debug { fmt.Printf("Capitiseid [0] = %q, [1] = %q\n ", runes[i], runes[i+1]) }
+			if (runes[i] == rune('i') || runes[i] == rune('I')) && (runes[i+1] == rune('d') || runes[i+1] == rune('D')) {
+				if debug {
+					fmt.Printf("Capitiseid match at i= %d\n ", i)
+				}
+				runes[i] = rune('I')
+				runes[i+1] = rune('D')
+			}
 		}
 	}
 
@@ -109,8 +116,10 @@ debug = false
 	} else {
 		tmpFields := strings.Split(fieldName, "_" )
 		if debug {fmt.Printf("CapitaliseSplitFieldName tmpFields  = %q\n ", tmpFields)}
+		first := dontUpdate
 		for _, v := range tmpFields {
-			v = Capitiseid( debug, v, dontUpdate )
+			v = Capitiseid( debug, v, first )
+			first = false
 			v = strings.ToUpper(string(v[0])) + v[1:]
 			ret = ret + v
 		}
