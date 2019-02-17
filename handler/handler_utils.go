@@ -83,6 +83,11 @@ func Capitiseid( debug bool, fieldName string, dontUpdate bool ) string {
 	}
 
 	if ! dontUpdate {
+		if (runes[0] == rune('i') || runes[0] == rune('I')) && (runes[1] == rune('d') || runes[1] == rune('D')) {
+			runes[0] = rune('I')
+			runes[1] = rune('D')
+		}
+		/*
 		for i := 0; i < last; i++ {
 			if ! ((i == 0) || (i == last-1)) {
 				continue;
@@ -95,7 +100,8 @@ func Capitiseid( debug bool, fieldName string, dontUpdate bool ) string {
 				runes[i] = rune('I')
 				runes[i+1] = rune('D')
 			}
-		}
+		}*/
+
 	}
 
 	ret = strings.ToUpper(string(runes[0])) + string(runes[1:])
@@ -415,11 +421,11 @@ func findTypeDetails ( debug bool, typeName string, parserOutput parser.ParseOut
 
 
 
-func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName string, destFieldName string,  fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, dontUpdate bool  ) string {
+func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName string, destFieldName string,  fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput  ) string {
 	equals := " := "
 	ret := ""
-	arrayType := basicMapCassandraTypeToGoType(debug, false, inTable, fieldDetails.DbFieldName, fieldDetails.DbFieldCollectionType, "", fieldDetails, parserOutput, dontUpdate, true )
-	arrayTypeDest := basicMapCassandraTypeToGoType(debug, false, inTable, fieldDetails.DbFieldName, fieldDetails.DbFieldCollectionType, "", fieldDetails, parserOutput, dontUpdate, false )
+	arrayType := basicMapCassandraTypeToGoType(debug, false, inTable, fieldDetails.DbFieldName, fieldDetails.DbFieldCollectionType, "", fieldDetails, parserOutput, true, true )
+	arrayTypeDest := basicMapCassandraTypeToGoType(debug, false, inTable, fieldDetails.DbFieldName, fieldDetails.DbFieldCollectionType, "", fieldDetails, parserOutput, false, false )
 
 	switch arrayType {
 	case "*inf.Dec":

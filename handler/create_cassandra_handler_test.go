@@ -684,7 +684,7 @@ func performCreateTest1( debug bool, test string, cql string, expected string , 
 	input(file)
 
 	parse1 := parser.ParseText( false, parser.Setup, parser.Reset, cql )
-	CreateCode( false, "/tmp", "github.com/stevef1uk/test4", parse1,  "",  "",  0, false , false , true   )
+	CreateCode( false, "/tmp", "github.com/stevef1uk/test4", parse1,  "",  "",  0, false , true   )
 
 
 	// Read generated file
@@ -697,6 +697,7 @@ func performCreateTest1( debug bool, test string, cql string, expected string , 
 	log.Printf("Expected to read %d bytes\n", len(expected))
 	byteSlice := make([]byte, 10000)
 	numBytesRead, err := io.ReadFull(fileo, byteSlice)
+
 	if err != nil {
 		log.Printf("Number of bytes read: %d\n", numBytesRead)
 	}

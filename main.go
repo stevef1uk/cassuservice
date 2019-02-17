@@ -28,7 +28,7 @@ func main() {
 	logNoDataPtr := flag.Bool("logNoData", true, "Set logNoData to false to supress logging of No Data & any error message from the select")
 	outputPtr := flag.String("dirToGenerateIn", "/tmp", "set dirToGenerateIn to the full path of the directory where the output of swagger is defaults to /tmp")
 	pathNamePtr := flag.String("pathNamePtr", "", "if auto patching of configure_simple.go isn't working set pathNamePtr to the full path of the directory where the output of swagger is")
-	dontUpdateFieldPtr := flag.Bool("idLeave", false, "Set flag true to prevent trailing id values in fields being capitalised e.g. Mid will not be changed to MID")
+	//dontUpdateFieldPtr := flag.Bool("idLeave", false, "Set flag true to prevent trailing id values in fields being capitalised e.g. Mid will not be changed to MID")
 	//swaggerPtr := flag.String("swagger", "/usr/local/bin/swagger", "set swagger to full path name of swagger program from: https://github.com/go-swagger/go-swagger, defaults to /usr/local/bin")
     //_ = swaggerPtr
 
@@ -55,7 +55,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	handler.CreateCode( *debugPtr, *outputPtr, *goPackageNamePtr, parse1,  *consistencyPtr,  *endPointPtr, *primaryKeysPtr,  *allowFilteringPtr , *dontUpdateFieldPtr , *logNoDataPtr   )
+	handler.CreateCode( *debugPtr, *outputPtr, *goPackageNamePtr, parse1,  *consistencyPtr,  *endPointPtr, *primaryKeysPtr,  *allowFilteringPtr, *logNoDataPtr   )
 
 	os.Setenv("PATH", "/usr/bin:/sbin:/usr/local/bin:/bin")
 	command := "swagger"
@@ -65,7 +65,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	tableName := handler.GetFieldName(  *debugPtr, false, parse1.TableDetails.TableName, *dontUpdateFieldPtr )
+	tableName := handler.GetFieldName(  *debugPtr, false, parse1.TableDetails.TableName, false )
 	ret := handler.SpiceInHandler( false , pathName, tableName, *endPointPtr )
 	_ = ret
 }
