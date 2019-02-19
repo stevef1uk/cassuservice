@@ -9,6 +9,8 @@ The architecture approach is simple:
 2. Use go-swagger to generate the RESTful server, see: https://github.com/go-swagger/go-swagger
 3. Parse Cassandra DDL to create the Cassandra handler and wire it into the RESTful server.
 
+I have written a short blog providing a little more information: https://stevef1uk.blogspot.com/2019/02/an-easy-way-to-build-restful-micro.html
+
 Prerequisites:
 I have updated the main.go file to perform the above steps in one. However, on my machine I have run the 'swagger generate server -f t.cql' command before and then followed the instructions to run 'go get -u X' as instructed, which will need to be done once manually to load the required packages. I have also installed gocql see: https://github.com/gocql/gocql as the generated Cassandra handler uses this.
 
