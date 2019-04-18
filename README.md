@@ -1,4 +1,4 @@
-# cassuservice
+# cassuservice 
 Repo that contains Golang code that can autogenerate a Golang microservice from a Cassandra DDL for a table.
 
 I originally wrote equivalent code whilst at my last employer as an exercise to learning Golang. I am no longer a professional programmer, but still enjoy the challenges of coding. I did gain permission to open source my first working version of the previous  work, but was unable to get the code officially listed before I decided to move on. Therefore, I have rewritten it in this repo and done it better the second time I believe. 
@@ -8,6 +8,8 @@ The architecture approach is simple:
 1. Parse Cassandra DDL to create a swagger file
 2. Use go-swagger to generate the RESTful server, see: https://github.com/go-swagger/go-swagger
 3. Parse Cassandra DDL to create the Cassandra handler and wire it into the RESTful server.
+
+I have written a short blog providing a little more information: https://stevef1uk.blogspot.com/2019/02/an-easy-way-to-build-restful-micro.html
 
 Prerequisites:
 I have updated the main.go file to perform the above steps in one. However, on my machine I have run the 'swagger generate server -f t.cql' command before and then followed the instructions to run 'go get -u X' as instructed, which will need to be done once manually to load the required packages. I have also installed gocql see: https://github.com/gocql/gocql as the generated Cassandra handler uses this.
