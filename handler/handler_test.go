@@ -66,6 +66,7 @@ func TestFieldName(t *testing.T) {
 	}
 }
 
+/*
 func TestFieldName2(t *testing.T) {
 
 	ret1 := CreateFile(true, "/tmp", "/tmp", MAINFILE)
@@ -84,6 +85,7 @@ func TestFieldName2(t *testing.T) {
 		t.Errorf("Expected int got %s", ret2)
 	}
 */
+/*
 	ret3 := createTempVar("field1")
 	if ret3 != "tmp_field1_0" {
 		t.Errorf("Expected tmp_field1_0 got %s", ret3)
@@ -98,6 +100,7 @@ func TestFieldName2(t *testing.T) {
 	//ret4 := setUpArrayTypes(true, "TIMEUUID", false)
 	//_ = ret4
 }
+*/
 
 func TestFieldName3(t *testing.T) {
 
