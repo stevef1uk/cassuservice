@@ -1,4 +1,4 @@
-# cassuservice
+# cassuservice 
 Repo that contains Golang code that can autogenerate a Golang microservice from a Cassandra DDL for a table.
 
 I originally wrote equivalent code whilst at my last employer as an exercise to learning Golang. I am no longer a professional programmer, but still enjoy the challenges of coding. I did gain permission to open source my first working version of the previous  work, but was unable to get the code officially listed before I decided to move on. Therefore, I have rewritten it in this repo and done it better the second time I believe. 
