@@ -28,6 +28,7 @@ func main() {
 	logNoDataPtr := flag.Bool("logNoData", true, "Set logNoData to false to supress logging of No Data & any error message from the select")
 	outputPtr := flag.String("dirToGenerateIn", "/tmp", "set dirToGenerateIn to the full path of the directory where the output of swagger is defaults to /tmp")
 	pathNamePtr := flag.String("pathNamePtr", "", "if auto patching of configure_simple.go isn't working set pathNamePtr to the full path of the directory where the output of swagger is")
+	postPtr := flag.Bool("post", false, "set to true to add post method as well")
 
     //_ = swaggerPtr
 
@@ -41,7 +42,7 @@ func main() {
 	input := string(b)
 	parse1 := parser.ParseText( *debugPtr, parser.Setup, parser.Reset, input )
 
-	swagger := swagger.CreateSwagger( *debugPtr, parse1, *endPointPtr )
+	swagger := swagger.CreateSwagger( *debugPtr, parse1, *endPointPtr, *postPtr )
 
 	pathName := os.Getenv("GOPATH")  + "/src/" + *goPackageNamePtr
 	if *pathNamePtr != "" {

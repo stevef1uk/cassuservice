@@ -258,10 +258,60 @@ func addParametersAndResponses( debug bool, output string, parseOutput  parser.P
 	return ret
 }
 
+// FUnction to add the schema for the Post record
+func addPostFields( debug bool, haveDefs bool , parseOutput  parser.ParseOutput, tableName string  ) string {
+	ret, ret1 := "", ""
+	tableDetails := parseOutput.TableDetails
+
+	if ! haveDefs {
+		ret = "definitions:"
+	}
+
+    ret = ret + `
+  ` + tableName + `:
+    properties:`
+	for i :=0;  i < tableDetails.PkIndex; i++ {
+		ret1 = addFieldDetails(debug, "      ", "", parseOutput, tableDetails.TableFields, false, 0)
+	}
+	return ret + ret1
+}
+
+
+// Function to create the swagger string for a POST operation to support inserts
+func CreateSwaggerPost( debug bool, output string, parseOutput parser.ParseOutput ) (string, string)  {
+	retSwagger := output
+
+	tableName := strings.Title(strings.ToLower(parseOutput.TableDetails.TableName))
+
+	//Add tablename & get string
+	retSwagger = output + `
+    post: 
+      tags:
+      - " ` + tableName + `" 
+      summary: Add a new record to the Cassandra table 
+      description: Adds or updates a row in the Cassandra table
+      operationId: add` + tableName + `
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: The fields of the table that needs to be populates in JSON form
+          required: true
+          schema:
+            $ref: '#/definitions/` + tableName + `'
+      responses:
+        '405':
+          description: Invalid input
+`
+	return retSwagger, tableName
+}
 
 // Main function to generate a string containing a swagger file
 
-func CreateSwagger( debug bool, parseOutput parser.ParseOutput, endPointOveride string  ) string {
+func CreateSwagger( debug bool, parseOutput parser.ParseOutput, endPointOveride string, addPost bool  ) string {
 	retSwagger := HEADER
 
 	tableName := strings.ToLower(parseOutput.TableDetails.TableName)
@@ -279,14 +329,22 @@ func CreateSwagger( debug bool, parseOutput parser.ParseOutput, endPointOveride 
 
 	// Add the parameters
 	retSwagger = addParametersAndResponses( debug, retSwagger, parseOutput )
+	if addPost {
+		retSwagger, tableName = CreateSwaggerPost(debug, retSwagger, parseOutput)
+	}
+
 	retSwagger, haveDefs := addDefinitions( debug, retSwagger, parseOutput  )
 	if haveDefs {
 		retSwagger = addUDTs( debug, retSwagger, parseOutput )
 		retSwagger = addMaps( debug, retSwagger, parseOutput )
 		retSwagger = addCollectionTypes( debug, retSwagger, parseOutput )
 	}
+	if addPost {
+		retSwagger = retSwagger + addPostFields(debug, haveDefs, parseOutput, tableName)
+	}
 
 	return retSwagger
 }
+
 
 
