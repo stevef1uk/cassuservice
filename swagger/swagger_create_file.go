@@ -287,7 +287,7 @@ func CreateSwaggerPost( debug bool, output string, parseOutput parser.ParseOutpu
 	retSwagger = output + `
     post: 
       tags:
-      - " ` + tableName + `" 
+      - "` + tableName + `" 
       summary: Add a new record to the Cassandra table 
       description: Adds or updates a row in the Cassandra table
       operationId: add` + tableName + `

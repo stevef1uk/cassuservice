@@ -511,7 +511,7 @@ func handleSelectReturn( debug bool, parserOutput parser.ParseOutput, timeVar st
 
 
 // Entry point
-func CreateCode( debug bool, generateDir string,  goPathForRepo string,  parserOutput parser.ParseOutput, cassandraConsistencyRequired string, endPointNameOveride string, overridePrimaryKeys int, allowFiltering bool, logExtraInfo bool   ) {
+func CreateCode( debug bool, generateDir string,  goPathForRepo string,  parserOutput parser.ParseOutput, cassandraConsistencyRequired string, endPointNameOveride string, overridePrimaryKeys int, allowFiltering bool, logExtraInfo bool, addPost bool    ) {
 	indexCounter = 0
 	counter = 0
 	output := CreateFile( debug, generateDir, "/data", MAINFILE )

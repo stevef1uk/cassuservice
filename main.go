@@ -55,7 +55,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	handler.CreateCode( *debugPtr, *outputPtr, *goPackageNamePtr, parse1,  *consistencyPtr,  *endPointPtr, *primaryKeysPtr,  *allowFilteringPtr, *logNoDataPtr   )
+	handler.CreateCode( *debugPtr, *outputPtr, *goPackageNamePtr, parse1,  *consistencyPtr,  *endPointPtr, *primaryKeysPtr,  *allowFilteringPtr, *logNoDataPtr, *postPtr   )
 
 	os.Setenv("PATH", "/usr/bin:/sbin:/usr/local/bin:/bin")
 	command := "swagger"
@@ -66,6 +66,6 @@ func main() {
 	}
 
 	tableName := handler.GetFieldName(  *debugPtr, false, parse1.TableDetails.TableName, false )
-	ret := handler.SpiceInHandler( false , pathName, tableName, *endPointPtr )
+	ret := handler.SpiceInHandler( false , pathName, tableName, *endPointPtr, *postPtr  )
 	_ = ret
 }

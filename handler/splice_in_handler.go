@@ -77,8 +77,9 @@ func createFile( generatedCodePath string, tmpFile string  ) {
 }
 
 // Only enable debug here when in difficulty as the debug strings will end up in the generated file causing compilation issues
-func SpiceInHandler( debug bool, generatedCodePath string, tableName string, endPointNameOverRide string) bool {
+func SpiceInHandler( debug bool, generatedCodePath string, tableName string, endPointNameOverRide string, addPost bool) bool {
 	reprocessing := false
+	foundImport := false
 	genString := ""
 	if (endPointNameOverRide != "" ) {
 		genString = strings.Title(endPointNameOverRide)
@@ -87,7 +88,9 @@ func SpiceInHandler( debug bool, generatedCodePath string, tableName string, end
 	}
 	if debug {fmt.Println("SpiceInHandler  genString = ", genString)
 	}
-	handlerString := "api.Get" + genString + "Handler = operations.Get" + genString
+	tblName := strings.Title(strings.ToLower(tableName))
+	handlerString := "api.Get" + genString + "Handler = operations.Get" + genString +"HandlerFunc"
+	postHandlerString := "api." +tblName + "Add" + tblName + "Handler = " + strings.ToLower(tableName) + ".Add" + tblName + "HandlerFunc"
 
 	fileout := tempFile()
 	defer fileout.Close()
@@ -145,17 +148,30 @@ func SpiceInHandler( debug bool, generatedCodePath string, tableName string, end
 				skip = true
 				fmt.Println(`
 	return data.Search(params) `)
-				} else if ( strings.Contains(text, "restapi/operations") ) {
+				} else if addPost && ( strings.Contains(text, postHandlerString) ) {
 					if debug {
-						fmt.Print("Found import")
+						fmt.Print("Found handlerString2")
 					}
-					tmpStr := strings.Replace(text, "restapi/operations", "data", -1)
 					fmt.Println(text)
-					fmt.Println(tmpStr + `
+					skip = true
+					fmt.Println(`
+	return data.Insert(params) `)
+					} else if ( strings.Contains(text, "restapi/operations") ) {
+						if debug {
+							fmt.Print("Found import")
+						}
+						if ! foundImport {
+							foundImport = true
+							tmpStr := strings.Replace(text, "restapi/operations", "data", -1)
+							fmt.Println(text)
+							fmt.Println(tmpStr + `
 `)
-				} else {
-					fmt.Println(text)
-				}
+						} else {
+							fmt.Println(text)
+						}
+					} else {
+						fmt.Println(text)
+					}
 	}
 	if ( reprocessing == false ) {
 
