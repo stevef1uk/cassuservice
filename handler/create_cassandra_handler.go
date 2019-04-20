@@ -509,6 +509,11 @@ func handleSelectReturn( debug bool, parserOutput parser.ParseOutput, timeVar st
 	return ret
 }
 
+func handlePost(debug bool, parserOutput parser.ParseOutput, timeVar string ) string {
+	ret := ""
+
+	return ret
+}
 
 // Entry point
 func CreateCode( debug bool, generateDir string,  goPathForRepo string,  parserOutput parser.ParseOutput, cassandraConsistencyRequired string, endPointNameOveride string, overridePrimaryKeys int, allowFiltering bool, logExtraInfo bool, addPost bool    ) {
@@ -533,8 +538,13 @@ func CreateCode( debug bool, generateDir string,  goPathForRepo string,  parserO
 	tmp = handleSelectReturn( debug, parserOutput, tmpTimeVar )
 	tmp = tmp + INDENT_1 + "return operations.NewGet" + tmpName + "OK().WithPayload( " + PAYLOAD + "." + PAYLOAD_STRUCT + ")" + INDENT_1 + "}"
 	output.WriteString( tmp )
- 
 
+	if addPost {
+		tmpData = &tableDetails{ generateDir, strings.ToLower(parserOutput.TableDetails.TableName), strings.Title(strings.ToLower(parserOutput.TableDetails.TableName)), tmpName}
+		WriteStringToFileWithTemplates(  "\n" + POST_HEADER, "headerpost", output, &tmpData)
+		tmp =  handlePost( debug , parserOutput, tmpTimeVar)
+		output.WriteString( tmp )
+	}
 }
 
 

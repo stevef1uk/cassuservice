@@ -81,6 +81,10 @@ func Search(params operations.Get{{.EXPORTPATH}}Params) middleware.Responder {
 	PAYLOAD_STRUCT = "Payload"
 	PARAMS_RET = "retParams"
 
+	POST_HEADER = `
+func Insert(params {{.KEYSPACE}}.Add{{.TABLENAME}}Params) middleware.Responder {
+`
+
 
 )
 
