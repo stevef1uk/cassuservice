@@ -14,7 +14,7 @@ import (
 
 
 
-func WriteHeaderPart( debug bool, parserOutput parser.ParseOutput, generateDir string, endPointNameOverRide string, dontUpdate bool, output  *os.File ) bool  {
+func WriteHeaderPart( debug bool, parserOutput parser.ParseOutput, generateDir string, endPointNameOverRide string, dontUpdate bool, addPost bool, output  *os.File ) bool  {
 	doNeedTimeImports := doINeedTime(parserOutput )
 	needDecimalImports := doINeedDecimal(parserOutput )
 
@@ -25,8 +25,11 @@ func WriteHeaderPart( debug bool, parserOutput parser.ParseOutput, generateDir s
 	if needDecimalImports {
 		extraImports = extraImports + IMPORTDEC
 	}
+	if addPost {
+		extraImports = extraImports + IMPORTFORPOST
+	}
 
-	tmpData := &tableDetails{ generateDir, "", "",""}
+	tmpData := &tableDetails{ generateDir, "", strings.ToLower(parserOutput.TableDetails.TableName),""}
 	WriteStringToFileWithTemplates(  COMMONIMPORTS + extraImports + IMPORTSEND , "codegen-get", output, &tmpData)
 
 	return doNeedTimeImports
@@ -511,6 +514,10 @@ func handleSelectReturn( debug bool, parserOutput parser.ParseOutput, timeVar st
 
 func handlePost(debug bool, parserOutput parser.ParseOutput, timeVar string ) string {
 	ret := ""
+	tableName := strings.ToLower(parserOutput.TableDetails.TableName)
+
+	ret = ret + INDENT_1 + "return " + tableName + "." + "NewAdd" + swagger.CapitaliseSplitTableName(debug, tableName) + "Created()" + `
+}`
 
 	return ret
 }
@@ -523,7 +530,7 @@ func CreateCode( debug bool, generateDir string,  goPathForRepo string,  parserO
 	defer output.Close()
 
 
-	doNeedTimeImports := WriteHeaderPart( debug, parserOutput, goPathForRepo, endPointNameOveride, false, output )
+	doNeedTimeImports := WriteHeaderPart( debug, parserOutput, goPathForRepo, endPointNameOveride, false, addPost, output )
 	addStruct( debug, parserOutput, output )
 	// Write out the static part of the header
 	tmpName := GetFieldName(debug, false, parserOutput.TableDetails.TableName, false)
@@ -540,7 +547,7 @@ func CreateCode( debug bool, generateDir string,  goPathForRepo string,  parserO
 	output.WriteString( tmp )
 
 	if addPost {
-		tmpData = &tableDetails{ generateDir, strings.ToLower(parserOutput.TableDetails.TableName), strings.Title(strings.ToLower(parserOutput.TableDetails.TableName)), tmpName}
+		tmpData = &tableDetails{ generateDir, strings.ToLower(parserOutput.TableDetails.TableName), swagger.CapitaliseSplitTableName(debug, parserOutput.TableDetails.TableName), tmpName}
 		WriteStringToFileWithTemplates(  "\n" + POST_HEADER, "headerpost", output, &tmpData)
 		tmp =  handlePost( debug , parserOutput, tmpTimeVar)
 		output.WriteString( tmp )

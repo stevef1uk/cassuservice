@@ -44,6 +44,9 @@ import (
 	"strconv"
 	`
 
+	IMPORTFORPOST = `
+    "{{.PATH}}/restapi/operations/{{.TABLENAME}}"
+     `
 	HEADER =`
 var ` + SESSION_VAR + ` *gocql.Session
 

@@ -281,7 +281,7 @@ func addPostFields( debug bool, haveDefs bool , parseOutput  parser.ParseOutput,
 func CreateSwaggerPost( debug bool, output string, parseOutput parser.ParseOutput ) (string, string)  {
 	retSwagger := output
 
-	tableName := strings.Title(strings.ToLower(parseOutput.TableDetails.TableName))
+	tableName := CapitaliseSplitTableName(debug, parseOutput.TableDetails.TableName)
 
 	//Add tablename & get string
 	retSwagger = output + `
@@ -303,6 +303,8 @@ func CreateSwaggerPost( debug bool, output string, parseOutput parser.ParseOutpu
           schema:
             $ref: '#/definitions/` + tableName + `'
       responses:
+        '201':
+          description: Record created
         '405':
           description: Invalid input
 `

@@ -138,6 +138,10 @@ debug = false
 	return ret
 }
 
+
+
+
+
 // THis function returns the Go types for UDT fields
 func basicMapCassandraTypeToGoType( debug bool, leaveFieldCase bool, inTable bool, fieldName string, fieldType string, typeName string,  fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, dontUpdate bool, makeSmall bool ) string {
 	text := ""

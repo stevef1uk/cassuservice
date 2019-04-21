@@ -406,3 +406,16 @@ CREATE TABLE demo.employee1 (
 		t.Errorf("DbFieldDetails[1].DbFieldName  incorrect, got: %s, want: %s.", expected.TableDetails.TableFields.DbFieldDetails[1].DbFieldName, "TSIMPLE")
 	}
 }
+
+func TestComplexTableNames(t *testing.T) {
+
+	expected := ParseText(false, Setup, Reset, `
+CREATE TABLE demo.simple1_two(
+    id int,
+    citycode text
+);
+  `)
+	if expected.TableDetails.TableName != "SIMPLE1_TWO" {
+		t.Errorf("TableName incorrect, got: %s, want: %s.", expected.TableDetails.TableName, "SIMPLE1_TWO")
+	}
+}

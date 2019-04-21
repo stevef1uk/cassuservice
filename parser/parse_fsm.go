@@ -35,6 +35,7 @@ var theFSM fsm
 //var theRegs []*regexp.Regexp
 
 // Setup This function needs to be called first to initialise the FSM
+// Note: I used https://regex-golang.appspot.com/assets/html/index.html to test the regular expressions
 func Setup( debug bool ) {
 	parseOutput = ParseOutput{}
 	parseOutput.TableDetails = TableDetails{}

@@ -1,9 +1,10 @@
 package swagger
 
 import (
+	"fmt"
 	"github.com/stevef1uk/cassuservice/parser"
-	"strings"
 	"log"
+	"strings"
 )
 
 // Utility function to identify if the passed fieldType is a User Defined Type
@@ -144,4 +145,36 @@ func mapCassandraTypeToSwaggerFormat( fieldType string  ) string {
 	}
 	return text
 
+}
+
+// Function to wrap strings.Title
+func Title( input string ) string {
+
+	return strings.Title(input)
+}
+
+// Function that renames fields to match that performed for some reason by go-swagger in its generated framework code e.g. My_List becomes MyList
+// Note: Cassandra does not let tables be created with the foem x-y just x_y and id strinsg are left alone
+func CapitaliseSplitTableName ( debug bool, fieldName string ) string {
+	debug = false
+	var ret string = ""
+	if debug { fmt.Printf("CapitaliseSplitTableName entry field  = %s, len = %d\n ",fieldName, len(fieldName) ) }
+
+	if fieldName == ""{
+		ret = fieldName
+		if debug { fmt.Printf("CapitaliseSplitTableName fieldName empty\n ") }
+	} else {
+		tmpFields := strings.Split(strings.ToLower(fieldName), "_" )
+		if debug {fmt.Printf("CapitaliseSplitTableName tmpFields  = %q\n ", tmpFields)}
+		for _, v := range tmpFields {
+			v = Title( v )
+			v = strings.ToUpper(string(v[0])) + v[1:]
+			ret = ret + v
+		}
+		ret = strings.ToUpper(string(ret[0])) + ret[1:]
+
+	}
+
+	if debug {fmt.Printf("CapitaliseSplitTableName returning field  = %s\n ", ret)}
+	return ret
 }

@@ -3,6 +3,7 @@ package handler
 import (
 	"bufio"
 	"fmt"
+	"github.com/stevef1uk/cassuservice/swagger"
 	"io/ioutil"
 	"log"
 	"os"
@@ -88,7 +89,7 @@ func SpiceInHandler( debug bool, generatedCodePath string, tableName string, end
 	}
 	if debug {fmt.Println("SpiceInHandler  genString = ", genString)
 	}
-	tblName := strings.Title(strings.ToLower(tableName))
+	tblName := swagger.CapitaliseSplitTableName(debug, tableName)
 	handlerString := "api.Get" + genString + "Handler = operations.Get" + genString +"HandlerFunc"
 	postHandlerString := "api." +tblName + "Add" + tblName + "Handler = " + strings.ToLower(tableName) + ".Add" + tblName + "HandlerFunc"
 

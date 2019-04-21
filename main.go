@@ -65,7 +65,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	tableName := handler.GetFieldName(  *debugPtr, false, parse1.TableDetails.TableName, false )
+	//tableName := handler.GetFieldName(  *debugPtr, false, parse1.TableDetails.TableName, false )
+	tableName := parse1.TableDetails.TableName
 	ret := handler.SpiceInHandler( false , pathName, tableName, *endPointPtr, *postPtr  )
 	_ = ret
 }

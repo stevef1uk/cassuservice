@@ -775,3 +775,22 @@ CREATE TABLE demo.employee (
 		t.Errorf("Swagger output wrong got:%s: want:%s:", ret1, expectedOutput )
 	}
 }
+
+
+func TestTableName(t *testing.T) {
+
+	ret := CapitaliseSplitTableName(false, "i")
+	if ret != "I" {
+		t.Errorf("Expected I got %s", ret)
+	}
+
+	ret = CapitaliseSplitTableName(false, "one_two")
+	if ret != "OneTwo" {
+		t.Errorf("Expected OneTwo got %s", ret)
+	}
+
+	ret = CapitaliseSplitTableName(false, "id_id")
+	if ret != "IdId" {
+		t.Errorf("Expected IdId got %s", ret)
+	}
+}
