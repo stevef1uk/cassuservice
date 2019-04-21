@@ -85,7 +85,7 @@ func SpiceInHandler( debug bool, generatedCodePath string, tableName string, end
 	if (endPointNameOverRide != "" ) {
 		genString = strings.Title(endPointNameOverRide)
 	} else {
-		genString = tableName
+		genString = swagger.CapitaliseSplitTableName(debug, tableName )
 	}
 	if debug {fmt.Println("SpiceInHandler  genString = ", genString)
 	}
