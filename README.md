@@ -73,6 +73,11 @@ Known issues:
 
 The functonality of this tool to support the Cassandra MAP type is very limited. This tool can only cope with maps if they are defined as map<text,text>; this is simply becasue there seems to be no way of modelling the map type in Swagger! I have used the addionalProperties arroach and hard coded this to a string. For now if maps are used that are not of this trivial form the generated code handler will need to be modified manually.
 
+BUGS:
+1. Types of VARINT don't work - I have found set<VARINT> not to work
+2. For Post only tables without UDTs are supported. This is because gocql doesn't seem to properly support these as far as I can tell
+
+
 A more complex example:
 
  CREATE TYPE demo.simple (

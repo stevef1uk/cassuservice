@@ -474,3 +474,20 @@ func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName
 	}
 	return ret
 }
+
+
+func processPostField(debug bool, fieldName string, fieldDetails parser.FieldDetails ) string {
+    ret := ""
+	if debug {fmt.Printf("processPostField %s %s\n ", fieldName, fieldDetails.DbFieldType )}
+	switch strings.ToLower(fieldDetails.DbFieldType) {
+	case "timestamp":
+		tmp := createTempVar( fieldName )
+		ret = INDENT_1 + tmp + ",ok" + tmp + " := time.Parse( time.RFC3339,params.Body." + GetFieldName(  debug , false, fieldName, false ) + ")"
+		ret = ret + INDENT_1 + "if ok" + tmp + " != nil {" + `
+` + INDENT3 +  "log.Println(ok" + tmp + ")" + `
+` + INDENT2 + "}" + INDENT_1 +  `m["` + fieldName + `"] = ` + tmp
+	default:
+		ret = ret + INDENT_1 + `m["` + fieldName + `"] = ` + "params.Body." + GetFieldName(  debug , false, fieldName, false )
+	}
+    return ret
+}
