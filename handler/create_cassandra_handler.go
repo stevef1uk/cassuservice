@@ -512,9 +512,51 @@ func handleSelectReturn( debug bool, parserOutput parser.ParseOutput, timeVar st
 	return ret
 }
 
-func handlePost(debug bool, parserOutput parser.ParseOutput, timeVar string ) string {
-	ret := ""
+
+func setupPostParams( debug bool, parserOutput parser.ParseOutput, tableName string ) string {
+
+	ret := INDENT_1
+	tmp := buildSelectParams( debug , parserOutput )
+	for _, v := range strings.Split(tmp, ", ") {
+		ret = ret + INDENT_1 + `m["` + v + `"] = ` + "params.Body." + GetFieldName(  debug , false, v, false )
+	}
+
+	return ret
+}
+
+
+func createInsert(debug bool, parserOutput parser.ParseOutput, tableName string  )string {
+	ret := INDENT_1 + "m := make(map[string]interface{})"
+	ret = ret + INDENT_1 + setupPostParams( debug, parserOutput, swagger.CapitaliseSplitTableName(debug, tableName) )
+	ret = ret + INDENT_1 + "if err := " + SESSION_VAR + ".Query(" + "`" + " INSERT INTO " + tableName + "("
+	tmp := buildSelectParams( debug , parserOutput )
+	tmp1 := ""
+	ret = ret + tmp + ") VALUES ("
+
+	s := strings.Split(tmp, ", ")
+	for i, v := range s {
+		ret = ret + "?"
+		tmp1 = tmp1 + "m[" + `"` + v + `"` + "]"
+		if i < len(s) -1 {
+			tmp1 = tmp1 + ","
+			ret = ret + ","
+		}
+	}
+	ret = ret + ")`,"
+
+	ret = ret + tmp1 + ").Exec(); err != nil {" +  INDENT_1 + INDENT + "return " + tableName + "." + "NewAdd" + swagger.CapitaliseSplitTableName(debug, tableName) + "MethodNotAllowed()" + INDENT_1 + "}"
+
+	return ret
+}
+
+//NewAddAccountsMethodNotAllowed()
+
+func handlePost(debug bool, parserOutput parser.ParseOutput ) string {
+
 	tableName := strings.ToLower(parserOutput.TableDetails.TableName)
+
+	ret:= createInsert( debug, parserOutput, tableName )
+
 
 	ret = ret + INDENT_1 + "return " + tableName + "." + "NewAdd" + swagger.CapitaliseSplitTableName(debug, tableName) + "Created()" + `
 }`
@@ -549,7 +591,7 @@ func CreateCode( debug bool, generateDir string,  goPathForRepo string,  parserO
 	if addPost {
 		tmpData = &tableDetails{ generateDir, strings.ToLower(parserOutput.TableDetails.TableName), swagger.CapitaliseSplitTableName(debug, parserOutput.TableDetails.TableName), tmpName}
 		WriteStringToFileWithTemplates(  "\n" + POST_HEADER, "headerpost", output, &tmpData)
-		tmp =  handlePost( debug , parserOutput, tmpTimeVar)
+		tmp =  handlePost( debug , parserOutput)
 		output.WriteString( tmp )
 	}
 }
