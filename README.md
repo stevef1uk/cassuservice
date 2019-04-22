@@ -72,8 +72,7 @@ Known issues:
 The functonality of this tool to support the Cassandra MAP type is very limited. This tool can only cope with maps if they are defined as map<text,text>; this is simply becasue there seems to be no way of modelling the map type in Swagger! 
 I have used the addionalProperties arroach and hard coded this to a string. For now if maps are used that are not of this trivial form the generated code handler will need to be modified manually.
 
-I am strugging to work out how to use gocql to insert UDTs or certain types properly. Thus the ability to use the -post flag to support POST
-operations is limited to the following basic table types + date
+I am strugging to work out how to use gocql to insert UDTs or certain types properly. Thus the ability to use the -post flag to support POST operation is limited to the following basic table types + date
 ```
 CREATE TABLE demo.demo1 (
                         id int PRIMARY KEY,
@@ -99,8 +98,8 @@ curl -X GET "http://127.0.0.1:5000/v1/demo1?id=1"
 Not supplying all fields in a POST will reset the values not passed to null or defaults e.g. date fields will be set to 1970-01-01
 
 BUGS:
-1. Types of VARINT don't work - I have found set<VARINT> not to work
-2. For Post only tables without UDTs are supported. This is because gocql doesn't seem to properly support these as far as I can tell.
+1. Types of VARINT don't work - I have found set<VARINT> won't work
+2. For Post only tables without UDTs are supported. This is because I haven't managed to use gocql to insert UDTs.
 2. For Post only a subset of Cassandra data types are supported (as I can't figure out how to get gocql to insert them :-) 
 
 
