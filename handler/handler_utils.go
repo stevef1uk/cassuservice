@@ -504,6 +504,11 @@ func processPostField(debug bool, fieldName string, fieldDetails parser.FieldDet
 ` + INDENT2 + INDENT3 +  `m["` + fieldName + `"] = ""` + INDENT_1 + INDENT2 + "}"
 		ret = ret + " else { " + INDENT_1 + INDENT3 + `m["` + fieldName + `"] = ` + tmp + INDENT_1 + INDENT2 +  "}"
 		ret = ret + INDENT_1 + "}" + " else {" +  INDENT_1 + INDENT2 +  `m["` + fieldName + `"] = ""` + INDENT_1 +  "}"
+	case "date":
+		field := GetFieldName(  debug , false, fieldName, false )
+		ret = ret + INDENT_1 + `m["` + fieldName + `"] = ` + "params.Body." + GetFieldName(  debug , false, fieldName, false )
+		ret = ret + INDENT_1 + "if " + "params.Body." + field + ` == "" { `
+		ret = ret + INDENT_1 + INDENT2 + `m["` + fieldName + `"] =  "1970-01-01"` + INDENT_1 + "}"
 	case "float":
 		tmp := createTempVar( fieldName )
 		tmp1 := createTempVar( fieldName )

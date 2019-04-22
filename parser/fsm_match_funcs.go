@@ -117,7 +117,9 @@ func processPrimaryInLine(debug bool, p []string, f []string,  regRow fsmRow) bo
 
 func procNil(debug bool, p []string, f []string, regRow fsmRow) bool {
 	ret := false
-	parseOutput.TypeIndex = parseOutput.TypeIndex + 1
+	if parseOutput.inTable == false {
+		parseOutput.TypeIndex = parseOutput.TypeIndex + 1
+	}
 	theFSM.state = regRow.nextState // Force searching for other fields
 	return ret
 }

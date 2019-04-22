@@ -73,7 +73,7 @@ The functonality of this tool to support the Cassandra MAP type is very limited.
 I have used the addionalProperties arroach and hard coded this to a string. For now if maps are used that are not of this trivial form the generated code handler will need to be modified manually.
 
 I am strugging to work out how to use gocql to insert UDTs or certain types properly. This the ability to use the -post flag to support POST
-operations is limited to the following basic table types:
+operations is limited to the following basic table types + date
 ```
 CREATE TABLE demo.demo1 (
                         id int PRIMARY KEY,
@@ -90,9 +90,13 @@ CREATE TABLE demo.demo1 (
 ```
 To insert records (assuming --post flag set) used the command:
 ```
-curl -d '{"id": 1, "testint": 123}' -H "Content-Type: application/json" -v -X POST http://localhost:5000/v1/demo1
+curl -d '{"id": 1, "testfloat": 123.45, "testtimestamp": "2018-02-17T13:01:05.000Z", "testbigint": 123456789012345, "testblob": "Some long blob stuff here!", "testbool": true, "testdouble": 123.987, "testlist": ["dummy", "something"], "testset": [6,7,8], "testmap": {"a":"alpha","b":"beta"}}' -H "Content-Type: application/json" -v -X POST http://localhost:5000/v1/demo1
 ```
-
+Retrieve the data with:
+```
+curl -X GET "http://127.0.0.1:5000/v1/demo1?id=1"
+```
+Not supplying all fields in a POST will reset the values not passed to null or defaults e.g. date fields will be set to 1970-01-01
 
 BUGS:
 1. Types of VARINT don't work - I have found set<VARINT> not to work

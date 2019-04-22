@@ -40,7 +40,7 @@ func Setup( debug bool ) {
 	parseOutput = ParseOutput{}
 	parseOutput.TableDetails = TableDetails{}
 	//parseOutput.typeIndex = -1 // Set to -1 as always incrememeted when Type found
-
+	parseOutput.TypeIndex = 0
 	theFSM.rows = map[string][]fsmRow {
 		start:{
 			{`\s*CREATE TABLE\s*(\w+).(\w+)?`, processTable, tableField, 0, new(regexp.Regexp)},
