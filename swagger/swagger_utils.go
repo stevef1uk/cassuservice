@@ -31,7 +31,8 @@ func IsFieldTypeUDT( parserOutput parser.ParseOutput, fieldType string ) bool {
 func IsFieldTypeATime(  fType string ) bool {
 	ret := false
 	fType = strings.ToUpper( fType)
-	if fType == TIMESTAMP || fType == DATE || fType == TIMEUUID {
+	//if fType == TIMESTAMP || fType == DATE || fType == TIMEUUID {
+	if fType == TIMESTAMP || fType == DATE {
 		ret = true;
 	}
 	return ret
