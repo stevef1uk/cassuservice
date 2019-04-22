@@ -358,6 +358,20 @@ func doINeedTime(  parserOutput parser.ParseOutput   ) bool {
 	return ret
 }
 
+// Scan through table fields to see if type is a float. Return true if a field is float
+func doIHaveFloat(  parserOutput parser.ParseOutput   ) bool {
+	ret := false
+	for _, v := range parserOutput.TableDetails.TableFields.DbFieldDetails {
+		if strings.ToLower( v.DbFieldType ) == "float" {
+			ret = true;
+			break;
+		}
+	}
+
+	return ret
+}
+
+
 //Scan through fields and UDT fields to see if a type contained is a decimal. Return true if a field is a decimal
 func doINeedDecimal(  parserOutput parser.ParseOutput  ) bool {
 	ret := false
@@ -482,10 +496,21 @@ func processPostField(debug bool, fieldName string, fieldDetails parser.FieldDet
 	switch strings.ToLower(fieldDetails.DbFieldType) {
 	case "timestamp":
 		tmp := createTempVar( fieldName )
-		ret = INDENT_1 + tmp + ",ok" + tmp + " := time.Parse( time.RFC3339,params.Body." + GetFieldName(  debug , false, fieldName, false ) + ")"
-		ret = ret + INDENT_1 + "if ok" + tmp + " != nil {" + `
-` + INDENT3 +  "log.Println(ok" + tmp + ")" + `
-` + INDENT2 + "}" + INDENT_1 +  `m["` + fieldName + `"] = ` + tmp
+		field := GetFieldName(  debug , false, fieldName, false )
+		ret = INDENT_1 + "if " + "params.Body." + field + ` != "" { `
+		ret = ret + INDENT_1 + INDENT2 + tmp + ",ok" + tmp + " := time.Parse( time.RFC3339,params.Body." + field + ")"
+		ret = ret + INDENT_1 + INDENT2 + "if ok" + tmp + " != nil {" + `
+` + INDENT2 + INDENT3 +  "log.Println(" + "ok" + tmp + `)
+` + INDENT2 + INDENT3 +  `m["` + fieldName + `"] = ""` + INDENT_1 + INDENT2 + "}"
+		ret = ret + " else { " + INDENT_1 + INDENT3 + `m["` + fieldName + `"] = ` + tmp + INDENT_1 + INDENT2 +  "}"
+		ret = ret + INDENT_1 + "}" + " else {" +  INDENT_1 + INDENT2 +  `m["` + fieldName + `"] = ""` + INDENT_1 +  "}"
+	case "float":
+		tmp := createTempVar( fieldName )
+		tmp1 := createTempVar( fieldName )
+		field := GetFieldName(  debug , false, fieldName, false )
+		ret = ret + INDENT_1 + tmp + `:= fmt.Sprintf("%f",params.Body.` + field + ")"
+		ret = ret + INDENT_1 + tmp1 + `,_ := strconv.ParseFloat(` + tmp + ",32)"
+		ret = ret + INDENT_1 + `m["` + fieldName + `"] = float32(` + tmp1 + ")"
 	default:
 		ret = ret + INDENT_1 + `m["` + fieldName + `"] = ` + "params.Body." + GetFieldName(  debug , false, fieldName, false )
 	}

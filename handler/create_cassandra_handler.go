@@ -27,6 +27,9 @@ func WriteHeaderPart( debug bool, parserOutput parser.ParseOutput, generateDir s
 	}
 	if addPost {
 		extraImports = extraImports + IMPORTFORPOST
+		if doIHaveFloat( parserOutput ) {
+			extraImports = extraImports + IMPORTFORPOST2
+		}
 	}
 
 	tmpData := &tableDetails{ generateDir, "", strings.ToLower(parserOutput.TableDetails.TableName),""}
@@ -591,7 +594,7 @@ func CreateCode( debug bool, generateDir string,  goPathForRepo string,  parserO
 	if addPost {
 		tmpData = &tableDetails{ generateDir, strings.ToLower(parserOutput.TableDetails.TableName), swagger.CapitaliseSplitTableName(debug, parserOutput.TableDetails.TableName), tmpName}
 		WriteStringToFileWithTemplates(  "\n" + POST_HEADER, "headerpost", output, &tmpData)
-		tmp =  handlePost( debug , parserOutput)
+		tmp = handlePost( debug , parserOutput)
 		output.WriteString( tmp )
 	}
 }
