@@ -110,6 +110,9 @@ CREATE TABLE demo.employee1 (
     tSimple  frozen <simple>
 ) WITH CLUSTERING ORDER BY (name ASC) ;
 `
+
+// insert into employee1 (id, tsimple ) VALUES (1, {id:2,dummy:'text',mediate:'2017-01-18T13:01:06.000Z',estruct:{{id:4,citycode:'Peef'}}} );
+//curl -X GET "http://127.0.0.1:5000/v1/employee1?id=1"
 /*
 type City struct {
     ID int `+"`"+`cql:"id"`+"`"+`
