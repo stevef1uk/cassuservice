@@ -777,6 +777,382 @@ CREATE TABLE demo.employee (
 }
 
 
+
+
+func TestComplexUDTPost(t *testing.T) {
+
+	expectedOutput := `swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Simple API
+  description: A generated file representing a Cassandra Table definition
+schemes:
+  - http
+host: localhost
+basePath: /v1
+paths:
+  /testing:
+    get: 
+      summary: Retrieve some records from the Cassandra table 
+      description: Returns rows from the Cassandra table
+      parameters:
+        - name: id
+          in: query
+          description: Primary Key field in Table
+          required: true
+          type: integer
+          format: int32
+        - name: mediate
+          in: query
+          description: Primary Key field in Table
+          required: true
+          type: string
+          format: date-time
+        - name: second_ts
+          in: query
+          description: Primary Key field in Table
+          required: true
+          type: string
+          format: date-time
+      responses:
+        200:
+          description: A list of records
+          schema:
+            type: array
+            items:
+              required:
+                - id
+                - address_set
+                - my_list
+                - name
+                - mediate
+                - second_ts
+                - tevents
+                - tmylist
+                - tmymap
+              properties:
+                 id:
+                   type: integer
+                 address_set:
+                   $ref: "#/definitions/address_set"
+                 my_list:
+                   $ref: "#/definitions/my_list"
+                 name:
+                   type: string
+                 mediate:
+                   type: string
+                 second_ts:
+                   type: string
+                 tevents:
+                   type: array
+                   items:
+                     type: integer
+                 tmylist:
+                   type: array
+                   items:
+                     type: number
+                 tmymap:
+                   $ref: "#/definitions/tmymap"
+        400: 
+          description: Record not found
+        default:
+          description: Sorry unexpected error
+    post: 
+      tags:
+      - "Employee" 
+      summary: Add a new record to the Cassandra table 
+      description: Adds or updates a row in the Cassandra table
+      operationId: addEmployee
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: The fields of the table that needs to be populates in JSON form
+          required: true
+          schema:
+            $ref: '#/definitions/Employee'
+      responses:
+        '201':
+          description: Record created
+        '405':
+          description: Invalid input
+
+definitions:
+  simple:
+    properties:
+       dummy:
+         type: string
+  city:
+    properties:
+       id:
+         type: integer
+       citycode:
+         type: string
+       cityname:
+         type: string
+       test_int:
+         type: integer
+       lastupdatedat:
+         type: string
+       myfloat:
+         type: number
+       events:
+         type: array
+         items:
+           type: integer
+       mymap:
+         $ref: "#/definitions/city_mymap"
+       address_list:
+         $ref: "#/definitions/city_address_list"
+  tmymap:
+      additionalProperties:
+        type: string
+  city_mymap:
+      additionalProperties:
+        type: string
+  address_set:
+      type: array
+      items:
+         $ref: "#/definitions/city"
+  my_list:
+      type: array
+      items:
+         $ref: "#/definitions/simple"
+  city_address_list:
+      type: array
+      items:
+         $ref: "#/definitions/simple"
+  Employee:
+    properties:
+      id:
+        type: integer
+      address_set:
+        $ref: "#/definitions/address_set"
+      my_list:
+        $ref: "#/definitions/my_list"
+      name:
+        type: string
+      mediate:
+        type: string
+      second_ts:
+        type: string
+      tevents:
+        type: array
+        items:
+          type: integer
+      tmylist:
+        type: array
+        items:
+          type: number
+      tmymap:
+        $ref: "#/definitions/tmymap"`
+
+	ret := parser.ParseText( false, parser.Setup, parser.Reset, `
+CREATE TYPE demo.simple (
+   dummy text
+);
+
+CREATE TYPE demo.city (
+    id int,
+    citycode text,
+    cityname text,
+    test_int int,
+    lastUpdatedAt TIMESTAMP,
+    myfloat float
+    events set<int>,
+    mymap  map<int, text>
+    address_list set<frozen<simple>>,
+);
+
+CREATE TABLE demo.employee (
+    id int,
+    address_set set<frozen<city>>,
+    my_List list<frozen<simple>>,
+    name text,
+    mediate TIMESTAMP,
+    second_ts timestamp,
+    tevents set<int>,
+    tmylist list<float>
+    tmymap  map<int, text>
+   PRIMARY KEY (id, mediate, second_ts )
+ ) WITH CLUSTERING ORDER BY (mediate ASC, second_ts ASC)
+` )
+	ret1 := CreateSwagger( true, ret, "testing" ,true )
+	if expectedOutput != ret1 {
+
+		if len(expectedOutput) != len(ret1) {
+			t.Errorf("Expected length %d, actual, %d", len(expectedOutput), len(ret1) )
+		}
+		for i, _ := range expectedOutput {
+			if (expectedOutput[i] != ret1[i] ) {
+				t.Errorf("Difference at %d, got %c expected %c", i, expectedOutput[i], ret1[i] )
+			}
+		}
+		t.Errorf("Swagger output wrong got:%s: want:%s:", ret1, expectedOutput )
+	}
+}
+
+
+func TestSimpleTablePost(t *testing.T) {
+
+	expectedOutput := `swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Simple API
+  description: A generated file representing a Cassandra Table definition
+schemes:
+  - http
+host: localhost
+basePath: /v1
+paths:
+  /testing:
+    get: 
+      summary: Retrieve some records from the Cassandra table 
+      description: Returns rows from the Cassandra table
+      parameters:
+        - name: id
+          in: query
+          description: Primary Key field in Table
+          required: true
+          type: integer
+          format: int32
+      responses:
+        200:
+          description: A list of records
+          schema:
+            type: array
+            items:
+              required:
+                - id
+                - testtimestamp
+                - testbigint
+                - testblob
+                - testbool
+                - testfloat
+                - testdouble
+                - testint
+                - testlist
+                - testset
+                - testmap
+              properties:
+                 id:
+                   type: integer
+                 testtimestamp:
+                   type: string
+                 testbigint:
+                   type: integer
+                 testblob:
+                   type: string
+                 testbool:
+                   type: boolean
+                 testfloat:
+                   type: number
+                 testdouble:
+                   type: number
+                 testint:
+                   type: integer
+                 testlist:
+                   type: array
+                   items:
+                     type: string
+                 testset:
+                   type: array
+                   items:
+                     type: integer
+                 testmap:
+                   $ref: "#/definitions/testmap"
+        400: 
+          description: Record not found
+        default:
+          description: Sorry unexpected error
+    post: 
+      tags:
+      - "Demo1" 
+      summary: Add a new record to the Cassandra table 
+      description: Adds or updates a row in the Cassandra table
+      operationId: addDemo1
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: The fields of the table that needs to be populates in JSON form
+          required: true
+          schema:
+            $ref: '#/definitions/Demo1'
+      responses:
+        '201':
+          description: Record created
+        '405':
+          description: Invalid input
+
+definitions:
+  testmap:
+      additionalProperties:
+        type: string
+  Demo1:
+    properties:
+      id:
+        type: integer
+      testtimestamp:
+        type: string
+      testbigint:
+        type: integer
+      testblob:
+        type: string
+      testbool:
+        type: boolean
+      testfloat:
+        type: number
+      testdouble:
+        type: number
+      testint:
+        type: integer
+      testlist:
+        type: array
+        items:
+          type: string
+      testset:
+        type: array
+        items:
+          type: integer
+      testmap:
+        $ref: "#/definitions/testmap"`
+
+	ret := parser.ParseText( false, parser.Setup, parser.Reset, `
+CREATE TABLE demo.demo1 (
+                        id int PRIMARY KEY,
+                        testtimestamp  timestamp,
+                        testbigint     bigint,
+                        testblob       blob,
+                        testbool       boolean,
+                        testfloat      float,
+                        testdouble     double,
+                        testint        int,
+                        testlist       list<text>,
+                        testset        set<int>,
+                        testmap        map<text, text> )
+` )
+	ret1 := CreateSwagger( true, ret, "testing" ,true )
+	if expectedOutput != ret1 {
+
+		if len(expectedOutput) != len(ret1) {
+			t.Errorf("Expected length %d, actual, %d", len(expectedOutput), len(ret1) )
+		}
+		for i, _ := range expectedOutput {
+			if (expectedOutput[i] != ret1[i] ) {
+				t.Errorf("Difference at %d, got %c expected %c", i, expectedOutput[i], ret1[i] )
+			}
+		}
+		t.Errorf("Swagger output wrong got:%s: want:%s:", ret1, expectedOutput )
+	}
+}
+
 func TestTableName(t *testing.T) {
 
 	ret := CapitaliseSplitTableName(false, "i")
