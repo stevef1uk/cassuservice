@@ -111,6 +111,22 @@ CREATE TABLE demo.employee1 (
 ) WITH CLUSTERING ORDER BY (name ASC) ;
 `
 
+	CSQ_TEST5= `
+CREATE TABLE demo.demo1 (
+                        id int PRIMARY KEY,
+                        testtimestamp  timestamp,
+                        testbigint     bigint,
+                        testblob       blob,
+                        testbool       boolean,
+                        testfloat      float,
+                        testdouble     double,
+                        testint        int,
+                        testlist       list<text>,
+                        testset        set<int>,
+                        testmap        map<text, text> )
+
+`
+
 // insert into employee1 (id, tsimple ) VALUES (1, {id:2,dummy:'text',mediate:'2017-01-18T13:01:06.000Z',estruct:{{id:4,citycode:'Peef'}}} );
 //curl -X GET "http://127.0.0.1:5000/v1/employee1?id=1"
 /*
@@ -673,6 +689,160 @@ func Search(params operations.GetEmployee1Params) middleware.Responder {
     retParams.Tsimple = tmp_TSIMPLE_3
     return operations.NewGetEmployee1OK().WithPayload( payLoad.Payload)
     }`
+
+	EXPECTED_OUTPUT_TEST5 = `// GENERATED FILE so do not edit or will be overwritten upon next generate
+package data
+
+import (
+    "github.com/stevef1uk/test4/models"
+    "github.com/stevef1uk/test4/restapi/operations"
+    middleware "github.com/go-openapi/runtime/middleware"
+    "github.com/gocql/gocql"
+    "os"
+    "log"
+    "time"
+     
+    "github.com/stevef1uk/test4/restapi/operations/demo1"
+     
+    "fmt"
+    "strconv"
+     
+)
+
+
+var cassuservice_session *gocql.Session
+
+func SetUp() {
+  var err error
+  log.Println("Tring to connect to Cassandra database using ", os.Getenv("CASSANDRA_SERVICE_HOST"))
+  cluster := gocql.NewCluster(os.Getenv("CASSANDRA_SERVICE_HOST"))
+  cluster.Keyspace = "demo"
+  cluster.Consistency = gocql.One
+  cassuservice_session, err = cluster.CreateSession()
+  if ( err != nil ) {
+    log.Fatal("Have you remembered to set the env var $CASSANDRA_SERVICE_HOST as connection to Cannandra failed with error = ", err)
+  } else {
+    log.Println("Yay! Connection to Cannandra established")
+  }
+}
+
+func Stop() {
+    log.Println("Shutting down the service handler")
+  cassuservice_session.Close()
+}
+
+func Search(params operations.GetDemo1Params) middleware.Responder {
+
+    var ID int64
+    _ = ID
+    var Testtimestamp time.Time
+    _ = Testtimestamp
+    var Testbigint int64
+    _ = Testbigint
+    var Testblob string
+    _ = Testblob
+    var Testbool bool
+    _ = Testbool
+    var Testfloat float64
+    _ = Testfloat
+    var Testdouble float64
+    _ = Testdouble
+    var Testint int64
+    _ = Testint
+    var Testlist []string
+    _ = Testlist
+    var Testset []int64
+    _ = Testset
+    var Testmap []string
+    _ = Testmap
+    _ = models.Demo1{}
+
+    codeGenRawTableResult := map[string]interface{}{}
+
+    if err := cassuservice_session.Query(`+"`"+` SELECT id, testtimestamp, testbigint, testblob, testbool, testfloat, testdouble, testint, testlist, testset, testmap FROM demo1 WHERE id = ? `+"`"+`,params.ID).Consistency(gocql.One).MapScan(codeGenRawTableResult); err != nil {
+      log.Println("No data? ", err)
+      return operations.NewGetDemo1BadRequest()
+    }
+    payLoad := operations.NewGetDemo1OK()
+    payLoad.Payload = make([]*operations.GetDemo1OKBodyItems0,1)
+    payLoad.Payload[0] = new(operations.GetDemo1OKBodyItems0)
+    retParams := payLoad.Payload[0]
+    tmp_ID_1 := codeGenRawTableResult["id"].(int)
+    ID = int64(tmp_ID_1)
+    retParams.ID = &ID
+    Testtimestamp = codeGenRawTableResult["testtimestamp"].(time.Time)
+    tmp_Testtimestamp_2 := Testtimestamp.String()
+    retParams.Testtimestamp = &tmp_Testtimestamp_2
+    tmp_Testbigint_3 := codeGenRawTableResult["testbigint"].(int64)
+    retParams.Testbigint = &tmp_Testbigint_3
+    tmp_Testblob_4 := codeGenRawTableResult["testblob"].([]uint8)
+    Testblob = string(tmp_Testblob_4)
+    retParams.Testblob = &Testblob
+    tmp_Testbool_5 := codeGenRawTableResult["testbool"].(bool)
+    retParams.Testbool = &tmp_Testbool_5
+    tmp_Testfloat_6 := codeGenRawTableResult["testfloat"].(float32)
+    Testfloat = float64(tmp_Testfloat_6)
+    retParams.Testfloat = &Testfloat
+    retParams.Testdouble = &Testdouble
+    tmp_Testint_7 := codeGenRawTableResult["testint"].(int)
+    Testint = int64(tmp_Testint_7)
+    retParams.Testint = &Testint
+    
+    tmp_Testlist_8 := codeGenRawTableResult["testlist"].([]string)
+    retParams.Testlist = make([] string, len(tmp_Testlist_8) )
+    for j := 0; j < len(tmp_Testlist_8 ); j++ { 
+      retParams.Testlist[j] = tmp_Testlist_8[j]
+    }
+    
+    tmp_Testset_9 := codeGenRawTableResult["testset"].([]int)
+    retParams.Testset = make([] int64, len(tmp_Testset_9) )
+    for j := 0; j < len(tmp_Testset_9 ); j++ { 
+      retParams.Testset[j] = int64(tmp_Testset_9[j])
+    }
+    tmp_Testmap_10, ok := codeGenRawTableResult["testmap"].(map[string]string)
+    if ! ok {
+      log.Fatal("handleReturnedVar() - failed to find entry for testmap", ok )
+    }
+    retParams.Testmap = make(map[string]string,len(tmp_Testmap_10))
+    for i12, v := range tmp_Testmap_10 {
+      retParams.Testmap[i12] = v
+    }
+    return operations.NewGetDemo1OK().WithPayload( payLoad.Payload)
+    }
+
+func Insert(params demo1.AddDemo1Params) middleware.Responder {
+
+    m := make(map[string]interface{})
+    
+    
+    m["id"] = params.Body.ID
+    if params.Body.Testtimestamp != "" { 
+        tmp_testtimestamp_11,oktmp_testtimestamp_11 := time.Parse( time.RFC3339,params.Body.Testtimestamp)
+        if oktmp_testtimestamp_11 != nil {
+          log.Println(oktmp_testtimestamp_11)
+          m["testtimestamp"] = ""
+        } else { 
+          m["testtimestamp"] = tmp_testtimestamp_11
+        }
+    } else {
+        m["testtimestamp"] = ""
+    }
+    m["testbigint"] = params.Body.Testbigint
+    m["testblob"] = params.Body.Testblob
+    m["testbool"] = params.Body.Testbool
+    tmp_testfloat_12:= fmt.Sprintf("%f",params.Body.Testfloat)
+    tmp_testfloat_13,_ := strconv.ParseFloat(tmp_testfloat_12,32)
+    m["testfloat"] = float32(tmp_testfloat_13)
+    m["testdouble"] = params.Body.Testdouble
+    m["testint"] = params.Body.Testint
+    m["testlist"] = params.Body.Testlist
+    m["testset"] = params.Body.Testset
+    m["testmap"] = params.Body.Testmap
+    if err := cassuservice_session.Query(`+"`"+` INSERT INTO demo1(id, testtimestamp, testbigint, testblob, testbool, testfloat, testdouble, testint, testlist, testset, testmap) VALUES (?,?,?,?,?,?,?,?,?,?,?)`+"`"+`,m["id"],m["testtimestamp"],m["testbigint"],m["testblob"],m["testbool"],m["testfloat"],m["testdouble"],m["testint"],m["testlist"],m["testset"],m["testmap"]).Consistency(gocql.One).Exec(); err != nil {
+      return demo1.NewAddDemo1MethodNotAllowed()
+    }
+    return demo1.NewAddDemo1Created()
+}`
 	
 )
 
@@ -772,6 +942,16 @@ func Test4(t *testing.T) {
 			ret6 :=  SpiceInHandler( false , path, "Employee1", "" )
 			_ = ret6
 */
+}
+
+
+func Test5(t *testing.T) {
+	performCreateTest1(true, "Test1", CSQ_TEST5, EXPECTED_OUTPUT_TEST5, t, true )
+	/*
+				path := os.Getenv("GOPATH")  + "/src/github.com/stevef1uk/test4/"
+				ret6 :=  SpiceInHandler( false , path, "Employee1", "" )
+				_ = ret6
+	*/
 }
 /*
 CSQ_TEST1 = `
