@@ -169,7 +169,11 @@ func createSelectString( debug bool, parserOutput parser.ParseOutput, tableName 
 		consistency = cassandraConsistencyRequired
 	}
 
-	ret = ret + " FROM " + strings.ToLower( parserOutput.TableDetails.TableName ) + whereClause +  "`," + varsClause + ")"
+	ret = ret + " FROM " + strings.ToLower( parserOutput.TableDetails.TableName ) + whereClause
+	if allowFiltering {
+		ret = ret + "ALLOW FILTERING"
+	}
+	ret = ret +   "`," + varsClause + ")"
 	ret = ret + ".Consistency(" + consistency + ").MapScan(codeGenRawTableResult); err != nil {"
 	if logExtraInfo {
 		ret = ret + INDENT_1 + `  log.Println("No data? ", err)`
@@ -528,7 +532,13 @@ func setupPostParams( debug bool, parserOutput parser.ParseOutput, tableName str
 }
 
 
-func createInsert(debug bool, parserOutput parser.ParseOutput, tableName string  )string {
+func createInsert(debug bool, parserOutput parser.ParseOutput, tableName string, cassandraConsistencyRequired string  )string {
+
+	consistency := "gocql.One"
+	if cassandraConsistencyRequired != "" {
+		consistency = cassandraConsistencyRequired
+	}
+
 	ret := INDENT_1 + "m := make(map[string]interface{})"
 	ret = ret + INDENT_1 + setupPostParams( debug, parserOutput, swagger.CapitaliseSplitTableName(debug, tableName) )
 	ret = ret + INDENT_1 + "if err := " + SESSION_VAR + ".Query(" + "`" + " INSERT INTO " + tableName + "("
@@ -547,18 +557,18 @@ func createInsert(debug bool, parserOutput parser.ParseOutput, tableName string 
 	}
 	ret = ret + ")`,"
 
-	ret = ret + tmp1 + ").Exec(); err != nil {" +  INDENT_1 + INDENT + "return " + tableName + "." + "NewAdd" + swagger.CapitaliseSplitTableName(debug, tableName) + "MethodNotAllowed()" + INDENT_1 + "}"
+	ret = ret + tmp1 + ").Consistency(" + consistency + ").Exec(); err != nil {" +  INDENT_1 + INDENT + "return " + tableName + "." + "NewAdd" + swagger.CapitaliseSplitTableName(debug, tableName) + "MethodNotAllowed()" + INDENT_1 + "}"
 
 	return ret
 }
 
 //NewAddAccountsMethodNotAllowed()
 
-func handlePost(debug bool, parserOutput parser.ParseOutput ) string {
+func handlePost(debug bool, parserOutput parser.ParseOutput, cassandraConsistencyRequired string ) string {
 
 	tableName := strings.ToLower(parserOutput.TableDetails.TableName)
 
-	ret:= createInsert( debug, parserOutput, tableName )
+	ret:= createInsert( debug, parserOutput, tableName, cassandraConsistencyRequired  )
 
 
 	ret = ret + INDENT_1 + "return " + tableName + "." + "NewAdd" + swagger.CapitaliseSplitTableName(debug, tableName) + "Created()" + `
@@ -594,7 +604,7 @@ func CreateCode( debug bool, generateDir string,  goPathForRepo string,  parserO
 	if addPost {
 		tmpData = &tableDetails{ generateDir, strings.ToLower(parserOutput.TableDetails.TableName), swagger.CapitaliseSplitTableName(debug, parserOutput.TableDetails.TableName), tmpName}
 		WriteStringToFileWithTemplates(  "\n" + POST_HEADER, "headerpost", output, &tmpData)
-		tmp = handlePost( debug , parserOutput)
+		tmp = handlePost( debug , parserOutput, cassandraConsistencyRequired )
 		output.WriteString( tmp )
 	}
 }
