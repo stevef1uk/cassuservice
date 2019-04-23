@@ -45,6 +45,8 @@ CREATE TABLE demo.employee (
    PRIMARY KEY (id, mediate, second_ts )
  ) WITH CLUSTERING ORDER BY (mediate ASC, second_ts ASC)
 `
+// Insert test: insert into employee ( id, mediate, second_ts, name,  my_list, address_set  ) values (1, '2018-02-17T13:01:05.000Z', '1999-12-01T23:21:59.123Z', 'steve', [{dummy:'fred'}], {{id:1, mymap:{'a':'fred'}, citycode:'Peef',lastupdatedat:'2019-02-18T14:02:06.000Z',address_list:{{dummy:'foobar'}},events:{1,2,3} }} ) ;
+// curl -X GET "http://127.0.0.1:5000/v1/employee?id=1&mediate=2018-02-17T13:01:05.000Z&second_ts=1999-12-01T23:21:59.123Z"
 
 	CSQ_TEST2 = `
 
@@ -73,6 +75,8 @@ CREATE TABLE demo.employee (
     PRIMARY KEY (id, name, time1)
 ) WITH CLUSTERING ORDER BY (name ASC)
 `
+//insert into accounts4 ( id, name, time1, dec1, uuid1,time2)  values (1, 'steve', '2017-02-18T13:01:06.000Z', 1.23e40, 74e61f45-bff0-11e6-b8d5-843835632426,Now() );
+//curl -X GET "http://127.0.0.1:5000/v1/accounts4?id=1&name=steve&time1=2017-02-18T13:01:06.000Z"
 
 	CSQ_TEST3 = `
 CREATE TYPE demo.simple (

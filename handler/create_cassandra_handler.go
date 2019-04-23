@@ -28,7 +28,11 @@ func WriteHeaderPart( debug bool, parserOutput parser.ParseOutput, generateDir s
 	if addPost {
 		extraImports = extraImports + IMPORTFORPOST
 		if doIHaveFloat( parserOutput ) {
-			extraImports = extraImports + IMPORTFORPOST2
+			if ( needDecimalImports ) {
+				extraImports = extraImports + IMPORTFORPOST2A
+			} else {
+				extraImports = extraImports + IMPORTFORPOST2
+			}
 		}
 	}
 

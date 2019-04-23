@@ -52,7 +52,9 @@ import (
     "fmt"
     "strconv"
      `
-
+	IMPORTFORPOST2A = `
+    "fmt"
+     `
 	HEADER =`
 var ` + SESSION_VAR + ` *gocql.Session
 
