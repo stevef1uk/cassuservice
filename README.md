@@ -7,7 +7,7 @@ I originally wrote equivalent code whilst at my last employer as an exercise to 
 The architecture approach is simple:
 
 1. Parse Cassandra DDL to create a swagger file
-2. Use go-swagger to generate the RESTful server, see: https://github.com/go-swagger/go-swagger
+2. Use go-swagger to generate the RESTful server, see: https://github.com/go-swagger/go-swagger (Tested against v0.19.0)
 3. Parse Cassandra DDL to create the Cassandra handler and wire it into the RESTful server.
 
 I have written a short blog providing a little more information: https://stevef1uk.blogspot.com/2019/02/an-easy-way-to-build-restful-micro.html

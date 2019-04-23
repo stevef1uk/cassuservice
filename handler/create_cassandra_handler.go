@@ -116,6 +116,10 @@ func WriteVars(  debug bool, parserOutput parser.ParseOutput, goPathForRepo stri
 		tmpTimeVar = createTempVar( TMP_TIME_VAR_PREFIX )
 		//output.WriteString( INDENT_1 + tmpTimeVar + " := strfmt.NewDateTime().String()" )
 	}
+
+	// Handle cases where we donn't access any structures in thge model direwctory
+	output.WriteString( INDENT_1  + "_ = " + MODELS + swagger.CapitaliseSplitTableName(debug, parserOutput.TableDetails.TableName) + "{}")
+
 	output.WriteString( "\n" + INDENT_1 + SELECT_OUTPUT + " := map[string]interface{}{}\n")
 
 
@@ -181,8 +185,8 @@ func createSelectString( debug bool, parserOutput parser.ParseOutput, tableName 
 	tableName = GetFieldName(debug, false, tableName, false)
 	ret = ret + INDENT_1 + "  return " + OPERATIONS + "NewGet" + tableName + "BadRequest()" +  INDENT_1 + "}"
 	ret = ret + INDENT_1 + PAYLOAD + " := " + OPERATIONS + "NewGet" +  tableName + "OK()"
-	ret = ret + INDENT_1 + PAYLOAD + "." + PAYLOAD_STRUCT + " = make([]*" + MODELS + "Get" + tableName + "OKBodyItems,1)"
-	ret = ret + INDENT_1 + PAYLOAD + "." + PAYLOAD_STRUCT + "[0] = new(" + MODELS + "Get" + tableName + "OKBodyItems)"
+	ret = ret + INDENT_1 + PAYLOAD + "." + PAYLOAD_STRUCT + " = make([]*" + OPERATIONS + "Get" + tableName + "OKBodyItems0,1)"
+	ret = ret + INDENT_1 + PAYLOAD + "." + PAYLOAD_STRUCT + "[0] = new(" + OPERATIONS + "Get" + tableName + "OKBodyItems0)"
 	ret = ret + INDENT_1 + PARAMS_RET + " := " + PAYLOAD + "." + PAYLOAD_STRUCT + "[0]"
 
 	return ret

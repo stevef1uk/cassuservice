@@ -136,12 +136,15 @@ func SpiceInHandler( debug bool, generatedCodePath string, tableName string, end
         data.Stop()
     } ` )
 
-		} else if ( strings.Contains(text, "func setupMiddlewares(handler") ) {
+		} else if ( strings.Contains(text, "Handler == nil") ) {
+			if debug { fmt.Print("Found Guard to be circumvented") }
+			fmt.Println("if true {")
+			} else if ( strings.Contains(text, "func setupMiddlewares(handler") ) {
 			if debug { fmt.Print("Found setupMiddlewares") }
 			fmt.Println(text)
 			fmt.Println(`
         data.SetUp() `)
-			} else if ( strings.Contains(text, handlerString) ) {
+		} else if ( strings.Contains(text, handlerString) ) {
 				if debug {
 					fmt.Print("Found handlerString")
 				}

@@ -195,6 +195,7 @@ func Search(params operations.GetEmployeeParams) middleware.Responder {
     _ = Tmylist
     var Tmymap []string
     _ = Tmymap
+    _ = models.Employee{}
 
     codeGenRawTableResult := map[string]interface{}{}
 
@@ -205,8 +206,8 @@ func Search(params operations.GetEmployeeParams) middleware.Responder {
       return operations.NewGetEmployeeBadRequest()
     }
     payLoad := operations.NewGetEmployeeOK()
-    payLoad.Payload = make([]*models.GetEmployeeOKBodyItems,1)
-    payLoad.Payload[0] = new(models.GetEmployeeOKBodyItems)
+    payLoad.Payload = make([]*operations.GetEmployeeOKBodyItems0,1)
+    payLoad.Payload[0] = new(operations.GetEmployeeOKBodyItems0)
     retParams := payLoad.Payload[0]
     tmp_ID_1 := codeGenRawTableResult["id"].(int)
     ID = int64(tmp_ID_1)
@@ -392,6 +393,7 @@ func Search(params operations.GetAccounts4Params) middleware.Responder {
     _ = Myset
     var Adec []*inf.Dec
     _ = Adec
+    _ = models.Accounts4{}
 
     codeGenRawTableResult := map[string]interface{}{}
 
@@ -401,8 +403,8 @@ func Search(params operations.GetAccounts4Params) middleware.Responder {
       return operations.NewGetAccounts4BadRequest()
     }
     payLoad := operations.NewGetAccounts4OK()
-    payLoad.Payload = make([]*models.GetAccounts4OKBodyItems,1)
-    payLoad.Payload[0] = new(models.GetAccounts4OKBodyItems)
+    payLoad.Payload = make([]*operations.GetAccounts4OKBodyItems0,1)
+    payLoad.Payload[0] = new(operations.GetAccounts4OKBodyItems0)
     retParams := payLoad.Payload[0]
     tmp_ID_1 := codeGenRawTableResult["id"].(int)
     ID = int64(tmp_ID_1)
@@ -519,6 +521,7 @@ func Search(params operations.GetEmployee1Params) middleware.Responder {
     _ = ID
     Tsimple := &Simple{}
     _ = Tsimple
+    _ = models.Employee1{}
 
     codeGenRawTableResult := map[string]interface{}{}
 
@@ -527,8 +530,8 @@ func Search(params operations.GetEmployee1Params) middleware.Responder {
       return operations.NewGetEmployee1BadRequest()
     }
     payLoad := operations.NewGetEmployee1OK()
-    payLoad.Payload = make([]*models.GetEmployee1OKBodyItems,1)
-    payLoad.Payload[0] = new(models.GetEmployee1OKBodyItems)
+    payLoad.Payload = make([]*operations.GetEmployee1OKBodyItems0,1)
+    payLoad.Payload[0] = new(operations.GetEmployee1OKBodyItems0)
     retParams := payLoad.Payload[0]
     tmp_ID_1 := codeGenRawTableResult["id"].(int)
     ID = int64(tmp_ID_1)
@@ -609,6 +612,7 @@ func Search(params operations.GetEmployee1Params) middleware.Responder {
     _ = ID
     Tsimple := &Simple{}
     _ = Tsimple
+    _ = models.Employee1{}
 
     codeGenRawTableResult := map[string]interface{}{}
 
@@ -617,8 +621,8 @@ func Search(params operations.GetEmployee1Params) middleware.Responder {
       return operations.NewGetEmployee1BadRequest()
     }
     payLoad := operations.NewGetEmployee1OK()
-    payLoad.Payload = make([]*models.GetEmployee1OKBodyItems,1)
-    payLoad.Payload[0] = new(models.GetEmployee1OKBodyItems)
+    payLoad.Payload = make([]*operations.GetEmployee1OKBodyItems0,1)
+    payLoad.Payload[0] = new(operations.GetEmployee1OKBodyItems0)
     retParams := payLoad.Payload[0]
     tmp_ID_1 := codeGenRawTableResult["id"].(int)
     ID = int64(tmp_ID_1)
