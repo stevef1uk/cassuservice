@@ -225,7 +225,11 @@ func basicMapCassandraTypeToGoType( debug bool, leaveFieldCase bool, inTable boo
 			text =  MODELS + fieldName
 		} else {
 			typeName = GetFieldName( debug, leaveCase, typeName, dontUpdate)
-			text =  MODELS + typeName + fieldName
+			if fieldDetails.DbFieldCollectionType != "" || fieldDetails.DbFieldMapType != "" {
+				text =  MODELS + typeName + fieldName
+			} else {
+				text = typeName
+			}
 		}
 
 		//panic(1)

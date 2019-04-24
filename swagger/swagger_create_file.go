@@ -152,8 +152,14 @@ func addFieldDetails( debug bool, spaces string, output string, parseOutput  par
 
 			} else {
 				if inType {
-					ret = ret + `
+					if tableDetails.DbFieldDetails[i].DbFieldCollectionType != "" {
+						ret = ret + `
 ` + spaces + "  $ref: " + `"#/definitions/` + strings.ToLower(parseOutput.TypeDetails[typeIndex].TypeName) + "_" + strings.ToLower( tableDetails.DbFieldDetails[i].DbFieldType) + `"`
+					} else {
+						ret = ret + `
+` + spaces + "  $ref: " + `"#/definitions/` + strings.ToLower( tableDetails.DbFieldDetails[i].DbFieldType) + `"`
+					}
+
 				} else {
 					ret = ret + `
 ` + spaces + "  $ref: " + `"#/definitions/` + strings.ToLower( tableDetails.DbFieldDetails[i].DbFieldType) + `"`
