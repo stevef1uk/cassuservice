@@ -55,6 +55,20 @@ import (
 	IMPORTFORPOST2A = `
     "fmt"
      `
+
+	PARSETIME = `
+func parseTime ( input string) time.Time {
+    var ret time.Time
+    if input == "" {
+        ret = time.Now()
+    } else {
+        ret, _ = time.Parse( time.RFC3339, input )
+    }
+    return ret;
+}
+`
+	PARSERTIME_FUNC_NAME = "parseTime"
+
 	HEADER =`
 var ` + SESSION_VAR + ` *gocql.Session
 

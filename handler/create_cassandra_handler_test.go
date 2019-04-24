@@ -160,6 +160,16 @@ import (
      
 )
 
+func parseTime ( input string) time.Time {
+    var ret time.Time
+    if input == "" {
+        ret = time.Now()
+    } else {
+        ret, _ = time.Parse( time.RFC3339, input )
+    }
+    return ret;
+}
+
 type Simple struct {
     Dummy string `+"`"+`cql:"dummy"`+"`"+`
 }
@@ -350,6 +360,16 @@ import (
 	
 )
 
+func parseTime ( input string) time.Time {
+    var ret time.Time
+    if input == "" {
+        ret = time.Now()
+    } else {
+        ret, _ = time.Parse( time.RFC3339, input )
+    }
+    return ret;
+}
+
 
 var cassuservice_session *gocql.Session
 
@@ -510,6 +530,16 @@ import (
      
 )
 
+func parseTime ( input string) time.Time {
+    var ret time.Time
+    if input == "" {
+        ret = time.Now()
+    } else {
+        ret, _ = time.Parse( time.RFC3339, input )
+    }
+    return ret;
+}
+
 type Simple struct {
     ID int `+"`"+`cql:"id"`+"`"+`
     Dummy string `+"`"+`cql:"dummy"`+"`"+`
@@ -594,6 +624,16 @@ import (
     "time"
      
 )
+
+func parseTime ( input string) time.Time {
+    var ret time.Time
+    if input == "" {
+        ret = time.Now()
+    } else {
+        ret, _ = time.Parse( time.RFC3339, input )
+    }
+    return ret;
+}
 
 type Simple1 struct {
     ID int `+"`"+`cql:"id"`+"`"+`
@@ -709,6 +749,16 @@ import (
      
 )
 
+func parseTime ( input string) time.Time {
+    var ret time.Time
+    if input == "" {
+        ret = time.Now()
+    } else {
+        ret, _ = time.Parse( time.RFC3339, input )
+    }
+    return ret;
+}
+
 
 var cassuservice_session *gocql.Session
 
@@ -816,23 +866,13 @@ func Insert(params demo1.AddDemo1Params) middleware.Responder {
     
     
     m["id"] = params.Body.ID
-    if params.Body.Testtimestamp != "" { 
-        tmp_testtimestamp_11,oktmp_testtimestamp_11 := time.Parse( time.RFC3339,params.Body.Testtimestamp)
-        if oktmp_testtimestamp_11 != nil {
-          log.Println(oktmp_testtimestamp_11)
-          m["testtimestamp"] = ""
-        } else { 
-          m["testtimestamp"] = tmp_testtimestamp_11
-        }
-    } else {
-        m["testtimestamp"] = ""
-    }
+    m["testtimestamp"] = parseTime(params.Body.Testtimestamp)
     m["testbigint"] = params.Body.Testbigint
     m["testblob"] = params.Body.Testblob
     m["testbool"] = params.Body.Testbool
-    tmp_testfloat_12:= fmt.Sprintf("%f",params.Body.Testfloat)
-    tmp_testfloat_13,_ := strconv.ParseFloat(tmp_testfloat_12,32)
-    m["testfloat"] = float32(tmp_testfloat_13)
+    tmp_testfloat_11:= fmt.Sprintf("%f",params.Body.Testfloat)
+    tmp_testfloat_12,_ := strconv.ParseFloat(tmp_testfloat_11,32)
+    m["testfloat"] = float32(tmp_testfloat_12)
     m["testdouble"] = params.Body.Testdouble
     m["testint"] = params.Body.Testint
     m["testlist"] = params.Body.Testlist

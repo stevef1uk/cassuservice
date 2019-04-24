@@ -490,23 +490,21 @@ func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName
 }
 
 
-func applyTypeConversionForGoSwaggerToGocql( debug bool, output string, fieldName string,  fieldType string ) string {
+func applyTypeConversionForGoSwaggerToGocql( debug bool, output string, suffix string, fieldName string,  fieldType string ) string {
 
 	ret := output
 	if debug {fmt.Printf("mapGoSwaggerToGoCSQLFieldType %s %s\n ", fieldName,fieldType )}
 
+	fieldName = suffix + fieldName
 	switch strings.ToLower(fieldType) {
-	case "int64":
-		ret = ret + INDENT_1 + " = (int )" + fieldName
-	case "date":
-		tmp := createTempVar( fieldName )
-		//tmp1 := INDENT_1 + tmp + ",_ := time.Parse( time.RFC3339,params.Body." + fieldName + ")"
-		ret = ret + INDENT_1 + " = " +  tmp
-	case "float64":
-		ret = ret +  INDENT_1 + " = (float32 )" + fieldName
-
+	case "int":
+		ret = ret + INDENT_1 + "int(" + fieldName + "),"
+	case "timestamp":
+		ret = ret + INDENT_1 + PARSERTIME_FUNC_NAME + "(" + fieldName + "),"
+	case "float":
+		ret = ret +  INDENT_1 + "float32(" + fieldName + "),"
 	default:
-		ret = ret + INDENT_1 + " = " + fieldName
+		ret = ret + INDENT_1 + fieldName + ","
 	}
 
 	if debug { fmt.Printf("mapGoSwaggerToGoCSQLFieldType returning %s from field %s type %s\n", ret, fieldName, fieldType ) }
@@ -515,13 +513,13 @@ func applyTypeConversionForGoSwaggerToGocql( debug bool, output string, fieldNam
 
 
 // Function called to convert from go-swagger type tp go-cql type
-func copyFromStructToStruc( debug bool, source string, dest string, fieldsDetails parser.AllFieldDetails, parserOutput parser.ParseOutput  ) string {
+func copyFromStructToStruc( debug bool, suffix string, dest string, typeDetails * parser.TypeDetails, parserOutput parser.ParseOutput  ) string {
 	ret := ""
 
-	if debug {fmt.Printf("copyFromStructToStruc %s %s\n ", source, dest )}
+	if debug {fmt.Printf("copyFromStructToStruc %s %s\n ", suffix, dest )}
 
-	for i := 0; i <  fieldsDetails.FieldIndex; i++ {
-		f := fieldsDetails.DbFieldDetails[i]
+	for i := 0; i <  typeDetails.TypeFields.FieldIndex; i++ {
+		f := typeDetails.TypeFields.DbFieldDetails[i]
 		if swagger.IsFieldTypeUDT(parserOutput, f.DbFieldType) {
 			if debug { fmt.Println("copyFromStructToStruc Found UDT = ", f.DbFieldType) }
 			// Process UDT
@@ -529,7 +527,7 @@ func copyFromStructToStruc( debug bool, source string, dest string, fieldsDetail
 			//fieldType := GetFieldName(debug, false, f.DbFieldType, true)
 			// Need to recurse here
 		} else {
-			ret = applyTypeConversionForGoSwaggerToGocql( debug , ret , CapitaliseSplitFieldName ( debug , f.DbFieldName , false),  f.DbFieldType)
+			ret = applyTypeConversionForGoSwaggerToGocql( debug , ret , suffix, CapitaliseSplitFieldName ( debug , strings.ToLower(f.DbFieldName) , false),  f.DbFieldType)
 		}
 	}
 
@@ -542,6 +540,7 @@ func processPostField(debug bool, fieldName string,  parserOutput parser.ParseOu
 	if debug {fmt.Printf("processPostField %s %s\n ", fieldName, fieldDetails.DbFieldType )}
 	switch strings.ToLower(fieldDetails.DbFieldType) {
 	case "timestamp":
+		/*
 		tmp := createTempVar( fieldName )
 		field := GetFieldName(  debug , false, fieldName, false )
 		ret = INDENT_1 + "if " + "params.Body." + field + ` != "" { `
@@ -551,6 +550,8 @@ func processPostField(debug bool, fieldName string,  parserOutput parser.ParseOu
 ` + INDENT2 + INDENT3 +  `m["` + fieldName + `"] = ""` + INDENT_1 + INDENT2 + "}"
 		ret = ret + " else { " + INDENT_1 + INDENT3 + `m["` + fieldName + `"] = ` + tmp + INDENT_1 + INDENT2 +  "}"
 		ret = ret + INDENT_1 + "}" + " else {" +  INDENT_1 + INDENT2 +  `m["` + fieldName + `"] = ""` + INDENT_1 +  "}"
+		*/
+		ret = ret + INDENT_1 + `m["` + fieldName + `"] = ` + PARSERTIME_FUNC_NAME + "(" + "params.Body." + GetFieldName(debug, false, fieldName, false) + ")"
 	case "date":
 		field := GetFieldName(  debug , false, fieldName, false )
 		ret = ret + INDENT_1 + `m["` + fieldName + `"] = ` + "params.Body." + GetFieldName(  debug , false, fieldName, false )
@@ -567,11 +568,13 @@ func processPostField(debug bool, fieldName string,  parserOutput parser.ParseOu
 		if swagger.IsFieldTypeUDT( parserOutput, fieldDetails.DbFieldType) {
 			fieldName := CapitaliseSplitFieldName(debug, strings.ToLower(fieldDetails.DbFieldName),false)
 			dest := createTempVar( fieldName )
+			suffix := "params.Body." + fieldName + "."
 			ret = INDENT_1 + dest + " := &" + CapitaliseSplitFieldName(debug, strings.ToLower(fieldDetails.DbFieldType),false) + "{"
 			//source := "params.Body" + "." + fieldName
-			t := copyFromStructToStruc(debug, dest, fieldName, parserOutput.TableDetails.TableFields, parserOutput)
+			t := copyFromStructToStruc(debug, suffix, fieldName,findTypeDetails (debug ,fieldDetails.DbFieldType, parserOutput), parserOutput)
 			ret = ret + t
 			ret = ret + INDENT_1 + "}"
+			ret = ret + INDENT_1 + `m["` + strings.ToLower(fieldName) + `"] = ` + "&" + dest
 		} else {
 			ret = ret + INDENT_1 + `m["` + fieldName + `"] = ` + "params.Body." + GetFieldName(debug, false, fieldName, false)
 		}

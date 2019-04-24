@@ -73,7 +73,9 @@ Known issues:
 The functonality of this tool to support the Cassandra MAP type is very limited. This tool can only cope with maps if they are defined as map<text,text>; this is simply becasue there seems to be no way of modelling the map type in Swagger! 
 I have used the addionalProperties arroach and hard coded this to a string. For now if maps are used that are not of this trivial form the generated code handler will need to be modified manually.
 
-I am strugging to work out how to use gocql to insert UDTs or certain types properly. Thus the ability to use the -post flag to support POST operation is limited to the following basic table types + date
+I am in the process of supporting UDTs in insert clauses. Currently ony simple UDTs in tables will work and this is still early days.
+
+The ability to use the -post flag to support POST operation is limited to the following basic table types + date
 ```
 CREATE TABLE demo.demo1 (
                         id int PRIMARY KEY,

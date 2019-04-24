@@ -594,6 +594,10 @@ func CreateCode( debug bool, generateDir string,  goPathForRepo string,  parserO
 
 
 	doNeedTimeImports := WriteHeaderPart( debug, parserOutput, goPathForRepo, endPointNameOveride, false, addPost, output )
+	if doNeedTimeImports {
+		output.WriteString( PARSETIME )
+	}
+
 	addStruct( debug, parserOutput, output )
 	// Write out the static part of the header
 	tmpName := GetFieldName(debug, false, parserOutput.TableDetails.TableName, false)
