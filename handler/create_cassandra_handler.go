@@ -533,7 +533,7 @@ func setupPostParams( debug bool, parserOutput parser.ParseOutput, tableName str
 	ret := INDENT_1
 	tmp := buildSelectParams( debug , parserOutput )
 	for i, v := range strings.Split(tmp, ", ") {
-		ret = ret + processPostField( debug, v, parserOutput.TableDetails.TableFields.DbFieldDetails[i] )
+		ret = ret + processPostField( debug, v, parserOutput, parserOutput.TableDetails.TableFields.DbFieldDetails[i] )
 	}
 
 	return ret

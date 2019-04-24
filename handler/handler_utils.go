@@ -490,7 +490,54 @@ func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName
 }
 
 
-func processPostField(debug bool, fieldName string, fieldDetails parser.FieldDetails ) string {
+func applyTypeConversionForGoSwaggerToGocql( debug bool, output string, fieldName string,  fieldType string ) string {
+
+	ret := output
+	if debug {fmt.Printf("mapGoSwaggerToGoCSQLFieldType %s %s\n ", fieldName,fieldType )}
+
+	switch strings.ToLower(fieldType) {
+	case "int64":
+		ret = ret + INDENT_1 + " = (int )" + fieldName
+	case "date":
+		tmp := createTempVar( fieldName )
+		//tmp1 := INDENT_1 + tmp + ",_ := time.Parse( time.RFC3339,params.Body." + fieldName + ")"
+		ret = ret + INDENT_1 + " = " +  tmp
+	case "float64":
+		ret = ret +  INDENT_1 + " = (float32 )" + fieldName
+
+	default:
+		ret = ret + INDENT_1 + " = " + fieldName
+	}
+
+	if debug { fmt.Printf("mapGoSwaggerToGoCSQLFieldType returning %s from field %s type %s\n", ret, fieldName, fieldType ) }
+	return ret
+}
+
+
+// Function called to convert from go-swagger type tp go-cql type
+func copyFromStructToStruc( debug bool, source string, dest string, fieldsDetails parser.AllFieldDetails, parserOutput parser.ParseOutput  ) string {
+	ret := ""
+
+	if debug {fmt.Printf("copyFromStructToStruc %s %s\n ", source, dest )}
+
+	for i := 0; i <  fieldsDetails.FieldIndex; i++ {
+		f := fieldsDetails.DbFieldDetails[i]
+		if swagger.IsFieldTypeUDT(parserOutput, f.DbFieldType) {
+			if debug { fmt.Println("copyFromStructToStruc Found UDT = ", f.DbFieldType) }
+			// Process UDT
+			//fieldName := GetFieldName(debug, false, f.OrigFieldName, false)
+			//fieldType := GetFieldName(debug, false, f.DbFieldType, true)
+			// Need to recurse here
+		} else {
+			ret = applyTypeConversionForGoSwaggerToGocql( debug , ret , CapitaliseSplitFieldName ( debug , f.DbFieldName , false),  f.DbFieldType)
+		}
+	}
+
+	return ret
+}
+
+
+func processPostField(debug bool, fieldName string,  parserOutput parser.ParseOutput, fieldDetails parser.FieldDetails ) string {
     ret := ""
 	if debug {fmt.Printf("processPostField %s %s\n ", fieldName, fieldDetails.DbFieldType )}
 	switch strings.ToLower(fieldDetails.DbFieldType) {
@@ -517,7 +564,21 @@ func processPostField(debug bool, fieldName string, fieldDetails parser.FieldDet
 		ret = ret + INDENT_1 + tmp1 + `,_ := strconv.ParseFloat(` + tmp + ",32)"
 		ret = ret + INDENT_1 + `m["` + fieldName + `"] = float32(` + tmp1 + ")"
 	default:
-		ret = ret + INDENT_1 + `m["` + fieldName + `"] = ` + "params.Body." + GetFieldName(  debug , false, fieldName, false )
+		if swagger.IsFieldTypeUDT( parserOutput, fieldDetails.DbFieldType) {
+			fieldName := CapitaliseSplitFieldName(debug, strings.ToLower(fieldDetails.DbFieldName),false)
+			dest := createTempVar( fieldName )
+			ret = INDENT_1 + dest + " := &" + CapitaliseSplitFieldName(debug, strings.ToLower(fieldDetails.DbFieldType),false) + "{"
+			//source := "params.Body" + "." + fieldName
+			t := copyFromStructToStruc(debug, dest, fieldName, parserOutput.TableDetails.TableFields, parserOutput)
+			ret = ret + t
+			ret = ret + INDENT_1 + "}"
+		} else {
+			ret = ret + INDENT_1 + `m["` + fieldName + `"] = ` + "params.Body." + GetFieldName(debug, false, fieldName, false)
+		}
 	}
     return ret
 }
+
+
+
+
