@@ -43,7 +43,7 @@ func WriteHeaderPart( debug bool, parserOutput parser.ParseOutput, generateDir s
 }
 
 
-// Write out the types for the UDT. Ensure structure type is lowercased to prevent unintentional export of structure beyond package
+// Write out the types for the UDT.
 func addStruct( debug bool, parserOutput parser.ParseOutput, output  *os.File ) {
 
 	for i := 0; i < parserOutput.TypeIndex; i++ {
@@ -53,6 +53,7 @@ func addStruct( debug bool, parserOutput parser.ParseOutput, output  *os.File ) 
 			revisedFieldName := GetFieldName(debug, false, v.TypeFields.DbFieldDetails[j].OrigFieldName , false )
 			revisedType := GetFieldName( debug, false, v.TypeName,true)
 			tmp := mapFieldTypeToGoCSQLType( debug,  revisedFieldName, true,false, v.TypeFields.DbFieldDetails[j].DbFieldType, revisedType, v.TypeFields.DbFieldDetails[j], parserOutput, true  )
+			//if swagger.IsFieldTypeUDT(parserOutput,  )
 			//debug bool, fieldName string, leaveFieldCase bool, inTable bool, fieldType string, typeName string, fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, dontUpdate bool
 			output.WriteString( "\n    " + revisedFieldName + " ")
 			output.WriteString( tmp   + " `" + `cql:"` + strings.ToLower( v.TypeFields.DbFieldDetails[j].DbFieldName ) + `"` +"`")
@@ -269,7 +270,10 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, i
 			inDent = inDent + INDENT
 		}
 
-		if ( typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType != "" && ( swagger.IsFieldTypeUDT( parserOutput, typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType ) ) )  || typeStruct.TypeFields.DbFieldDetails[i].DbFieldMapType != ""  {
+		//if ( typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType != "" && ( swagger.IsFieldTypeUDT( parserOutput, typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType ) ) )  || typeStruct.TypeFields.DbFieldDetails[i].DbFieldMapType != ""  {
+		if ( typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType != "" && ( swagger.IsFieldTypeUDT( parserOutput, typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType ) ) )  ||
+			typeStruct.TypeFields.DbFieldDetails[i].DbFieldMapType != "" {
+		//|| ( ! inTable &&  swagger.IsFieldTypeUDT( parserOutput, typeStruct.TypeFields.DbFieldDetails[i].DbFieldType ) )
 			// Deal with the more complex types
 			tmpVar := createTempVar( fieldName )
 			tmpVar1 := createTempVar( fieldName )
@@ -495,7 +499,7 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent strin
 
 	default:
 		if swagger.IsFieldTypeUDT( parserOutput, fieldDetails.DbFieldType ) {
-			// UDTs can only appear as singular fields in table and not in other UDTs
+			// UDTs can only appear as singular fields in table and not in other UDTs. Nope!
 			tmp_var := createTempVar( fieldDetails.DbFieldName )
 			ret_struct := createTempVar( fieldDetails.DbFieldName )
 			local_struct := createTempVar( fieldDetails.DbFieldName )

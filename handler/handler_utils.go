@@ -228,7 +228,8 @@ func basicMapCassandraTypeToGoType( debug bool, leaveFieldCase bool, inTable boo
 			if fieldDetails.DbFieldCollectionType != "" || fieldDetails.DbFieldMapType != "" {
 				text =  MODELS + typeName + fieldName
 			} else {
-				text = typeName
+				// This is the case of an embedded UDT within a UDT as a single field
+				text = CapitaliseSplitFieldName( debug, strings.ToLower(fieldType), false )
 			}
 		}
 
@@ -493,7 +494,7 @@ func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName
 	return ret
 }
 
-
+// Ensure each field in the GoSQL structure "Pararms.Body.<field> can be passed to the GoSQL structure constructor for the field
 func applyTypeConversionForGoSwaggerToGocql( debug bool, output string, suffix string, fieldName string,  fieldType string ) string {
 
 	ret := output
@@ -527,6 +528,11 @@ func copyFromStructToStruc( debug bool, suffix string, dest string, typeDetails 
 		if swagger.IsFieldTypeUDT(parserOutput, f.DbFieldType) {
 			if debug { fmt.Println("copyFromStructToStruc Found UDT = ", f.DbFieldType) }
 			// Process UDT
+			ret = ret + INDENT_1 + CapitaliseSplitFieldName(debug, strings.ToLower(f.DbFieldType), false) + "{"
+			nestedTypeDetails := findTypeDetails(debug ,f.DbFieldType, parserOutput)
+			suffix = suffix + CapitaliseSplitFieldName(debug, strings.ToLower(f.DbFieldName), false) + "."
+			ret = ret + copyFromStructToStruc( debug, suffix , dest, nestedTypeDetails, parserOutput )
+			ret = ret + INDENT_1 + INDENT2 + "},"
 			//fieldName := GetFieldName(debug, false, f.OrigFieldName, false)
 			//fieldType := GetFieldName(debug, false, f.DbFieldType, true)
 			// Need to recurse here
@@ -575,7 +581,7 @@ func processPostField(debug bool, fieldName string,  parserOutput parser.ParseOu
 			suffix := "params.Body." + fieldName + "."
 			ret = INDENT_1 + dest + " := &" + CapitaliseSplitFieldName(debug, strings.ToLower(fieldDetails.DbFieldType),false) + "{"
 			//source := "params.Body" + "." + fieldName
-			t := copyFromStructToStruc(debug, suffix, fieldName,findTypeDetails (debug ,fieldDetails.DbFieldType, parserOutput), parserOutput)
+			t := copyFromStructToStruc(debug, suffix, fieldName,findTypeDetails(debug ,fieldDetails.DbFieldType, parserOutput), parserOutput)
 			ret = ret + t
 			ret = ret + INDENT_1 + "}"
 			ret = ret + INDENT_1 + `m["` + strings.ToLower(fieldName) + `"] = ` + "&" + dest
