@@ -284,7 +284,7 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, i
 					extraVars = extraVars + INDENT_1 + inDent + tmpVar1 + ":= make(" + tmpType + ", len(" + tmpVar + ") )"
 					extraVars = extraVars + INDENT_1 + inDent + setUpStructs(debug, true, timeFound, inDent, false, tmpVar1, tmpVar, strings.ToLower(typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType), parserOutput, timeVar)
 					structAssignment[i] = true
-				} else { // Case of single UTD at this point we can't set this up, that needs to be done below
+				} else { // Case of single UTD at this point. We can't set this up, that needs to be done below
 					typeName := GetFieldName(  debug, recursing, typeStruct.TypeFields.DbFieldDetails[i].DbFieldType, false )
 					ret = ret + INDENT_1 + inDent + INDENT2 + typeName + "{},"
 				}
@@ -300,9 +300,7 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, i
 	tmp := ""
 	for i := 0; i < typeStruct.TypeFields.FieldIndex; i++ {
 		fieldName := GetFieldName(debug, false, typeStruct.TypeFields.DbFieldDetails[i].OrigFieldName, false)
-		//typeName := GetFieldName(debug, false, typeStruct.TypeName, false)
 		tmpDest := destField + "." + fieldName
-		//addMake := INDENT_1 + inDent + destField +  = &" + MODELS + typeName + "{}"
 		if structAssignment[i] {
 			if typeStruct.TypeFields.DbFieldDetails[i].DbFieldMapType == "" && ! inTable {
 				tmpDest = destField
@@ -310,6 +308,7 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, i
 				goto here
 			}
 		} else if swagger.IsFieldTypeUDT( parserOutput, typeStruct.TypeFields.DbFieldDetails[i].DbFieldType ) {
+			// Case of a UTD within a UTD
 			tmpVar := createTempVar( fieldName )
 			ret = ret + INDENT_1 + inDent + tmpVar + ",ok := " + raw_data + `["` + strings.ToLower( fieldName ) + `"].(map[string]interface{})`
 			ret = ret + INDENT_1 + inDent +  "if ! ok {" + INDENT_1 + INDENT + `log.Fatal("handleReturnedVar() - failed to find entry for ` +  fieldName + `", ok )` + INDENT_1 + "}"
@@ -324,8 +323,6 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, i
 	here:
 		ret = ret + inDent + INDENT2  + tmp
 	}
-
-	//ret = ret + INDENT_1 + inDent + "}"
 
 	return ret
 }

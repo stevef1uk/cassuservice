@@ -123,7 +123,14 @@ func addCollectionTypes( debug bool, output string, parserOutput  parser.ParseOu
 			if v.TypeFields.DbFieldDetails[j].DbFieldCollectionType != "" && v.TypeFields.DbFieldDetails[j].DbFieldMapType == "" {
 				if IsFieldTypeUDT(parserOutput, v.TypeFields.DbFieldDetails[j].DbFieldCollectionType ) {
 					ret = ret + addCollectionType(debug, parserOutput, v.TypeFields.DbFieldDetails[j], true, i)
-				}
+				} //else if  v.TypeFields.DbFieldDetails[j].DbFieldCollectionType != "" {
+					// SJF
+					//ret = ret + addCollectionType(debug, parserOutput, v.TypeFields.DbFieldDetails[j], true, i)
+					//ret = ret + ":" + `
+//` + "      type: array" + `
+//` + "      items:" + `
+//` + "         $ref: " + `"#/definitions/` + strings.ToLower(v.TypeFields.DbFieldDetails[j].DbFieldCollectionType) + `"`
+//				}
 			}
 		}
 

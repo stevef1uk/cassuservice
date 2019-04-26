@@ -550,17 +550,6 @@ func processPostField(debug bool, fieldName string,  parserOutput parser.ParseOu
 	if debug {fmt.Printf("processPostField %s %s\n ", fieldName, fieldDetails.DbFieldType )}
 	switch strings.ToLower(fieldDetails.DbFieldType) {
 	case "timestamp":
-		/*
-		tmp := createTempVar( fieldName )
-		field := GetFieldName(  debug , false, fieldName, false )
-		ret = INDENT_1 + "if " + "params.Body." + field + ` != "" { `
-		ret = ret + INDENT_1 + INDENT2 + tmp + ",ok" + tmp + " := time.Parse( time.RFC3339,params.Body." + field + ")"
-		ret = ret + INDENT_1 + INDENT2 + "if ok" + tmp + " != nil {" + `
-` + INDENT2 + INDENT3 +  "log.Println(" + "ok" + tmp + `)
-` + INDENT2 + INDENT3 +  `m["` + fieldName + `"] = ""` + INDENT_1 + INDENT2 + "}"
-		ret = ret + " else { " + INDENT_1 + INDENT3 + `m["` + fieldName + `"] = ` + tmp + INDENT_1 + INDENT2 +  "}"
-		ret = ret + INDENT_1 + "}" + " else {" +  INDENT_1 + INDENT2 +  `m["` + fieldName + `"] = ""` + INDENT_1 +  "}"
-		*/
 		ret = ret + INDENT_1 + `m["` + fieldName + `"] = ` + PARSERTIME_FUNC_NAME + "(" + "params.Body." + GetFieldName(debug, false, fieldName, false) + ")"
 	case "date":
 		field := GetFieldName(  debug , false, fieldName, false )
