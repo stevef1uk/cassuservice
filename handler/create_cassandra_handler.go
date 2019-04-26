@@ -241,14 +241,13 @@ func handleStructVarConversion(  debug bool, recursing bool, indexCounter int, t
 
 var indexCounter int = 0
 
-// Handle the case of a single UDT field, which can only occur in a Table definition right now
+// Handle the case of a single UDT field, which can only occur in a Table definition right now. Sadly not true as they can be in UDTs too!
 func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, inTable bool, raw_data string, destField string, theVar string, theType string,  parserOutput parser.ParseOutput, timeVar string ) string {
 
 	extraVars := ""
 	newStr := ""
 	ret := ""
-	//iIndex := "i" + strconv.Itoa(indexCounter)
-	//vIndex := "v" + strconv.Itoa(indexCounter)
+
 	typeStruct := findTypeDetails( debug, theType, parserOutput )
 	var structAssignment []bool = make( []bool, typeStruct.TypeFields.FieldIndex)
 	structName := GetFieldName(  debug, recursing, theType, false )
@@ -257,10 +256,6 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, i
 	if recursing {
 		inDent = inDent + INDENT2
 	}
-	/*space := ""
-	if recursing {
-		space = inDent
-	}*/
 
 	loopAssignment := INDENT_1 + inDent  + tmpStruct + " := &" + structName + "{"
 	for i := 0; i < typeStruct.TypeFields.FieldIndex; i++ {
@@ -272,8 +267,7 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, i
 
 		//if ( typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType != "" && ( swagger.IsFieldTypeUDT( parserOutput, typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType ) ) )  || typeStruct.TypeFields.DbFieldDetails[i].DbFieldMapType != ""  {
 		if ( typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType != "" && ( swagger.IsFieldTypeUDT( parserOutput, typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType ) ) )  ||
-			typeStruct.TypeFields.DbFieldDetails[i].DbFieldMapType != "" {
-		//|| ( ! inTable &&  swagger.IsFieldTypeUDT( parserOutput, typeStruct.TypeFields.DbFieldDetails[i].DbFieldType ) )
+			typeStruct.TypeFields.DbFieldDetails[i].DbFieldMapType != "" || ( swagger.IsFieldTypeUDT( parserOutput, typeStruct.TypeFields.DbFieldDetails[i].DbFieldType ) ) {
 			// Deal with the more complex types
 			tmpVar := createTempVar( fieldName )
 			tmpVar1 := createTempVar( fieldName )
@@ -282,13 +276,18 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, i
 				ret = ret + INDENT_1 + inDent + INDENT2  + tmpVar + ","
 				extraVars = extraVars +  INDENT_1 + inDent + tmpVar + " := " + raw_data +  `["` + strings.ToLower(fieldName ) + `"].(map[string]string)`
 			} else {
-				// Handle lists & sets here!
-				ret = ret + INDENT_1 + inDent + INDENT2  + tmpVar1 + ","
-				extraVars = extraVars +  INDENT_1 + inDent + tmpVar + ":= " + raw_data + `["` + strings.ToLower(fieldName ) + `"].([]map[string]interface{})`
-				tmpType := mapFieldTypeToGoCSQLType( debug, fieldName, true, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType, structName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, true  )
-				extraVars = extraVars +  INDENT_1 + inDent + tmpVar1 + ":= make(" + tmpType + ", len(" + tmpVar + ") )"
-				extraVars = extraVars + INDENT_1 + inDent + setUpStructs( debug,  true,  timeFound, inDent, false, tmpVar1,  tmpVar, strings.ToLower(typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType),  parserOutput, timeVar )
-				structAssignment[i] = true
+				if  typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType != "" {
+					// Handle lists & sets here!
+					ret = ret + INDENT_1 + inDent + INDENT2 + tmpVar1 + ","
+					extraVars = extraVars + INDENT_1 + inDent + tmpVar + ":= " + raw_data + `["` + strings.ToLower(fieldName) + `"].([]map[string]interface{})`
+					tmpType := mapFieldTypeToGoCSQLType(debug, fieldName, true, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType, structName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, true)
+					extraVars = extraVars + INDENT_1 + inDent + tmpVar1 + ":= make(" + tmpType + ", len(" + tmpVar + ") )"
+					extraVars = extraVars + INDENT_1 + inDent + setUpStructs(debug, true, timeFound, inDent, false, tmpVar1, tmpVar, strings.ToLower(typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType), parserOutput, timeVar)
+					structAssignment[i] = true
+				} else { // Case of single UTD at this point we can't set this up, that needs to be done below
+					typeName := GetFieldName(  debug, recursing, typeStruct.TypeFields.DbFieldDetails[i].DbFieldType, false )
+					ret = ret + INDENT_1 + inDent + INDENT2 + typeName + "{},"
+				}
 			}
 		} else {
 			ret = ret + INDENT_1 + inDent + INDENT2  + raw_data + `["` + strings.ToLower(fieldName ) + `"].(` + fieldType + "),"
@@ -310,15 +309,20 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, i
 				tmp = INDENT_1 + inDent + tmpDest + " = " + tmpStruct
 				goto here
 			}
+		} else if swagger.IsFieldTypeUDT( parserOutput, typeStruct.TypeFields.DbFieldDetails[i].DbFieldType ) {
+			tmpVar := createTempVar( fieldName )
+			ret = ret + INDENT_1 + inDent + tmpVar + ",ok := " + raw_data + `["` + strings.ToLower( fieldName ) + `"].(map[string]interface{})`
+			ret = ret + INDENT_1 + inDent +  "if ! ok {" + INDENT_1 + INDENT + `log.Fatal("handleReturnedVar() - failed to find entry for ` +  fieldName + `", ok )` + INDENT_1 + "}"
+			typeName := GetFieldName(  debug, recursing, typeStruct.TypeFields.DbFieldDetails[i].DbFieldType, false )
+			ret = ret + INDENT_1 + inDent + destField + "." + fieldName + " = &" + "models." + typeName + "{}"
+			destField = destField + "." + GetFieldName(debug, false, typeStruct.TypeFields.DbFieldDetails[i].OrigFieldName, false)
+			ret = ret + INDENT_1 + setUpStruct(debug , recursing ,  timeFound , inDent , false, tmpVar, destField, theVar, typeName , parserOutput, timeVar )
+			return ret
 		}
+
 		tmp = handleStructVarConversion(debug, recursing, indexCounter, timeFound, inDent, tmpStruct, tmpDest, typeStruct, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, timeVar )
 	here:
-		if i == 0 {
-			//ret = ret + inDent + INDENT2 + addMake + tmp
-			ret = ret + inDent + INDENT2  + tmp
-		} else {
-			ret = ret + inDent + INDENT2  + tmp
-		}
+		ret = ret + inDent + INDENT2  + tmp
 	}
 
 	//ret = ret + INDENT_1 + inDent + "}"
