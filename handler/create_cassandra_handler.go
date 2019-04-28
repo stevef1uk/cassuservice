@@ -43,12 +43,15 @@ func WriteHeaderPart( debug bool, parserOutput parser.ParseOutput, generateDir s
 }
 
 
-// Write out the types for the UDT.
-func addStruct( debug bool, parserOutput parser.ParseOutput, output  *os.File ) {
+// Write out the types for the UDT. Returns true if a Post specific structure has been added
+func addStruct( debug bool, addPost bool, parserOutput parser.ParseOutput, output  *os.File ) bool {
+	ret := false
 
 	for i := 0; i < parserOutput.TypeIndex; i++ {
+		localModelType := ""
 		v := parserOutput.TypeDetails[i]
 		output.WriteString( "\ntype " + GetFieldName( debug, false, v.TypeName, true)  + " struct {")
+		needToAddPostStruct := false
 		for j := 0; j < v.TypeFields.FieldIndex ; j++ {
 			revisedFieldName := GetFieldName(debug, false, v.TypeFields.DbFieldDetails[j].OrigFieldName , false )
 			revisedType := GetFieldName( debug, false, v.TypeName,true)
@@ -57,10 +60,42 @@ func addStruct( debug bool, parserOutput parser.ParseOutput, output  *os.File ) 
 			//debug bool, fieldName string, leaveFieldCase bool, inTable bool, fieldType string, typeName string, fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, dontUpdate bool
 			output.WriteString( "\n    " + revisedFieldName + " ")
 			output.WriteString( tmp   + " `" + `cql:"` + strings.ToLower( v.TypeFields.DbFieldDetails[j].DbFieldName ) + `"` +"`")
+
+			if addPost && strings.HasPrefix( tmp, MODELS )  { // Need to define a local structure for Posts to use cql annoated type
+				ret = true
+				needToAddPostStruct = ret
+				localType := ""
+				if v.TypeFields.DbFieldDetails[j].DbFieldMapType != "" {
+					localType = " map[string]string"
+				} else  if v.TypeFields.DbFieldDetails[j].DbFieldCollectionType != "" {
+					localType = " []* " +  GetFieldName( debug, false, v.TypeFields.DbFieldDetails[j].DbFieldCollectionType,true)
+				}
+				//localTypeName := GetFieldName( debug, false, v.TypeName, true)
+				localModelType = localModelType + "\ntype " + strings.TrimPrefix( tmp, MODELS ) +localType
+			}
+		}
+
+		if needToAddPostStruct {
+			output.WriteString("\n}\n" )
+			output.WriteString("\n" + localModelType + "\n")
+			output.WriteString( "\ntype " + GetFieldName( debug, false, v.TypeName, true)  + "Post struct {")
+			for j := 0; j < v.TypeFields.FieldIndex ; j++ {
+				revisedFieldName := GetFieldName(debug, false, v.TypeFields.DbFieldDetails[j].OrigFieldName , false )
+				revisedType := GetFieldName( debug, false, v.TypeName,true)
+				tmp := mapFieldTypeToGoCSQLType( debug,  revisedFieldName, true,false, v.TypeFields.DbFieldDetails[j].DbFieldType, revisedType, v.TypeFields.DbFieldDetails[j], parserOutput, true  )
+				if strings.HasPrefix( tmp, MODELS )  {
+					tmp = strings.TrimPrefix( tmp, MODELS )
+
+				}
+					//debug bool, fieldName string, leaveFieldCase bool, inTable bool, fieldType string, typeName string, fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, dontUpdate bool
+				output.WriteString( "\n    " + revisedFieldName + " ")
+				output.WriteString( tmp   + " `" + `cql:"` + strings.ToLower( v.TypeFields.DbFieldDetails[j].DbFieldName ) + `"` +"`")
+
+			}
 		}
 		output.WriteString("\n}\n" )
 	}
-
+    return ret
 }
 
 
@@ -603,7 +638,7 @@ func CreateCode( debug bool, generateDir string,  goPathForRepo string,  parserO
 		output.WriteString( PARSETIME )
 	}
 
-	addStruct( debug, parserOutput, output )
+	addStruct( debug, addPost, parserOutput, output )
 	// Write out the static part of the header
 	tmpName := GetFieldName(debug, false, parserOutput.TableDetails.TableName, false)
 	if endPointNameOveride != "" {
