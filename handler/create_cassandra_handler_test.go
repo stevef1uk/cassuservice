@@ -253,6 +253,9 @@ func Search(params operations.GetEmployeeParams) middleware.Responder {
     for i3, v3 := range tmp_City_2 {
     
       tmp_mymap_4 := v3["mymap"].(map[string]string)
+      if v3["address_list"] == nil { 
+          continue
+      }
       tmp_address_list_6:= v3["address_list"].([]map[string]interface{})
       tmp_address_list_7:= make(models.CityAddressList, len(tmp_address_list_6) )
       

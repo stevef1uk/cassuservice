@@ -399,10 +399,12 @@ func setUpStructs ( debug bool, recursing bool,  timeFound bool, inDent string, 
 			// Note as there seems no way of mapping a Map type in Swagger to anything other than string:string we are a bit stuffed here!
 			if typeStruct.TypeFields.DbFieldDetails[i].DbFieldMapType != "" {
 				ret = ret + INDENT_1 + inDent + INDENT2  + tmpVar + ","
+				//extraVars = extraVars + INDENT_1 + inDent + "if " + vIndex + `["` + strings.ToLower(fieldName) + `"] == nil { ` +  INDENT_1 + inDent + INDENT2 + "continue" + INDENT_1 + inDent  + "}"
 				extraVars = extraVars +  INDENT_1 + inDent + tmpVar + " := " +vIndex +  `["` + strings.ToLower(fieldName ) + `"].(map[string]string)`
 			} else {
 				// Handle lists & sets here!
 				ret = ret + INDENT_1 + inDent + INDENT2  + tmpVar1 + ","
+				extraVars = extraVars + INDENT_1 + inDent + "if " + vIndex + `["` + strings.ToLower(fieldName) + `"] == nil { ` +  INDENT_1 + inDent + INDENT2 + "continue" + INDENT_1 + inDent  + "}"
 				extraVars = extraVars +  INDENT_1 + inDent + tmpVar + ":= " + vIndex + `["` + strings.ToLower(fieldName ) + `"].([]map[string]interface{})`
 				tmpType := mapFieldTypeToGoCSQLType( debug, fieldName, true, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldCollectionType, structName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, true  )
 				extraVars = extraVars +  INDENT_1 + inDent + tmpVar1 + ":= make(" + tmpType + ", len(" + tmpVar + ") )"
@@ -410,6 +412,7 @@ func setUpStructs ( debug bool, recursing bool,  timeFound bool, inDent string, 
 				structAssignment[i] = true
 			}
 		} else {
+			//ret = ret + INDENT_1 + inDent +  INDENT2 + "if " + vIndex + `["` + strings.ToLower(fieldName) + `"] == nil { ` +  INDENT_1 + inDent + INDENT2 + "continue" + INDENT_1 + inDent  + "}"
 			ret = ret + INDENT_1 + inDent + INDENT2  + vIndex + `["` + strings.ToLower(fieldName ) + `"].(` + fieldType + "),"
 		}
 	}
