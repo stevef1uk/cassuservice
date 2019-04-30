@@ -10,10 +10,6 @@ import (
 	//"github.com/stevef1uk/cassuservice/swagger"
 	"os"
 	"strings"
-
-	//"regexp"
-	//"strings"
-	//"log"
 )
 
 // Function to create a file that will contain the Cassandra handler code
