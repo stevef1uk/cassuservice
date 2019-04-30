@@ -582,5 +582,29 @@ func processPostField(debug bool, fieldName string,  parserOutput parser.ParseOu
 }
 
 
+func createCopyFunctions( debug bool, fieldName string, typeName string, returnType string, output  *os.File ) {
+	if debug {fmt.Printf("createCopyFunctions %s %s %s %s\n ", fieldName, fieldName,typeName,returnType   )}
+}
 
+
+// Function to identify where the go-swagger Params type need to be converted to the UDT type in this package so go-cql annotations will be used and the insert will work
+func setUpStuctArrayFromSwaggerParams( debug bool, parserOutput parser.ParseOutput, output  *os.File )  {
+	for i := 0; i <  parserOutput.TableDetails.TableFields.FieldIndex; i++ {
+		if swagger.IsFieldTypeUDT(parserOutput, parserOutput.TableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType ) {
+			// Need to create a function for this one
+			for j := 0; j < parserOutput.TypeIndex ; j++ {
+				for k := 0; k < parserOutput.TypeDetails[j].TypeFields.FieldIndex; k++ {
+					if parserOutput.TypeDetails[j].TypeFields.DbFieldDetails[k].DbFieldCollectionType != "" {
+						returnType := GetFieldName(debug, false, parserOutput.TypeDetails[j].TypeName, false) +
+							GetFieldName(debug, false, parserOutput.TypeDetails[j].TypeFields.DbFieldDetails[k].DbFieldName, false)
+						createCopyFunctions(debug,
+							strings.ToLower(parserOutput.TableDetails.TableFields.DbFieldDetails[i].DbFieldName),
+							GetFieldName(debug, false, parserOutput.TypeDetails[j].TypeName, false),
+							returnType, output )
+					}
+				}
+			}
+		}
+	}
+}
 

@@ -157,7 +157,7 @@ func WriteVars(  debug bool, parserOutput parser.ParseOutput, goPathForRepo stri
 		//output.WriteString( INDENT_1 + tmpTimeVar + " := strfmt.NewDateTime().String()" )
 	}
 
-	// Handle cases where we donn't access any structures in thge model direwctory
+	// Handle cases where we donn't access any structures in the model direwctory
 	output.WriteString( INDENT_1  + "_ = " + MODELS + swagger.CapitaliseSplitTableName(debug, parserOutput.TableDetails.TableName) + "{}")
 
 	output.WriteString( "\n" + INDENT_1 + SELECT_OUTPUT + " := map[string]interface{}{}\n")
@@ -641,7 +641,9 @@ func CreateCode( debug bool, generateDir string,  goPathForRepo string,  parserO
 		output.WriteString( PARSETIME )
 	}
 
-	addStruct( debug, addPost, parserOutput, output )
+	if addStruct( debug, addPost, parserOutput, output ) {
+		setUpStuctArrayFromSwaggerParams( debug, parserOutput, output )
+	}
 	// Write out the static part of the header
 	tmpName := GetFieldName(debug, false, parserOutput.TableDetails.TableName, false)
 	if endPointNameOveride != "" {
