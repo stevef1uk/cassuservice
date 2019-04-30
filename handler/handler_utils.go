@@ -581,30 +581,63 @@ func processPostField(debug bool, fieldName string,  parserOutput parser.ParseOu
     return ret
 }
 
+/*
+func retSimplesEmbedded( params employee1.AddEmployee1Params ) SimplesEmbedded {
+    var ret SimplesEmbedded = make([]*Simple3, len(params.Body.Tsimple.Embedded))
 
-func createCopyFunctions( debug bool, fieldName string, typeName string, returnType string, output  *os.File ) {
-	if debug {fmt.Printf("createCopyFunctions %s %s %s %s\n ", fieldName, fieldName,typeName,returnType   )}
+    for i, v :=  range params.Body.Tsimple.Embedded {
+        ret[i] = &Simple3{ ID: int(v.ID), Floter: float32(v.Floter)}
+    }
+    return ret
+
+}
+*/
+func createCopyFunctions( debug bool, tableName string, fieldName string, structFieldName string, typeName string, returnType string ) string {
+	if debug {fmt.Printf("createCopyFunctions %s %s %s %s %s\n ", fieldName, fieldName, structFieldName, typeName,returnType   )}
+	ret := ""
+
+	ret = "\nfunc setUp" + returnType + "(params " + strings.ToLower(tableName) +  ".Add" + tableName + GS_PARAMS + ") " + returnType + " {"
+	ret = ret + INDENT_1 + strings.ToLower(returnType ) + " := make([]* " + typeName + ", len(" + strings.ToLower(GS_PARAMS) + "." + GS_BODY + "." + fieldName + "." + structFieldName + "))"
+	ret = ret + INDENT_1 + "return " + strings.ToLower(returnType ) + "\n}"
+
+	return ret
+
 }
 
 
 // Function to identify where the go-swagger Params type need to be converted to the UDT type in this package so go-cql annotations will be used and the insert will work
-func setUpStuctArrayFromSwaggerParams( debug bool, parserOutput parser.ParseOutput, output  *os.File )  {
+// The table must containa field that contains UTDs and the UTD field must be a list or set to require this
+func setUpStuctArrayFromSwaggerParams( debug bool, parserOutput parser.ParseOutput )  string {
+	ret := ""
+
 	for i := 0; i <  parserOutput.TableDetails.TableFields.FieldIndex; i++ {
-		if swagger.IsFieldTypeUDT(parserOutput, parserOutput.TableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType ) {
+		if parserOutput.TableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType != "" ||
+			swagger.IsFieldTypeUDT(parserOutput, parserOutput.TableDetails.TableFields.DbFieldDetails[i].DbFieldType) {
 			// Need to create a function for this one
 			for j := 0; j < parserOutput.TypeIndex ; j++ {
 				for k := 0; k < parserOutput.TypeDetails[j].TypeFields.FieldIndex; k++ {
 					if parserOutput.TypeDetails[j].TypeFields.DbFieldDetails[k].DbFieldCollectionType != "" {
 						returnType := GetFieldName(debug, false, parserOutput.TypeDetails[j].TypeName, false) +
 							GetFieldName(debug, false, parserOutput.TypeDetails[j].TypeFields.DbFieldDetails[k].DbFieldName, false)
-						createCopyFunctions(debug,
-							strings.ToLower(parserOutput.TableDetails.TableFields.DbFieldDetails[i].DbFieldName),
-							GetFieldName(debug, false, parserOutput.TypeDetails[j].TypeName, false),
-							returnType, output )
+						typeName := ""
+						if parserOutput.TableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType != "" {
+							typeName = parserOutput.TableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType
+						} else {
+							typeName = parserOutput.TableDetails.TableFields.DbFieldDetails[i].DbFieldType
+						}
+
+						ret = createCopyFunctions(debug,
+							swagger.CapitaliseSplitTableName(debug, parserOutput.TableDetails.TableName),
+							GetFieldName(debug, false, parserOutput.TableDetails.TableFields.DbFieldDetails[i].DbFieldName, false),
+							GetFieldName(debug, false, parserOutput.TypeDetails[j].TypeFields.DbFieldDetails[k].DbFieldName, false),
+							typeName,
+							returnType)
 					}
+
 				}
 			}
 		}
 	}
+	return ret
 }
 

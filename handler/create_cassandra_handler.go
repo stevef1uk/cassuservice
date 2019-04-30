@@ -642,7 +642,8 @@ func CreateCode( debug bool, generateDir string,  goPathForRepo string,  parserO
 	}
 
 	if addStruct( debug, addPost, parserOutput, output ) {
-		setUpStuctArrayFromSwaggerParams( debug, parserOutput, output )
+		tmp := setUpStuctArrayFromSwaggerParams( debug, parserOutput )
+		output.WriteString( "\n    " + tmp + "\n")
 	}
 	// Write out the static part of the header
 	tmpName := GetFieldName(debug, false, parserOutput.TableDetails.TableName, false)

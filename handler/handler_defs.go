@@ -110,6 +110,7 @@ func Search(params operations.Get{{.EXPORTPATH}}Params) middleware.Responder {
 func Insert(params {{.KEYSPACE}}.Add{{.TABLENAME}}Params) middleware.Responder {
 `
 
-
+	GS_PARAMS = "Params"
+	GS_BODY = "Body"
 )
 
