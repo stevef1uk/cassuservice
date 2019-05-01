@@ -363,6 +363,20 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, i
 }
 
 
+// Returns the value type for maps as a string and a boolean indicating it it is a UTD
+func getMapType( debug bool, recursing bool, inTable bool, mapType string, fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput  ) (string,bool) {
+	mapTypeInGo := ""
+	isUDT := false
+	if swagger.IsFieldTypeUDT( parserOutput, mapType  ) { // Map is <text, frozen <UDT>> where text has to be string owing to swagger limitation
+		mapTypeInGo = GetFieldName(debug, recursing, mapType, false )
+		isUDT = true
+	} else {
+		mapTypeInGo = basicMapCassandraTypeToGoType( debug , recursing , inTable, mapType , mapType , mapType,  fieldDetails, parserOutput, false , true  )
+	}
+	return mapTypeInGo, isUDT
+}
+
+
 // Function to handle UDTs in collection types
 func setUpStructs ( debug bool, recursing bool,  timeFound bool, inDent string, inTable bool, destField string, theVar string, theType string,  parserOutput parser.ParseOutput, timeVar string ) string {
 
@@ -400,7 +414,8 @@ func setUpStructs ( debug bool, recursing bool,  timeFound bool, inDent string, 
 			if typeStruct.TypeFields.DbFieldDetails[i].DbFieldMapType != "" {
 				ret = ret + INDENT_1 + inDent + INDENT2  + tmpVar + ","
 				//extraVars = extraVars + INDENT_1 + inDent + "if " + vIndex + `["` + strings.ToLower(fieldName) + `"] == nil { ` +  INDENT_1 + inDent + INDENT2 + "continue" + INDENT_1 + inDent  + "}"
-				extraVars = extraVars +  INDENT_1 + inDent + tmpVar + " := " +vIndex +  `["` + strings.ToLower(fieldName ) + `"].(map[string]string)`
+				mapTypeInGo,_ := getMapType(  debug , recursing , inTable , typeStruct.TypeFields.DbFieldDetails[i].DbFieldMapType , typeStruct.TypeFields.DbFieldDetails[i] , parserOutput )
+				extraVars = extraVars +  INDENT_1 + inDent + tmpVar + " := " +vIndex +  `["` + strings.ToLower(fieldName ) + `"].(map[string]` + mapTypeInGo + ")"
 			} else {
 				// Handle lists & sets here!
 				ret = ret + INDENT_1 + inDent + INDENT2  + tmpVar1 + ","
@@ -530,10 +545,14 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent strin
 		indexCounter++
 		iIndex := "i" + strconv.Itoa(indexCounter)
 		tmp_var := createTempVar( fieldName )
-		mapTypeInGo := "string" // This will always be the case as the swagger generated for maps is always []map[string]string
-		ret = INDENT_1 + inDent + tmp_var + ", ok := " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(map[string]` + mapTypeInGo + ")"
+		mapTypeInGo, isUDT := getMapType(  debug , recursing , inTable , fieldDetails.DbFieldMapType , fieldDetails , parserOutput )
+		mapTypeToUse := mapTypeInGo
+		if isUDT {
+			mapTypeToUse = "map[string]interface{}"
+		}
+		ret = INDENT_1 + inDent + tmp_var + ", ok := " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(map[string]` + mapTypeToUse + ")"
 		ret = ret + INDENT_1 + inDent +  "if ! ok {" + INDENT_1 + INDENT + `log.Fatal("handleReturnedVar() - failed to find entry for ` + strings.ToLower(fieldDetails.DbFieldName ) + `", ok )` + INDENT_1 + "}"
-		ret = ret + INDENT_1 + inDent +  PARAMS_RET + "." + fieldName + " = make(map[string]string,len(" + tmp_var + "))"
+		ret = ret + INDENT_1 + inDent +  PARAMS_RET + "." + fieldName + " = make(map[string]" + mapTypeInGo + ",len(" + tmp_var + "))"
 		ret = ret + INDENT_1 + inDent + "for " + iIndex +", v := range " + tmp_var + " {" + INDENT_1 + inDent + INDENT + PARAMS_RET + "." + fieldName  + "[" +  iIndex + "] = v"  +  INDENT_1 + inDent + "}"
 
 	default:
