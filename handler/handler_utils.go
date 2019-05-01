@@ -490,6 +490,27 @@ func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName
 	return ret
 }
 
+// @TODO need to add more types
+func converttoModelType( debug bool, ident string, sourceStruct string, destStruct string, typeDetails * parser.TypeDetails ) string {
+	ret := ""
+
+	for i := 0; i < typeDetails.TypeFields.FieldIndex; i++ {
+		field := typeDetails.TypeFields.DbFieldDetails[i]
+		//fieldName := GetFieldName( debug, false, typeDetails, false)
+		fieldName := GetFieldName( debug, false, field.OrigFieldName, false)
+		switch ( strings.ToLower( field.DbFieldType ) ) {
+		case "int":
+			ret = ret +  INDENT_1 + ident + destStruct + "." + fieldName + " = " + "int64(" + sourceStruct + "." + fieldName + ")"
+		case "float":
+			ret = ret +  INDENT_1 + ident + destStruct + "." + fieldName + " = " + "float64(" + sourceStruct + "." + fieldName + ")"
+		default:
+			ret = ret +  INDENT_1 + ident + destStruct + "." + fieldName + " = " +  sourceStruct + "." + fieldName
+		}
+	}
+	return ret
+}
+
+
 // Ensure each field in the GoSQL structure "Pararms.Body.<field> can be passed to the GoSQL structure constructor for the field
 func applyTypeConversionForGoSwaggerToGocql( debug bool, output string, suffix string, fieldName string,  fieldType string ) string {
 

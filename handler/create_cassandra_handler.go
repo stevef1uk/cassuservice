@@ -233,7 +233,7 @@ func createSelectString( debug bool, parserOutput parser.ParseOutput, tableName 
 }
 
 // Function called to process a local UDT structure and copy into the go-swagger model's structure type for the UDT
-func handleStructVarConversion(  debug bool, recursing bool, indexCounter int, timeFound bool, inDent string, theStructVar string, destVar string,  theType * parser.TypeDetails,  fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, timeVar string ) string {
+func handleStructVarConversion(  debug bool, recursing bool, inDent string, theStructVar string, destVar string, fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput ) string {
 
 	ret := ""
 
@@ -354,7 +354,7 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, i
 			return ret
 		}
 
-		tmp = handleStructVarConversion(debug, recursing, indexCounter, timeFound, inDent, tmpStruct, tmpDest, typeStruct, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, timeVar )
+		tmp = handleStructVarConversion(debug, recursing, inDent, tmpStruct, tmpDest, typeStruct.TypeFields.DbFieldDetails[i], parserOutput)
 	here:
 		ret = ret + inDent + INDENT2  + tmp
 	}
@@ -448,7 +448,7 @@ func setUpStructs ( debug bool, recursing bool,  timeFound bool, inDent string, 
 				goto here
 			}
 		}
-		tmp = handleStructVarConversion(debug, recursing, indexCounter, timeFound, inDent, tmpStruct, tmpDest, typeStruct, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, timeVar )
+		tmp = handleStructVarConversion(debug, recursing, inDent, tmpStruct, tmpDest, typeStruct.TypeFields.DbFieldDetails[i], parserOutput )
 	here:
 		if i == 0 {
 			ret = ret + inDent + INDENT2 + addMake + tmp
@@ -460,6 +460,36 @@ func setUpStructs ( debug bool, recursing bool,  timeFound bool, inDent string, 
 	ret = ret + INDENT_1 + inDent + "}"
 
 	return ret
+}
+
+/*
+for i3, v := range tmp_Mymap_1 {
+    t := Simple{}
+    t.ID = v["id"].(int)
+    t.Floter = v["floter"].(float32)
+
+  retParams.Mymap[i3] = models.Simple{ ID: int64(t.ID), Floter: float64( t.Floter) }
+ */
+func manageMap( debug bool, inDent string,  inTable bool, destName string, varName string, typeDetails  * parser.TypeDetails, parserOutput parser.ParseOutput, timeVar string ) string {
+	ret := ""
+
+	for i := 0; i < typeDetails.TypeFields.FieldIndex; i++ {
+		field := typeDetails.TypeFields.DbFieldDetails[i]
+		//fieldName := GetFieldName( debug, false, typeDetails, false)
+		fieldName := GetFieldName( debug, false, field.OrigFieldName, false)
+		ret = ret + INDENT_1 + inDent + destName + "." + fieldName + " = " + varName + `["` + strings.ToLower( fieldName ) + `"]`
+		switch ( strings.ToLower( field.DbFieldType ) ) {
+		case "int":
+			ret = ret + ".(int)"
+		case "float":
+			ret = ret + ".(float32)"
+		default:
+			ret = ret
+		}
+	}
+
+	return ret
+
 }
 
 
@@ -547,13 +577,39 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent strin
 		tmp_var := createTempVar( fieldName )
 		mapTypeInGo, isUDT := getMapType(  debug , recursing , inTable , fieldDetails.DbFieldMapType , fieldDetails , parserOutput )
 		mapTypeToUse := mapTypeInGo
+		tmpMapVarType := mapTypeInGo
+		tmpMapVar :=""
+		tmp1 := ""
 		if isUDT {
 			mapTypeToUse = "map[string]interface{}"
+			tmpMapVar = createTempVar( fieldName )
+			tmpMapVarType = MODELS + mapTypeInGo
+			tmp := INDENT_1 + inDent + INDENT + tmpMapVar + " := " + mapTypeInGo + "{}"
+			//ts := findTypeDetails( debug, fieldDetails.DbFieldMapType, parserOutput)
+			tmp1 = tmp + manageMap(debug, inDent + INDENT, inTable, tmpMapVar,"v", findTypeDetails( debug, mapTypeInGo, parserOutput ), parserOutput, timeVar )
+			//manageMap( debug bool, inDent string,  inTable bool, varName string, typeDetails  parser.TypeDetails, parserOutput parser.ParseOutput, timeVar string ) string {
+			// manageMap( debug bool, inDent string, structVar string,  inTable bool, fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, timeVar string ) string {
+			_ = tmp
+			_ = tmp1
 		}
 		ret = INDENT_1 + inDent + tmp_var + ", ok := " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(map[string]` + mapTypeToUse + ")"
 		ret = ret + INDENT_1 + inDent +  "if ! ok {" + INDENT_1 + INDENT + `log.Fatal("handleReturnedVar() - failed to find entry for ` + strings.ToLower(fieldDetails.DbFieldName ) + `", ok )` + INDENT_1 + "}"
-		ret = ret + INDENT_1 + inDent +  PARAMS_RET + "." + fieldName + " = make(map[string]" + mapTypeInGo + ",len(" + tmp_var + "))"
-		ret = ret + INDENT_1 + inDent + "for " + iIndex +", v := range " + tmp_var + " {" + INDENT_1 + inDent + INDENT + PARAMS_RET + "." + fieldName  + "[" +  iIndex + "] = v"  +  INDENT_1 + inDent + "}"
+		ret = ret + INDENT_1 + inDent +  PARAMS_RET + "." + fieldName + " = make(map[string]" + tmpMapVarType + ",len(" + tmp_var + "))"
+		//ret = ret + INDENT_1 + inDent + "for " + iIndex +", v := range " + tmp_var + " {" +  INDENT_1 + inDent + INDENT + PARAMS_RET + "." + fieldName  + "[" +  iIndex + "] = v" +  INDENT_1 + inDent + "}" // Modify this part!
+		ret = ret + INDENT_1 + inDent + "for " + iIndex +", v := range " + tmp_var + " {"
+		if tmp1 != "" {
+			ret = ret + INDENT_1 + inDent + tmp1;
+			typeDetails := findTypeDetails( debug, mapTypeInGo, parserOutput )
+			dest := PARAMS_RET + "." + fieldName  + "[" +  iIndex + "]"
+			tmpModelType := createTempVar( fieldName )
+			ret = ret + INDENT_1 + inDent + INDENT + tmpModelType + " := " + tmpMapVarType + "{}"
+			ret = ret + converttoModelType( debug, inDent + INDENT , tmpMapVar, tmpModelType, typeDetails )
+			ret = ret + INDENT_1 + inDent + INDENT + dest + " = " + tmpModelType
+			//@TODO
+		} else  {
+			ret = ret + INDENT_1 + inDent + INDENT + PARAMS_RET + "." + fieldName  + "[" +  iIndex + "] = v"
+		}
+		ret = ret + INDENT_1 + inDent + "}"
 
 	default:
 		if swagger.IsFieldTypeUDT( parserOutput, fieldDetails.DbFieldType ) {
