@@ -470,7 +470,7 @@ for i3, v := range tmp_Mymap_1 {
 
   retParams.Mymap[i3] = models.Simple{ ID: int64(t.ID), Floter: float64( t.Floter) }
  */
-func manageMap( debug bool, inDent string,  inTable bool, destName string, varName string, typeDetails  * parser.TypeDetails, parserOutput parser.ParseOutput, timeVar string ) string {
+func manageMap( debug bool, recursing bool, inDent string,  inTable bool, destName string, varName string, typeDetails  * parser.TypeDetails, parserOutput parser.ParseOutput, timeVar string ) string {
 	ret := ""
 
 	for i := 0; i < typeDetails.TypeFields.FieldIndex; i++ {
@@ -479,12 +479,33 @@ func manageMap( debug bool, inDent string,  inTable bool, destName string, varNa
 		fieldName := GetFieldName( debug, false, field.OrigFieldName, false)
 		ret = ret + INDENT_1 + inDent + destName + "." + fieldName + " = " + varName + `["` + strings.ToLower( fieldName ) + `"]`
 		switch ( strings.ToLower( field.DbFieldType ) ) {
-		case "int":
+		case "int": fallthrough
+		case "bigint":
 			ret = ret + ".(int)"
+		case "boolean":
+			ret = ret + ".(bool)"
+		case "date": fallthrough
+		case "timestamp":
+			ret = ret + ".(time.Time)"
+		case "decimal":
+			//ret = ret + ".(*inf.Dec)"
+			ret = ret + ".(float32)"
+		case "double": fallthrough
 		case "float":
 			ret = ret + ".(float32)"
+		case "timeuuid":
+			ret = ret + ".(gocql.UUID)"
+		case "set": fallthrough
+		case "list":
+			collectionType := GetFieldName(debug, recursing, field.DbFieldCollectionType, false )
+			if swagger.IsFieldTypeUDT( parserOutput, collectionType ) {
+				//@TODO!
+			} else {
+				tmp_var := createTempVar( fieldName )
+				ret = CopyArrayElements( debug, inTable, INDENT_1 + inDent, tmp_var, destName + "." + fieldName,  field, parserOutput )
+			}
 		default:
-			ret = ret
+			ret = ret+ ".(string)"
 		}
 	}
 
@@ -586,7 +607,7 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent strin
 			tmpMapVarType = MODELS + mapTypeInGo
 			tmp := INDENT_1 + inDent + INDENT + tmpMapVar + " := " + mapTypeInGo + "{}"
 			//ts := findTypeDetails( debug, fieldDetails.DbFieldMapType, parserOutput)
-			tmp1 = tmp + manageMap(debug, inDent + INDENT, inTable, tmpMapVar,"v", findTypeDetails( debug, mapTypeInGo, parserOutput ), parserOutput, timeVar )
+			tmp1 = tmp + manageMap(debug, recursing, inDent + INDENT, inTable, tmpMapVar,"v", findTypeDetails( debug, mapTypeInGo, parserOutput ), parserOutput, timeVar )
 			//manageMap( debug bool, inDent string,  inTable bool, varName string, typeDetails  parser.TypeDetails, parserOutput parser.ParseOutput, timeVar string ) string {
 			// manageMap( debug bool, inDent string, structVar string,  inTable bool, fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, timeVar string ) string {
 			_ = tmp
