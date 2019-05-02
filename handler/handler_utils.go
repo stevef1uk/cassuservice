@@ -143,7 +143,7 @@ for i3, v := range tmp_Mymap_1 {
 
   retParams.Mymap[i3] = models.Simple{ ID: int64(t.ID), Floter: float64( t.Floter) }
 */
-// Function that returns a string that ?
+// Function that returns a string that sets up a structure (destName) field's to the correct type from a map of strings (varName), indexed by the field names, returned by gocql
 func manageMap( debug bool, recursing bool, inDent string,  inTable bool, destName string, varName string, typeDetails  * parser.TypeDetails, parserOutput parser.ParseOutput, timeVar string ) string {
 	ret := ""
 
@@ -151,35 +151,34 @@ func manageMap( debug bool, recursing bool, inDent string,  inTable bool, destNa
 		field := typeDetails.TypeFields.DbFieldDetails[i]
 		//fieldName := GetFieldName( debug, false, typeDetails, false)
 		fieldName := GetFieldName( debug, false, field.OrigFieldName, false)
-		ret = ret + INDENT_1 + inDent + destName + "." + fieldName + " = " + varName + `["` + strings.ToLower( fieldName ) + `"]`
+		tmp :=  INDENT_1 + inDent + destName + "." + fieldName + " = " + varName + `["` + strings.ToLower( fieldName ) + `"]`
 		switch ( strings.ToLower( field.DbFieldType ) ) {
 		case "int":
-			ret = ret + ".(int)"
+			ret = ret + tmp + ".(int)"
 		case "bigint":
-			ret = ret + ".(int64)"
+			ret = ret + tmp + ".(int)"
 		case "boolean":
-			ret = ret + ".(bool)"
-		case "date": fallthrough
+			ret = ret + tmp + ".(bool)"
 		case "timestamp":
-			ret = ret + ".(time.Time)"
+			ret = ret + tmp + ".(time.Time)"
 		case "decimal":
-			ret = ret + ".(float32)"
+			ret = ret + tmp + ".(float64)"
 		case "double": fallthrough
 		case "float":
-			ret = ret + ".(float32)"
+			ret = ret + tmp + ".(float32)"
 		case "timeuuid":
-			ret = ret + ".(gocql.UUID)"
+			ret = ret + tmp + ".(gocql.UUID)"
 		case "set": fallthrough
 		case "list":
 			collectionType := GetFieldName(debug, recursing, field.DbFieldCollectionType, false )
 			if swagger.IsFieldTypeUDT( parserOutput, collectionType ) {
 				//@TODO!
 			} else {
-				tmp_var := createTempVar( fieldName )
-				ret = CopyArrayElements( debug, inTable, INDENT_1 + inDent, tmp_var, destName + "." + fieldName,  field, parserOutput )
+				//tmp_var := createTempVar( fieldName )
+				//ret = ret + CopyArrayElements( debug, inTable, INDENT_1 + inDent, tmp_var, destName + "." + fieldName,  field, parserOutput )
 			}
 		default:
-			ret = ret+ ".(string)"
+			ret = ret + tmp + ".(string)"
 		}
 	}
 
@@ -546,7 +545,6 @@ func converttoModelType( debug bool, ident string, sourceStruct string, destStru
 		case "float": fallthrough
 		case "double":
 			ret = ret +  INDENT_1 + ident + destStruct + "." + fieldName + " = " + "float64(" + sourceStruct + "." + fieldName + ")"
-		case "date": fallthrough
 		case "timestamp": fallthrough
 		case "timeuuid":
 			ret = ret + INDENT_1 + ident + destStruct + "." + fieldName + " = " + sourceStruct + "." + fieldName + ".String()"
