@@ -264,7 +264,7 @@ func handleStructVarConversion(  debug bool, recursing bool, inDent string, theS
 		if swagger.IsFieldTypeUDT( parserOutput, collectionType ) {
 			ret = INDENT_1 + inDent + destVar + " = " + sourceVar
 		} else {
-			ret = CopyArrayElements( debug, false, INDENT_1 + INDENT, theStructVar + "." + fieldName, destVar,  fieldDetails, parserOutput )
+			ret = CopyArrayElements( debug, false,false, INDENT_1 + INDENT, theStructVar + "." + fieldName, destVar,  fieldDetails, parserOutput )
 		}
 	default:
 		ret = INDENT_1 + inDent + destVar + " = " + sourceVar
@@ -538,7 +538,7 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent strin
 
 		} else {
 			tmp_var := createTempVar( fieldName )
-			ret = CopyArrayElements( debug, inTable, INDENT_1 + inDent, tmp_var, PARAMS_RET + "." + fieldName,  fieldDetails, parserOutput )
+			ret = CopyArrayElements( debug, true, inTable, INDENT_1 + inDent, tmp_var, PARAMS_RET + "." + fieldName,  fieldDetails, parserOutput )
 		}
 		// ret = ret + INDENT_1 + inDent + PARAMS_RET + "." + fieldName + " = " + fieldName
 		// We don't need the above because it won't give us what we need
@@ -574,7 +574,7 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent strin
 			dest := PARAMS_RET + "." + fieldName  + "[" +  iIndex + "]"
 			tmpModelType := createTempVar( fieldName )
 			ret = ret + INDENT_1 + inDent + INDENT + tmpModelType + " := " + tmpMapVarType + "{}"
-			ret = ret + converttoModelType( debug, inDent + INDENT , tmpMapVar, tmpModelType, typeDetails, parserOutput )
+			ret = ret + converttoModelType( debug, inDent + INDENT , inTable, tmpMapVar, tmpModelType, typeDetails, parserOutput )
 			ret = ret + INDENT_1 + inDent + INDENT + dest + " = " + tmpModelType
 			//@TODO
 		} else  {

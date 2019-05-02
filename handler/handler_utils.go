@@ -135,6 +135,14 @@ debug = false
 }
 
 
+func simpleArrayCopy( debug bool, source string, dest string ) string {
+	ret := ""
+
+
+
+	return ret
+}
+
 /*
 for i3, v := range tmp_Mymap_1 {
     t := Simple{}
@@ -174,8 +182,8 @@ func manageMap( debug bool, recursing bool, inDent string,  inTable bool, destNa
 			if swagger.IsFieldTypeUDT( parserOutput, collectionType ) {
 				//@TODO!
 			} else {
-				//tmp_var := createTempVar( fieldName )
-				//ret = ret + CopyArrayElements( debug, inTable, INDENT_1 + inDent, tmp_var, destName + "." + fieldName,  field, parserOutput )
+				arrayType := mapFieldTypeToGoCSQLType( debug, fieldName, recursing, false, collectionType, fieldName, field, parserOutput, false  )
+				ret = ret + tmp + ".([]" + arrayType + ")"
 			}
 		default:
 			ret = ret + tmp + ".(string)"
@@ -480,7 +488,7 @@ func findTypeDetails ( debug bool, typeName string, parserOutput parser.ParseOut
 
 
 
-func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName string, destFieldName string,  fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput  ) string {
+func CopyArrayElements( debug bool, addGet bool, inTable bool, inDent string, sourceFieldName string, destFieldName string,  fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput  ) string {
 	equals := " := "
 	ret := ""
 	arrayType := basicMapCassandraTypeToGoType(debug, false, inTable, fieldDetails.DbFieldName, fieldDetails.DbFieldCollectionType, "", fieldDetails, parserOutput, true, true )
@@ -494,7 +502,7 @@ func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName
 		arrayTypeDest = "string"
 	}
 
-	if inTable {
+	if addGet {
 		ret = INDENT_1 + inDent + sourceFieldName + equals +  SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].([]` + arrayType + ")"
 	}
 
@@ -531,7 +539,7 @@ func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName
 }
 
 // @TODO need to add more types
-func converttoModelType( debug bool, ident string, sourceStruct string, destStruct string, typeDetails * parser.TypeDetails, parserOutput parser.ParseOutput  ) string {
+func converttoModelType( debug bool, ident string, inTable bool, sourceStruct string, destStruct string, typeDetails * parser.TypeDetails, parserOutput parser.ParseOutput  ) string {
 	ret := ""
 
 	for i := 0; i < typeDetails.TypeFields.FieldIndex; i++ {
@@ -550,7 +558,8 @@ func converttoModelType( debug bool, ident string, sourceStruct string, destStru
 			ret = ret + INDENT_1 + ident + destStruct + "." + fieldName + " = " + sourceStruct + "." + fieldName + ".String()"
 		case "set": fallthrough
 		case "list":
-			//
+			tmp := CopyArrayElements( debug , false, inTable , INDENT_1 + ident , sourceStruct + "." + fieldName, destStruct + "." + fieldName ,  field, parserOutput )
+			ret = ret + tmp
 		default:
 			ret = ret +  INDENT_1 + ident + destStruct + "." + fieldName + " = " +  sourceStruct + "." + fieldName
 		}
