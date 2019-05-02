@@ -135,6 +135,57 @@ debug = false
 }
 
 
+/*
+for i3, v := range tmp_Mymap_1 {
+    t := Simple{}
+    t.ID = v["id"].(int)
+    t.Floter = v["floter"].(float32)
+
+  retParams.Mymap[i3] = models.Simple{ ID: int64(t.ID), Floter: float64( t.Floter) }
+*/
+// Function that returns a string that ?
+func manageMap( debug bool, recursing bool, inDent string,  inTable bool, destName string, varName string, typeDetails  * parser.TypeDetails, parserOutput parser.ParseOutput, timeVar string ) string {
+	ret := ""
+
+	for i := 0; i < typeDetails.TypeFields.FieldIndex; i++ {
+		field := typeDetails.TypeFields.DbFieldDetails[i]
+		//fieldName := GetFieldName( debug, false, typeDetails, false)
+		fieldName := GetFieldName( debug, false, field.OrigFieldName, false)
+		ret = ret + INDENT_1 + inDent + destName + "." + fieldName + " = " + varName + `["` + strings.ToLower( fieldName ) + `"]`
+		switch ( strings.ToLower( field.DbFieldType ) ) {
+		case "int":
+			ret = ret + ".(int)"
+		case "bigint":
+			ret = ret + ".(int64)"
+		case "boolean":
+			ret = ret + ".(bool)"
+		case "date": fallthrough
+		case "timestamp":
+			ret = ret + ".(time.Time)"
+		case "decimal":
+			ret = ret + ".(float32)"
+		case "double": fallthrough
+		case "float":
+			ret = ret + ".(float32)"
+		case "timeuuid":
+			ret = ret + ".(gocql.UUID)"
+		case "set": fallthrough
+		case "list":
+			collectionType := GetFieldName(debug, recursing, field.DbFieldCollectionType, false )
+			if swagger.IsFieldTypeUDT( parserOutput, collectionType ) {
+				//@TODO!
+			} else {
+				tmp_var := createTempVar( fieldName )
+				ret = CopyArrayElements( debug, inTable, INDENT_1 + inDent, tmp_var, destName + "." + fieldName,  field, parserOutput )
+			}
+		default:
+			ret = ret+ ".(string)"
+		}
+	}
+
+	return ret
+
+}
 
 
 
@@ -176,7 +227,11 @@ func basicMapCassandraTypeToGoType( debug bool, leaveFieldCase bool, inTable boo
 			text = "float64"
 		}
 	case "decimal":
-		text = "*inf.Dec"
+		if inTable {
+			text = "*inf.Dec"
+		} else {
+			text = "float64"
+		}
 	case "text":
 		text = "string"
 	case "varchar":
@@ -199,7 +254,7 @@ func basicMapCassandraTypeToGoType( debug bool, leaveFieldCase bool, inTable boo
 		} else {
 			fieldName = GetFieldName( debug, leaveCase, fieldName, dontUpdate)
 			text = text + MODELS
-			if ! inTable {
+			if  inTable {
 				text = text + fieldName
 			} else {
 				text = text + typeName + fieldName
@@ -214,6 +269,7 @@ func basicMapCassandraTypeToGoType( debug bool, leaveFieldCase bool, inTable boo
 			typeName = GetFieldName( debug, leaveCase, typeName, dontUpdate)
 			text = MODELS + typeName + fieldName
 		}
+
 	default:
 		if debug {fmt.Printf("basicMapCassandraTypeToGoType TYPE NOT MATCHED!!!!\n " )}
 		fieldName = GetFieldName( debug, leaveCase, fieldName, dontUpdate)
@@ -275,7 +331,7 @@ func mapFieldTypeToGoCSQLType( debug bool, fieldName string, leaveFieldCase bool
 		if ! swagger.IsFieldTypeUDT( parserOutput, fieldDetails.DbFieldCollectionType) {
 			text = "[]"
 		}
-		retType := basicMapCassandraTypeToGoType( debug, true, true, fieldName, fieldType, typeName,   fieldDetails , parserOutput, dontUpdate, true )
+		retType := basicMapCassandraTypeToGoType( debug, true, inTable, fieldName, fieldType, typeName,   fieldDetails , parserOutput, dontUpdate, true )
 		text = text + retType
 	default:
 		text = basicMapCassandraTypeToGoType( debug, true, inTable, fieldName, fieldType, typeName,   fieldDetails , parserOutput, dontUpdate, true )
@@ -306,20 +362,6 @@ func existsTimeField( fieldDetails parser.FieldDetails  ) bool {
 	return ret
 }
 
-/*
-func existsFieldType( fieldDetails parser.FieldDetails, fieldType string  ) bool {
-	ret := false
-	
-	if swagger.IsFieldTypeATime( strings.ToUpper( fieldType ) ) {
-		ret = existsTimeField( fieldDetails )
-	} else if ( ( strings.ToLower( fieldDetails.DbFieldType ) == fieldType ) ||
-		 ( strings.ToLower( fieldDetails.DbFieldCollectionType ) == fieldType ) ||
-		 (  strings.ToLower( fieldDetails.DbFieldMapType ) == fieldType ) ) {
-		ret = true
-		}
-	return ret
-}
-*/
 
 func existsFieldType( fieldDetails parser.FieldDetails, fieldType string  ) bool {
 	ret := false
@@ -421,10 +463,9 @@ func ProcessTime ( firstTime bool , indent string, timeVar string, typeName stri
 	ret = ret + indent + tmpV2 + ", _ " + equals + "strfmt.ParseDateTime(" + timeVar + ")"
 	ret = ret + indent + tmpV3 + " := " + tmpV2 + ".String()"
 
-
-
 	return ret, tmpV3
 }
+
 
 func findTypeDetails ( debug bool, typeName string, parserOutput parser.ParseOutput ) *parser.TypeDetails {
 	ret := &parser.TypeDetails{}
@@ -491,7 +532,7 @@ func CopyArrayElements( debug bool, inTable bool, inDent string, sourceFieldName
 }
 
 // @TODO need to add more types
-func converttoModelType( debug bool, ident string, sourceStruct string, destStruct string, typeDetails * parser.TypeDetails ) string {
+func converttoModelType( debug bool, ident string, sourceStruct string, destStruct string, typeDetails * parser.TypeDetails, parserOutput parser.ParseOutput  ) string {
 	ret := ""
 
 	for i := 0; i < typeDetails.TypeFields.FieldIndex; i++ {
@@ -499,10 +540,19 @@ func converttoModelType( debug bool, ident string, sourceStruct string, destStru
 		//fieldName := GetFieldName( debug, false, typeDetails, false)
 		fieldName := GetFieldName( debug, false, field.OrigFieldName, false)
 		switch ( strings.ToLower( field.DbFieldType ) ) {
-		case "int":
+		case "int": fallthrough
+		case "bigint":
 			ret = ret +  INDENT_1 + ident + destStruct + "." + fieldName + " = " + "int64(" + sourceStruct + "." + fieldName + ")"
-		case "float":
+		case "float": fallthrough
+		case "double":
 			ret = ret +  INDENT_1 + ident + destStruct + "." + fieldName + " = " + "float64(" + sourceStruct + "." + fieldName + ")"
+		case "date": fallthrough
+		case "timestamp": fallthrough
+		case "timeuuid":
+			ret = ret + INDENT_1 + ident + destStruct + "." + fieldName + " = " + sourceStruct + "." + fieldName + ".String()"
+		case "set": fallthrough
+		case "list":
+			//
 		default:
 			ret = ret +  INDENT_1 + ident + destStruct + "." + fieldName + " = " +  sourceStruct + "." + fieldName
 		}

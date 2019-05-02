@@ -462,56 +462,6 @@ func setUpStructs ( debug bool, recursing bool,  timeFound bool, inDent string, 
 	return ret
 }
 
-/*
-for i3, v := range tmp_Mymap_1 {
-    t := Simple{}
-    t.ID = v["id"].(int)
-    t.Floter = v["floter"].(float32)
-
-  retParams.Mymap[i3] = models.Simple{ ID: int64(t.ID), Floter: float64( t.Floter) }
- */
-func manageMap( debug bool, recursing bool, inDent string,  inTable bool, destName string, varName string, typeDetails  * parser.TypeDetails, parserOutput parser.ParseOutput, timeVar string ) string {
-	ret := ""
-
-	for i := 0; i < typeDetails.TypeFields.FieldIndex; i++ {
-		field := typeDetails.TypeFields.DbFieldDetails[i]
-		//fieldName := GetFieldName( debug, false, typeDetails, false)
-		fieldName := GetFieldName( debug, false, field.OrigFieldName, false)
-		ret = ret + INDENT_1 + inDent + destName + "." + fieldName + " = " + varName + `["` + strings.ToLower( fieldName ) + `"]`
-		switch ( strings.ToLower( field.DbFieldType ) ) {
-		case "int": fallthrough
-		case "bigint":
-			ret = ret + ".(int)"
-		case "boolean":
-			ret = ret + ".(bool)"
-		case "date": fallthrough
-		case "timestamp":
-			ret = ret + ".(time.Time)"
-		case "decimal":
-			//ret = ret + ".(*inf.Dec)"
-			ret = ret + ".(float32)"
-		case "double": fallthrough
-		case "float":
-			ret = ret + ".(float32)"
-		case "timeuuid":
-			ret = ret + ".(gocql.UUID)"
-		case "set": fallthrough
-		case "list":
-			collectionType := GetFieldName(debug, recursing, field.DbFieldCollectionType, false )
-			if swagger.IsFieldTypeUDT( parserOutput, collectionType ) {
-				//@TODO!
-			} else {
-				tmp_var := createTempVar( fieldName )
-				ret = CopyArrayElements( debug, inTable, INDENT_1 + inDent, tmp_var, destName + "." + fieldName,  field, parserOutput )
-			}
-		default:
-			ret = ret+ ".(string)"
-		}
-	}
-
-	return ret
-
-}
 
 
 func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent string, inTable bool, typeIndex int , fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, timeVar string ) (string, bool) {
@@ -624,7 +574,7 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent strin
 			dest := PARAMS_RET + "." + fieldName  + "[" +  iIndex + "]"
 			tmpModelType := createTempVar( fieldName )
 			ret = ret + INDENT_1 + inDent + INDENT + tmpModelType + " := " + tmpMapVarType + "{}"
-			ret = ret + converttoModelType( debug, inDent + INDENT , tmpMapVar, tmpModelType, typeDetails )
+			ret = ret + converttoModelType( debug, inDent + INDENT , tmpMapVar, tmpModelType, typeDetails, parserOutput )
 			ret = ret + INDENT_1 + inDent + INDENT + dest + " = " + tmpModelType
 			//@TODO
 		} else  {
