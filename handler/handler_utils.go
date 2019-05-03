@@ -163,17 +163,22 @@ func manageMap( debug bool, recursing bool, inDent string,  inTable bool, destNa
 		switch ( strings.ToLower( field.DbFieldType ) ) {
 		case "int":
 			ret = ret + tmp + ".(int)"
+		case "blob":
+			ret = ret + tmp + ".([]uint8)"
 		case "bigint":
-			ret = ret + tmp + ".(int)"
+			ret = ret + tmp + ".(int64)"
 		case "boolean":
 			ret = ret + tmp + ".(bool)"
-		case "timestamp":
+		case "timestamp": fallthrough
+		case "date":
 			ret = ret + tmp + ".(time.Time)"
 		case "decimal":
+			ret = ret + tmp + ".(*inf.Dec)"
+		case "double":
 			ret = ret + tmp + ".(float64)"
-		case "double": fallthrough
 		case "float":
 			ret = ret + tmp + ".(float32)"
+		case "uuid": fallthrough
 		case "timeuuid":
 			ret = ret + tmp + ".(gocql.UUID)"
 		case "set": fallthrough
@@ -207,7 +212,6 @@ func basicMapCassandraTypeToGoType( debug bool, leaveFieldCase bool, inTable boo
 	if debug {fmt.Printf("basicMapCassandraTypeToGoType %s %s\n ", fieldName,fieldType )}
 	switch strings.ToLower(fieldType) {
 	case "int": fallthrough
-	case "bigint": fallthrough
 	case "counter": fallthrough
 	case "varint":
 		if makeSmall {
@@ -215,6 +219,8 @@ func basicMapCassandraTypeToGoType( debug bool, leaveFieldCase bool, inTable boo
 		} else {
 			text = "int64"
 		}
+	case "bigint":
+		text = "int64"
 	case "uuid":
 		text = "string"
 	case "date": fallthrough
@@ -224,8 +230,6 @@ func basicMapCassandraTypeToGoType( debug bool, leaveFieldCase bool, inTable boo
 		text = "gocql.UUID"
 	case "boolean":
 		text = "bool"
-	//case "decimal":
-		//text = "*inf.Dec" // this is in the gopkg.in/inf.v0 package
 	case "float": fallthrough
 	case "double":
 		if makeSmall {
@@ -234,11 +238,7 @@ func basicMapCassandraTypeToGoType( debug bool, leaveFieldCase bool, inTable boo
 			text = "float64"
 		}
 	case "decimal":
-		if inTable {
-			text = "*inf.Dec"
-		} else {
-			text = "float64"
-		}
+		text = "*inf.Dec" // this is in the gopkg.in/inf.v0 package
 	case "text":
 		text = "string"
 	case "varchar":
@@ -246,7 +246,12 @@ func basicMapCassandraTypeToGoType( debug bool, leaveFieldCase bool, inTable boo
 	case "ascii":
 		text = "string"
 	case "blob":
-		text = "string"
+		if inTable {
+			text = "string"
+		} else
+		{
+			text = "[]uint8"
+		}
 	case "inet":
 		text = "string"
 	case "smallint":
@@ -301,14 +306,14 @@ func basicMapCassandraTypeToGoType( debug bool, leaveFieldCase bool, inTable boo
 
 
 // The Go types are different for UDT types and table field types in some cases. This function deals with table field return types
-func mapTableTypeToGoType( debug bool, fieldName string, fieldType string, typeName string, fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, dontUpdate bool  ) string {
+func mapTableTypeToGoType( debug bool, inTable bool, fieldName string, fieldType string, typeName string, fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, dontUpdate bool  ) string {
 
 	text := ""
 
 	switch strings.ToLower(fieldType) {
 
 	default:
-		text = basicMapCassandraTypeToGoType( debug, true, true, fieldName, fieldType, typeName,   fieldDetails , parserOutput, dontUpdate, false )
+		text = basicMapCassandraTypeToGoType( debug, true, inTable, fieldName, fieldType, typeName,   fieldDetails , parserOutput, dontUpdate, false )
 	}
 
 	if debug { fmt.Printf("mapTableTypeToGoType returning %s from field %s type %s\n", text, fieldName, fieldType ) }
@@ -325,11 +330,12 @@ func mapFieldTypeToGoCSQLType( debug bool, fieldName string, leaveFieldCase bool
 	case "int": fallthrough
 	case "varint":
 		text = "int"
-	case "uuid":
-		text = "string"
+	case "double":
+		text = "float64"
 	case "date":
-		text = "strfmt.DateTime"
-	case "timeuuid":
+		text = "time.Time"
+	case "timeuuid": fallthrough
+	case "uuid":
 		text = "gocql.UUID"
 	case "float":
 		text = "float32"

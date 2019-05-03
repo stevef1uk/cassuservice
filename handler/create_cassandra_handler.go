@@ -99,13 +99,13 @@ func addStruct( debug bool, addPost bool, parserOutput parser.ParseOutput, outpu
 }
 
 
-func writeField( debug bool, parserOutput parser.ParseOutput, field parser.FieldDetails, output  *os.File) {
+func writeField( debug bool, inTable bool, parserOutput parser.ParseOutput, field parser.FieldDetails, output  *os.File) {
 
 	fieldName := GetFieldName( debug, false, field.OrigFieldName, false)
 
 	if field.DbFieldCollectionType != "" {
 		collectionType := GetFieldName(debug, false, field.DbFieldCollectionType, true )
-		fieldType :=  mapTableTypeToGoType( debug, fieldName, collectionType, field.DbFieldCollectionType, field, parserOutput, true )
+		fieldType :=  mapTableTypeToGoType( debug, inTable, fieldName, collectionType, field.DbFieldCollectionType, field, parserOutput, true )
 		if debug {fmt.Println("writeField name =", field.DbFieldName, " fieldType = ", fieldType) }
 		if strings.ToLower(fieldType ) == "map" {
 			output.WriteString( INDENT_1 + "var " + fieldName + " " +  fieldType )
@@ -117,7 +117,7 @@ func writeField( debug bool, parserOutput parser.ParseOutput, field parser.Field
 			}
 		}
 	} else {
-		fieldType :=  mapTableTypeToGoType( debug, strings.ToLower(field.DbFieldName), field.DbFieldType, field.DbFieldCollectionType, field, parserOutput, true )
+		fieldType :=  mapTableTypeToGoType( debug, inTable, strings.ToLower(field.DbFieldName), field.DbFieldType, field.DbFieldCollectionType, field, parserOutput, true )
 		if debug {fmt.Println("writeField name =", fieldName, " fieldType = ", fieldType) }
 		output.WriteString( INDENT_1 + "var " + fieldName + " " + fieldType )
 	}
@@ -127,7 +127,7 @@ func writeField( debug bool, parserOutput parser.ParseOutput, field parser.Field
 
 
 // Function that writes out the variable types for the table & returns the temporary variable created if there is a time field
-func WriteVars(  debug bool, parserOutput parser.ParseOutput, goPathForRepo string, doNeedTimeImports bool, endPointNameOverRide string, output  *os.File )  string {
+func WriteVars(  debug bool, inTable bool, parserOutput parser.ParseOutput, goPathForRepo string, doNeedTimeImports bool, endPointNameOverRide string, output  *os.File )  string {
 	tmpTimeVar := ""
 
 	const UDTTYPE = `
@@ -148,7 +148,7 @@ func WriteVars(  debug bool, parserOutput parser.ParseOutput, goPathForRepo stri
 
 		} else {
 			if debug {fmt.Println("WriteVars writing field") }
-			writeField( debug, parserOutput, v, output)
+			writeField( debug, inTable, parserOutput, v, output)
 		}
 	}
 
@@ -698,7 +698,7 @@ func CreateCode( debug bool, generateDir string,  goPathForRepo string,  parserO
 	}
 	tmpData := &tableDetails{ generateDir, strings.ToLower(parserOutput.TableSpace), tmpName, tmpName}
 	WriteStringToFileWithTemplates(  "\n" + HEADER, "header", output, &tmpData)
-	tmpTimeVar := WriteVars( debug, parserOutput, goPathForRepo, doNeedTimeImports, endPointNameOveride, output )
+	tmpTimeVar := WriteVars( debug, true, parserOutput, goPathForRepo, doNeedTimeImports, endPointNameOveride, output )
 	tmp := createSelectString( debug , parserOutput, tmpName, tmpTimeVar, cassandraConsistencyRequired, overridePrimaryKeys, allowFiltering, logExtraInfo, output )
 	output.WriteString( INDENT_1 + "if err := " + SESSION_VAR + ".Query(" + "`" + " SELECT " + tmp )
 	tmp = handleSelectReturn( debug, parserOutput, tmpTimeVar )
