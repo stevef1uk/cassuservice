@@ -528,7 +528,9 @@ func CopyArrayElements( debug bool, addGet bool, inTable bool, inDent string, so
 	case "int64":
 		ret = ret + inDent + INDENT + destFieldName + "[j] = " +  "int64(" + sourceFieldName + "[j])" + inDent + "}"
 	case "*inf.Dec":
-		tmp_var := createTempVar( sourceFieldName )
+		// If structure field passed then remove the .suffix
+		tmp := strings.Split(sourceFieldName, "." )
+		tmp_var := createTempVar( tmp[0] )
 		ret = ret + inDent + INDENT + tmp_var + ",_ := " +  "strconv.ParseFloat(" + sourceFieldName + "[j].String(), 64 )"
 		ret = ret + inDent + INDENT + destFieldName + "[j] = " +  tmp_var +  inDent + "}"
 	case "uint": fallthrough
@@ -556,10 +558,16 @@ func converttoModelType( debug bool, ident string, inTable bool, sourceStruct st
 		case "int": fallthrough
 		case "bigint":
 			ret = ret +  INDENT_1 + ident + destStruct + "." + fieldName + " = " + "int64(" + sourceStruct + "." + fieldName + ")"
+		case "blob":
+			ret = ret +  INDENT_1 + ident + destStruct + "." + fieldName + " = " + "string(" + sourceStruct + "." + fieldName + ")"
+		case "decimal":
+			ret = ret +  INDENT_1 + ident + destStruct + "." + fieldName + ",_ = strconv.ParseFloat(" + sourceStruct + "." + fieldName + ".String(), 64 )"
 		case "float": fallthrough
 		case "double":
 			ret = ret +  INDENT_1 + ident + destStruct + "." + fieldName + " = " + "float64(" + sourceStruct + "." + fieldName + ")"
+		case "date": fallthrough
 		case "timestamp": fallthrough
+		case "uuid": fallthrough
 		case "timeuuid":
 			ret = ret + INDENT_1 + ident + destStruct + "." + fieldName + " = " + sourceStruct + "." + fieldName + ".String()"
 		case "set": fallthrough
