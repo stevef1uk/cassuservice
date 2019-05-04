@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/stevef1uk/cassuservice/swagger"
+	"log"
 	"strconv"
 	//"fmt"
 	"github.com/stevef1uk/cassuservice/parser"
@@ -557,11 +558,20 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent strin
 			tmpMapVarType = MODELS + mapTypeInGo
 			tmp := INDENT_1 + inDent + INDENT + tmpMapVar + " := " + mapTypeInGo + "{}"
 			//ts := findTypeDetails( debug, fieldDetails.DbFieldMapType, parserOutput)
-			tmp1 = tmp + manageMap(debug, recursing, inDent + INDENT, inTable, tmpMapVar,"v", findTypeDetails( debug, mapTypeInGo, parserOutput ), parserOutput, timeVar )
-			//manageMap( debug bool, inDent string,  inTable bool, varName string, typeDetails  parser.TypeDetails, parserOutput parser.ParseOutput, timeVar string ) string {
-			// manageMap( debug bool, inDent string, structVar string,  inTable bool, fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput, timeVar string ) string {
-			_ = tmp
-			_ = tmp1
+			mapFieldType, uDTTypeDetails := manageMap(debug, recursing, inDent + INDENT, inTable, tmpMapVar,"v", findTypeDetails( debug, mapTypeInGo, parserOutput ), parserOutput, timeVar )
+			if uDTTypeDetails != nil {
+				log.Fatal( "Sorry currently unable to handle map types that contain UDTs themselves ")
+			}
+			/*if uDTTypeDetails != nil{
+				returnedVar := PARAMS_RET + "." + fieldName
+				tmp_var := createTempVar( uDTTypeDetails.TypeName )
+				tmp2 := setUpStructs( debug, recursing, timeFound, INDENT, inTable, returnedVar, tmp_var, uDTTypeDetails.TypeName, parserOutput, timeVar )
+				tmp2 = "" //@TODO
+				tmp1 = tmp + tmp2
+			} else {
+				tmp1 = tmp + mapFieldType
+			}*/
+			tmp1 = tmp + mapFieldType
 		}
 		ret = INDENT_1 + inDent + tmp_var + ", ok := " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(map[string]` + mapTypeToUse + ")"
 		ret = ret + INDENT_1 + inDent +  "if ! ok {" + INDENT_1 + INDENT + `log.Fatal("handleReturnedVar() - failed to find entry for ` + strings.ToLower(fieldDetails.DbFieldName ) + `", ok )` + INDENT_1 + "}"

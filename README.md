@@ -70,8 +70,9 @@ Examples of other test tables & types I have used to test this are shown in the 
 
 Known issues:
 
-The functonality of this tool to support the Cassandra MAP type is very limited. This tool can only cope with maps if they are defined as map<text,text>; this is simply becasue there seems to be no way of modelling the map type in Swagger! 
+The functonality of this tool to support the Cassandra MAP type is very limited. This tool can only cope with maps if they are defined as map<text,x>; this is simply becasue there seems to be no way of modelling the map type in Swagger! 
 I have used the addionalProperties arroach and hard coded this to a string. For now if maps are used that are not of this trivial form the generated code handler will need to be modified manually.
+Also, whilst the value of the map can not be a UDT as well as simple types, the UDT can't contain other UDTs at present.
 
 I am in the process of supporting UDTs in insert clauses. Currently ony simple UDTs in tables will work and this is still early days.
 

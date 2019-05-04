@@ -2,6 +2,8 @@ package handler
 
 import (
 	"fmt"
+	"log"
+
 	//"github.com/go-openapi/strfmt"
 	"github.com/stevef1uk/cassuservice/parser"
 	"github.com/stevef1uk/cassuservice/swagger"
@@ -152,8 +154,9 @@ for i3, v := range tmp_Mymap_1 {
   retParams.Mymap[i3] = models.Simple{ ID: int64(t.ID), Floter: float64( t.Floter) }
 */
 // Function that returns a string that sets up a structure (destName) field's to the correct type from a map of strings (varName), indexed by the field names, returned by gocql
-func manageMap( debug bool, recursing bool, inDent string,  inTable bool, destName string, varName string, typeDetails  * parser.TypeDetails, parserOutput parser.ParseOutput, timeVar string ) string {
+func manageMap( debug bool, recursing bool, inDent string,  inTable bool, destName string, varName string, typeDetails  * parser.TypeDetails, parserOutput parser.ParseOutput, timeVar string ) (string, * parser.TypeDetails) {
 	ret := ""
+	var uDTtypeDetails * parser.TypeDetails
 
 	for i := 0; i < typeDetails.TypeFields.FieldIndex; i++ {
 		field := typeDetails.TypeFields.DbFieldDetails[i]
@@ -191,11 +194,16 @@ func manageMap( debug bool, recursing bool, inDent string,  inTable bool, destNa
 				ret = ret + tmp + ".([]" + arrayType + ")"
 			}
 		default:
-			ret = ret + tmp + ".(string)"
+			if swagger.IsFieldTypeUDT( parserOutput,field.DbFieldType ) {
+				// We have found a UDT so recursion required
+				uDTtypeDetails = findTypeDetails( debug, field.DbFieldType, parserOutput)
+			} else {
+				ret = ret + tmp + ".(string)"
+			}
 		}
 	}
 
-	return ret
+	return ret, uDTtypeDetails
 
 }
 
@@ -546,7 +554,8 @@ func CopyArrayElements( debug bool, addGet bool, inTable bool, inDent string, so
 	return ret
 }
 
-// @TODO need to add more types
+// Function used to process Map types
+// @TODO doesn't handle maps containing maps or sets of UDTs yet
 func converttoModelType( debug bool, ident string, inTable bool, sourceStruct string, destStruct string, typeDetails * parser.TypeDetails, parserOutput parser.ParseOutput  ) string {
 	ret := ""
 
@@ -572,8 +581,13 @@ func converttoModelType( debug bool, ident string, inTable bool, sourceStruct st
 			ret = ret + INDENT_1 + ident + destStruct + "." + fieldName + " = " + sourceStruct + "." + fieldName + ".String()"
 		case "set": fallthrough
 		case "list":
+			if swagger.IsFieldTypeUDT(parserOutput, field.DbFieldCollectionType) {
+				log.Fatal( "Sorry currently unable to handle map types that contain UDTs in sets or list themselves ")
+			}
 			tmp := CopyArrayElements( debug , false, inTable , INDENT_1 + ident , sourceStruct + "." + fieldName, destStruct + "." + fieldName ,  field, parserOutput )
 			ret = ret + tmp
+		case "map":
+				log.Fatal( "Sorry currently unable to handle map types that contain maps themselves ")
 		default:
 			ret = ret +  INDENT_1 + ident + destStruct + "." + fieldName + " = " +  sourceStruct + "." + fieldName
 		}
