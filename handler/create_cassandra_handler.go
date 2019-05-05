@@ -404,6 +404,7 @@ func setUpStructs ( debug bool, recursing bool,  timeFound bool, inDent string, 
 	for i := 0; i < typeStruct.TypeFields.FieldIndex; i++ {
 		fieldName := strings.ToLower( typeStruct.TypeFields.DbFieldDetails[i].DbFieldName )
 		fieldType := mapFieldTypeToGoCSQLType( debug, fieldName, true, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldType, structName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, true  )
+		/*
 		if swagger.IsFieldTypeUDT( parserOutput, fieldType ) {
 			tmpVar := createTempVar( fieldName )
 			tmpVar1 := createTempVar( fieldName )
@@ -411,6 +412,7 @@ func setUpStructs ( debug bool, recursing bool,  timeFound bool, inDent string, 
 			extraVars = extraVars + INDENT_1 + inDent + setUpStructs( debug,  true,  timeFound, inDent, false, tmpVar1,  tmpVar, strings.ToLower(fieldType),  parserOutput, timeVar )
 			//log.Fatalln("Sorry this tool can't handle UDTs that contain simple UDTs")
 		}
+		*/
 		if recursing {
 			inDent = inDent + INDENT
 		}
