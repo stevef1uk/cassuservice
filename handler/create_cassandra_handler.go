@@ -404,6 +404,13 @@ func setUpStructs ( debug bool, recursing bool,  timeFound bool, inDent string, 
 	for i := 0; i < typeStruct.TypeFields.FieldIndex; i++ {
 		fieldName := strings.ToLower( typeStruct.TypeFields.DbFieldDetails[i].DbFieldName )
 		fieldType := mapFieldTypeToGoCSQLType( debug, fieldName, true, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldType, structName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, true  )
+		if swagger.IsFieldTypeUDT( parserOutput, fieldType ) {
+			tmpVar := createTempVar( fieldName )
+			tmpVar1 := createTempVar( fieldName )
+			extraVars = extraVars +  INDENT_1 + inDent + tmpVar + ":= " + vIndex + `["` + strings.ToLower(fieldName ) + `"].([]map[string]interface{})`
+			extraVars = extraVars + INDENT_1 + inDent + setUpStructs( debug,  true,  timeFound, inDent, false, tmpVar1,  tmpVar, strings.ToLower(fieldType),  parserOutput, timeVar )
+			//log.Fatalln("Sorry this tool can't handle UDTs that contain simple UDTs")
+		}
 		if recursing {
 			inDent = inDent + INDENT
 		}
@@ -414,7 +421,6 @@ func setUpStructs ( debug bool, recursing bool,  timeFound bool, inDent string, 
 			// Note as there seems no way of mapping a Map type in Swagger to anything other than string:string we are a bit stuffed here!
 			if typeStruct.TypeFields.DbFieldDetails[i].DbFieldMapType != "" {
 				ret = ret + INDENT_1 + inDent + INDENT2  + tmpVar + ","
-				//extraVars = extraVars + INDENT_1 + inDent + "if " + vIndex + `["` + strings.ToLower(fieldName) + `"] == nil { ` +  INDENT_1 + inDent + INDENT2 + "continue" + INDENT_1 + inDent  + "}"
 				mapTypeInGo,_ := getMapType(  debug , recursing , inTable , typeStruct.TypeFields.DbFieldDetails[i].DbFieldMapType , typeStruct.TypeFields.DbFieldDetails[i] , parserOutput )
 				extraVars = extraVars +  INDENT_1 + inDent + tmpVar + " := " +vIndex +  `["` + strings.ToLower(fieldName ) + `"].(map[string]` + mapTypeInGo + ")"
 			} else {
@@ -594,7 +600,7 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent strin
 
 	default:
 		if swagger.IsFieldTypeUDT( parserOutput, fieldDetails.DbFieldType ) {
-			// UDTs can only appear as singular fields in table and not in other UDTs. Nope!
+			// UDTs can only appear as singular fields in table and not in other UDTs. Nope, but too hard to handled :-( !
 			tmp_var := createTempVar( fieldDetails.DbFieldName )
 			ret_struct := createTempVar( fieldDetails.DbFieldName )
 			local_struct := createTempVar( fieldDetails.DbFieldName )
