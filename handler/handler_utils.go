@@ -196,6 +196,7 @@ func manageMap( debug bool, recursing bool, inDent string,  inTable bool, destNa
 		default:
 			if swagger.IsFieldTypeUDT( parserOutput,field.DbFieldType ) {
 				// We have found a UDT so recursion required
+				// @TODO
 				uDTtypeDetails = findTypeDetails( debug, field.DbFieldType, parserOutput)
 			} else {
 				ret = ret + tmp + ".(string)"
@@ -500,6 +501,21 @@ func findTypeDetails ( debug bool, typeName string, parserOutput parser.ParseOut
 	return ret
 }
 
+// If a type contains a field that is also a type return true and also return an array of booleans indicating which of the fields are a type
+func doesTypeContainAType( debug bool, typeName string, parserOutput parser.ParseOutput ) (bool, []bool) {
+	ret := false
+	var indexes []bool
+	index := 0
+
+	typeDetails := findTypeDetails( debug, typeName,parserOutput )
+	indexes = make([]bool, typeDetails.TypeFields.FieldIndex)
+	for  index = 0; index < typeDetails.TypeFields.FieldIndex; index++ {
+		if swagger.IsFieldTypeUDT( parserOutput, typeDetails.TypeFields.DbFieldDetails[index].DbFieldType ) {
+			indexes[index] = true
+		}
+	}
+	return ret, indexes
+}
 
 
 func CopyArrayElements( debug bool, addGet bool, inTable bool, inDent string, sourceFieldName string, destFieldName string,  fieldDetails parser.FieldDetails, parserOutput parser.ParseOutput  ) string {
@@ -706,6 +722,15 @@ func createCopyFunctions( debug bool, tableName string, fieldName string, struct
 
 }
 
+// Function to return a string that will create a Type structure from a gocql map type
+func createStructSetupFromMapField( debug bool, mapVar string, destVar string, typeName string, parserOutput parser.ParseOutput ) string {
+	ret := ""
+
+	//typeFound, typeFields := doesTypeContainAType( debug, typeName, parserOutput )
+
+
+	return ret
+}
 
 // Function to identify where the go-swagger Params type need to be converted to the UDT type in this package so go-cql annotations will be used and the insert will work
 // The table must containa field that contains UTDs and the UTD field must be a list or set to require this

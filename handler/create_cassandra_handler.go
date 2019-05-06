@@ -404,15 +404,20 @@ func setUpStructs ( debug bool, recursing bool,  timeFound bool, inDent string, 
 	for i := 0; i < typeStruct.TypeFields.FieldIndex; i++ {
 		fieldName := strings.ToLower( typeStruct.TypeFields.DbFieldDetails[i].DbFieldName )
 		fieldType := mapFieldTypeToGoCSQLType( debug, fieldName, true, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldType, structName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, true  )
-		/*
+/* @TODO
 		if swagger.IsFieldTypeUDT( parserOutput, fieldType ) {
+			fieldType :=  findTypeDetails( debug,typeStruct.TypeFields.DbFieldDetails[i].DbFieldType, parserOutput )
 			tmpVar := createTempVar( fieldName )
-			tmpVar1 := createTempVar( fieldName )
-			extraVars = extraVars +  INDENT_1 + inDent + tmpVar + ":= " + vIndex + `["` + strings.ToLower(fieldName ) + `"].([]map[string]interface{})`
-			extraVars = extraVars + INDENT_1 + inDent + setUpStructs( debug,  true,  timeFound, inDent, false, tmpVar1,  tmpVar, strings.ToLower(fieldType),  parserOutput, timeVar )
+			vIndex := "v" + strconv.Itoa(indexCounter)
+			//tmpVar1 := createTempVar( fieldName )
+			extraVars = extraVars +  INDENT_1 + inDent + tmpVar + ":= " + vIndex + `["`  + strings.ToLower(fieldName ) + `"].([]map[string]interface{})`
+			for j := 0; j < fieldType.TypeFields.FieldIndex; j++ {
+				extraVars = extraVars + INDENT_1 + inDent + handleStructVarConversion(debug, recursing, inDent, "steve", "sarah", fieldType.TypeFields.DbFieldDetails[j], parserOutput)
+			}
+			//extraVars = extraVars + INDENT_1 + inDent + setUpStructs( debug,  true,  timeFound, inDent, false, tmpVar1,  tmpVar, strings.ToLower(fieldType),  parserOutput, timeVar )
 			//log.Fatalln("Sorry this tool can't handle UDTs that contain simple UDTs")
 		}
-		*/
+*/
 		if recursing {
 			inDent = inDent + INDENT
 		}
@@ -570,15 +575,6 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent strin
 			if uDTTypeDetails != nil {
 				log.Fatal( "Sorry currently unable to handle map types that contain UDTs themselves ")
 			}
-			/*if uDTTypeDetails != nil{
-				returnedVar := PARAMS_RET + "." + fieldName
-				tmp_var := createTempVar( uDTTypeDetails.TypeName )
-				tmp2 := setUpStructs( debug, recursing, timeFound, INDENT, inTable, returnedVar, tmp_var, uDTTypeDetails.TypeName, parserOutput, timeVar )
-				tmp2 = "" //@TODO
-				tmp1 = tmp + tmp2
-			} else {
-				tmp1 = tmp + mapFieldType
-			}*/
 			tmp1 = tmp + mapFieldType
 		}
 		ret = INDENT_1 + inDent + tmp_var + ", ok := " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(map[string]` + mapTypeToUse + ")"
@@ -602,16 +598,20 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent strin
 
 	default:
 		if swagger.IsFieldTypeUDT( parserOutput, fieldDetails.DbFieldType ) {
-			// UDTs can only appear as singular fields in table and not in other UDTs. Nope, but too hard to handled :-( !
-			tmp_var := createTempVar( fieldDetails.DbFieldName )
-			ret_struct := createTempVar( fieldDetails.DbFieldName )
-			local_struct := createTempVar( fieldDetails.DbFieldName )
-			theType := GetFieldName(debug, recursing, fieldDetails.DbFieldType, false )
-			ret = INDENT_1 + inDent + tmp_var + ", ok := " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(map[string]interface{})`
-			ret = ret + INDENT_1 + inDent + ret_struct + " := &" + MODELS + theType + "{}"
-			ret = ret + INDENT_1 + inDent +  "if ! ok {" + INDENT_1 + INDENT + `log.Fatal("handleReturnedVar() - failed to find entry for ` + strings.ToLower(fieldDetails.DbFieldName ) + `", ok )` + INDENT_1 + "}"
-			ret = ret + setUpStruct( debug, recursing, timeFound, "", inTable,  tmp_var, ret_struct , local_struct, fieldDetails.DbFieldType, parserOutput, timeVar )
-			ret = ret + INDENT_1 + inDent +  PARAMS_RET + "." + fieldName + " = " +  ret_struct
+			if inTable {
+				// UDTs can only appear as singular fields in table and not in other UDTs. Nope, but too hard to handled :-( !
+				tmp_var := createTempVar(fieldDetails.DbFieldName)
+				ret_struct := createTempVar(fieldDetails.DbFieldName)
+				local_struct := createTempVar(fieldDetails.DbFieldName)
+				theType := GetFieldName(debug, recursing, fieldDetails.DbFieldType, false)
+				ret = INDENT_1 + inDent + tmp_var + ", ok := " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(map[string]interface{})`
+				ret = ret + INDENT_1 + inDent + ret_struct + " := &" + MODELS + theType + "{}"
+				ret = ret + INDENT_1 + inDent + "if ! ok {" + INDENT_1 + INDENT + `log.Fatal("handleReturnedVar() - failed to find entry for ` + strings.ToLower(fieldDetails.DbFieldName) + `", ok )` + INDENT_1 + "}"
+				ret = ret + setUpStruct(debug, recursing, timeFound, "", inTable, tmp_var, ret_struct, local_struct, fieldDetails.DbFieldType, parserOutput, timeVar)
+				ret = ret + INDENT_1 + inDent + PARAMS_RET + "." + fieldName + " = " + ret_struct
+			} else { // UDT in UDT @TODO
+				ret = ret + INDENT_1  + inDent + "SJF HERE"
+			}
 		} else {
 			ret = INDENT_1  + inDent + PARAMS_RET + "." + fieldName + " = &" + fieldName
 		}
