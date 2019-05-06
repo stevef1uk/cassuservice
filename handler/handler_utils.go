@@ -511,6 +511,7 @@ func doesTypeContainAType( debug bool, typeName string, parserOutput parser.Pars
 	indexes = make([]bool, typeDetails.TypeFields.FieldIndex)
 	for  index = 0; index < typeDetails.TypeFields.FieldIndex; index++ {
 		if swagger.IsFieldTypeUDT( parserOutput, typeDetails.TypeFields.DbFieldDetails[index].DbFieldType ) {
+			ret = true
 			indexes[index] = true
 		}
 	}

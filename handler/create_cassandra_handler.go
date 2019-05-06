@@ -278,7 +278,7 @@ func handleStructVarConversion(  debug bool, recursing bool, inDent string, theS
 var indexCounter int = 0
 
 // Handle the case of a single UDT field, which can only occur in a Table definition right now. Sadly not true as they can be in UDTs too!
-func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, inTable bool, raw_data string, destField string, theVar string, theType string,  parserOutput parser.ParseOutput, timeVar string ) string {
+func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, inTable bool, raw_data string, destField string, theVar string, theType string,  parserOutput parser.ParseOutput, timeVar string ) (string,string) {
 
 	extraVars := ""
 	newStr := ""
@@ -294,6 +294,10 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, i
 	}
 
 	loopAssignment := INDENT_1 + inDent  + tmpStruct + " := &" + structName + "{"
+	if ! inTable {
+		loopAssignment = INDENT_1 + inDent  + tmpStruct + " := " + structName + "{"
+	}
+
 	for i := 0; i < typeStruct.TypeFields.FieldIndex; i++ {
 		fieldName := strings.ToLower( typeStruct.TypeFields.DbFieldDetails[i].DbFieldName )
 		fieldType := mapFieldTypeToGoCSQLType( debug, fieldName, true, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldType, structName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, true  )
@@ -351,8 +355,9 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, i
 			typeName := GetFieldName(  debug, recursing, typeStruct.TypeFields.DbFieldDetails[i].DbFieldType, false )
 			ret = ret + INDENT_1 + inDent + destField + "." + fieldName + " = &" + "models." + typeName + "{}"
 			destField = destField + "." + GetFieldName(debug, false, typeStruct.TypeFields.DbFieldDetails[i].OrigFieldName, false)
-			ret = ret + INDENT_1 + setUpStruct(debug , recursing ,  timeFound , inDent , false, tmpVar, destField, theVar, typeName , parserOutput, timeVar )
-			return ret
+			tmpStruct, _ := setUpStruct(debug , recursing ,  timeFound , inDent , false, tmpVar, destField, theVar, typeName , parserOutput, timeVar )
+			ret = ret + INDENT_1 + tmpStruct
+			return ret, tmpStruct
 		}
 
 		tmp = handleStructVarConversion(debug, recursing, inDent, tmpStruct, tmpDest, typeStruct.TypeFields.DbFieldDetails[i], parserOutput)
@@ -360,7 +365,7 @@ func setUpStruct ( debug bool, recursing bool,  timeFound bool, inDent string, i
 		ret = ret + inDent + INDENT2  + tmp
 	}
 
-	return ret
+	return ret, tmpStruct
 }
 
 
@@ -400,24 +405,28 @@ func setUpStructs ( debug bool, recursing bool,  timeFound bool, inDent string, 
 		space = inDent
 	}
 	loopStart := INDENT_1  + space + "for " + iIndex + ", " + vIndex + " := range " + theVar + " {"
+	beforeLoop := ""
 	loopAssignment := INDENT_1 + inDent  + tmpStruct + " := &" + structName + "{"
 	for i := 0; i < typeStruct.TypeFields.FieldIndex; i++ {
 		fieldName := strings.ToLower( typeStruct.TypeFields.DbFieldDetails[i].DbFieldName )
 		fieldType := mapFieldTypeToGoCSQLType( debug, fieldName, true, false, typeStruct.TypeFields.DbFieldDetails[i].DbFieldType, structName, typeStruct.TypeFields.DbFieldDetails[i], parserOutput, true  )
-/* @TODO
-		if swagger.IsFieldTypeUDT( parserOutput, fieldType ) {
-			fieldType :=  findTypeDetails( debug,typeStruct.TypeFields.DbFieldDetails[i].DbFieldType, parserOutput )
+
+		if swagger.IsFieldTypeUDT( parserOutput, typeStruct.TypeFields.DbFieldDetails[i].DbFieldType ) {
 			tmpVar := createTempVar( fieldName )
-			vIndex := "v" + strconv.Itoa(indexCounter)
 			//tmpVar1 := createTempVar( fieldName )
-			extraVars = extraVars +  INDENT_1 + inDent + tmpVar + ":= " + vIndex + `["`  + strings.ToLower(fieldName ) + `"].([]map[string]interface{})`
-			for j := 0; j < fieldType.TypeFields.FieldIndex; j++ {
-				extraVars = extraVars + INDENT_1 + inDent + handleStructVarConversion(debug, recursing, inDent, "steve", "sarah", fieldType.TypeFields.DbFieldDetails[j], parserOutput)
-			}
-			//extraVars = extraVars + INDENT_1 + inDent + setUpStructs( debug,  true,  timeFound, inDent, false, tmpVar1,  tmpVar, strings.ToLower(fieldType),  parserOutput, timeVar )
-			//log.Fatalln("Sorry this tool can't handle UDTs that contain simple UDTs")
+			tmpModelVar1 := createTempVar( fieldName )
+			beforeLoop = beforeLoop + INDENT_1 + inDent + INDENT2  + tmpVar + " := " + vIndex + `["` + fieldName + `"].(map[string]interface{})`
+			tmpTypeName := GetFieldName(debug, recursing, strings.ToLower(typeStruct.TypeFields.DbFieldDetails[i].DbFieldType) , false )
+			beforeLoop = beforeLoop + INDENT_1 + inDent + INDENT2  + tmpModelVar1 + " := &" + MODELS + tmpTypeName + "{}"
+			//beforeLoop = beforeLoop + INDENT_1 + inDent + INDENT2  + tmpVar1 + " := &" + tmpTypeName + "{}"
+			tmptmp, tmpVar2 := setUpStruct ( debug , recursing ,  timeFound , inDent , false , tmpVar, tmpModelVar1, "SJFSJF", tmpTypeName ,  parserOutput, timeVar )
+			_ = tmpVar2
+			beforeLoop = beforeLoop + INDENT_1 + inDent + INDENT2 + tmptmp
+			ret = ret + INDENT_1 + inDent + INDENT2  + tmpVar2 + ","
+
+			continue
 		}
-*/
+
 		if recursing {
 			inDent = inDent + INDENT
 		}
@@ -446,7 +455,7 @@ func setUpStructs ( debug bool, recursing bool,  timeFound bool, inDent string, 
 		}
 	}
 	ret = ret + INDENT_1 + inDent + INDENT + "}"
-	ret = loopStart + INDENT_1 + extraVars + loopAssignment + INDENT_1 + ret + INDENT_1 + newStr
+	ret = loopStart + INDENT_1 + extraVars + beforeLoop + loopAssignment + INDENT_1 + ret + INDENT_1 + newStr
 
 	// Now process each variable in order to set-up the Payload structure
 	tmp := ""
@@ -607,7 +616,8 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent strin
 				ret = INDENT_1 + inDent + tmp_var + ", ok := " + SELECT_OUTPUT + `["` + strings.ToLower(fieldDetails.DbFieldName) + `"].(map[string]interface{})`
 				ret = ret + INDENT_1 + inDent + ret_struct + " := &" + MODELS + theType + "{}"
 				ret = ret + INDENT_1 + inDent + "if ! ok {" + INDENT_1 + INDENT + `log.Fatal("handleReturnedVar() - failed to find entry for ` + strings.ToLower(fieldDetails.DbFieldName) + `", ok )` + INDENT_1 + "}"
-				ret = ret + setUpStruct(debug, recursing, timeFound, "", inTable, tmp_var, ret_struct, local_struct, fieldDetails.DbFieldType, parserOutput, timeVar)
+				tmpStruct,_ := setUpStruct(debug, recursing, timeFound, "", inTable, tmp_var, ret_struct, local_struct, fieldDetails.DbFieldType, parserOutput, timeVar)
+				ret = ret + tmpStruct
 				ret = ret + INDENT_1 + inDent + PARAMS_RET + "." + fieldName + " = " + ret_struct
 			} else { // UDT in UDT @TODO
 				ret = ret + INDENT_1  + inDent + "SJF HERE"
