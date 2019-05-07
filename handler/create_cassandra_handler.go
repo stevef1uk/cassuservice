@@ -268,7 +268,12 @@ func handleStructVarConversion(  debug bool, recursing bool, inDent string, theS
 			ret = CopyArrayElements( debug, false,false, INDENT_1 + INDENT, theStructVar + "." + fieldName, destVar,  fieldDetails, parserOutput )
 		}
 	default:
-		ret = INDENT_1 + inDent + destVar + " = " + sourceVar
+		if swagger.IsFieldTypeUDT( parserOutput, fieldDetails.DbFieldType ) {
+			//tmp := handleStructVarConversion(  debug, true, inDent, theStructVar, destVar, fieldDetails, parserOutput )
+			//_ = tmp
+		} else {
+			ret = INDENT_1 + inDent + destVar + " = " + sourceVar
+		}
 
 	}
 	return ret
@@ -415,15 +420,14 @@ func setUpStructs ( debug bool, recursing bool,  timeFound bool, inDent string, 
 			tmpVar := createTempVar( fieldName )
 			//tmpVar1 := createTempVar( fieldName )
 			tmpModelVar1 := createTempVar( fieldName )
-			beforeLoop = beforeLoop + INDENT_1 + inDent + INDENT2  + tmpVar + " := " + vIndex + `["` + fieldName + `"].(map[string]interface{})`
+			beforeLoop = beforeLoop + INDENT_1 + inDent  + tmpVar + " := " + vIndex + `["` + fieldName + `"].(map[string]interface{})`
 			tmpTypeName := GetFieldName(debug, recursing, strings.ToLower(typeStruct.TypeFields.DbFieldDetails[i].DbFieldType) , false )
-			beforeLoop = beforeLoop + INDENT_1 + inDent + INDENT2  + tmpModelVar1 + " := &" + MODELS + tmpTypeName + "{}"
+			beforeLoop = beforeLoop + INDENT_1 + inDent   + tmpModelVar1 + " := &" + MODELS + tmpTypeName + "{}"
 			//beforeLoop = beforeLoop + INDENT_1 + inDent + INDENT2  + tmpVar1 + " := &" + tmpTypeName + "{}"
 			tmptmp, tmpVar2 := setUpStruct ( debug , recursing ,  timeFound , inDent , false , tmpVar, tmpModelVar1, "SJFSJF", tmpTypeName ,  parserOutput, timeVar )
 			_ = tmpVar2
 			beforeLoop = beforeLoop + INDENT_1 + inDent + INDENT2 + tmptmp
 			ret = ret + INDENT_1 + inDent + INDENT2  + tmpVar2 + ","
-
 			continue
 		}
 
