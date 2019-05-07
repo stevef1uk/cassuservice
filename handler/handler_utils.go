@@ -571,9 +571,9 @@ func CopyArrayElements( debug bool, addGet bool, inTable bool, inDent string, so
 	return ret
 }
 
-// Function used to process Map types
+
 // @TODO doesn't handle maps containing maps or sets of UDTs yet
-func converttoModelType( debug bool, ident string, inTable bool, sourceStruct string, destStruct string, typeDetails * parser.TypeDetails, parserOutput parser.ParseOutput  ) string {
+func convertToModelType( debug bool, ident string, inTable bool, sourceStruct string, destStruct string, typeDetails * parser.TypeDetails, parserOutput parser.ParseOutput  ) string {
 	ret := ""
 
 	for i := 0; i < typeDetails.TypeFields.FieldIndex; i++ {
@@ -738,6 +738,7 @@ func createStructSetupFromMapField( debug bool, mapVar string, destVar string, t
 func setUpStuctArrayFromSwaggerParams( debug bool, parserOutput parser.ParseOutput )  string {
 	ret := ""
 
+	/* @TODO do I need this?
 	for i := 0; i <  parserOutput.TableDetails.TableFields.FieldIndex; i++ {
 		if parserOutput.TableDetails.TableFields.DbFieldDetails[i].DbFieldCollectionType != "" ||
 			swagger.IsFieldTypeUDT(parserOutput, parserOutput.TableDetails.TableFields.DbFieldDetails[i].DbFieldType) {
@@ -766,6 +767,8 @@ func setUpStuctArrayFromSwaggerParams( debug bool, parserOutput parser.ParseOutp
 			}
 		}
 	}
+	*/
+
 	return ret
 }
 

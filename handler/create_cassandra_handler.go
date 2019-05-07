@@ -271,6 +271,11 @@ func handleStructVarConversion(  debug bool, recursing bool, inDent string, theS
 		if swagger.IsFieldTypeUDT( parserOutput, fieldDetails.DbFieldType ) {
 			//tmp := handleStructVarConversion(  debug, true, inDent, theStructVar, destVar, fieldDetails, parserOutput )
 			//_ = tmp
+			typeDetails := findTypeDetails ( debug , fieldDetails.DbFieldType , parserOutput )
+			tmpTypeName := MODELS + GetFieldName( debug, false, fieldDetails.DbFieldType, false)
+			ret = ret + INDENT_1 + inDent + INDENT + destVar + " = &" + tmpTypeName + "{}"
+			ret = ret + convertToModelType( debug, inDent + INDENT , false, theStructVar, destVar, typeDetails, parserOutput )
+
 		} else {
 			ret = INDENT_1 + inDent + destVar + " = " + sourceVar
 		}
@@ -595,13 +600,13 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent strin
 		ret = ret + INDENT_1 + inDent +  PARAMS_RET + "." + fieldName + " = make(map[string]" + tmpMapVarType + ",len(" + tmp_var + "))"
 		//ret = ret + INDENT_1 + inDent + "for " + iIndex +", v := range " + tmp_var + " {" +  INDENT_1 + inDent + INDENT + PARAMS_RET + "." + fieldName  + "[" +  iIndex + "] = v" +  INDENT_1 + inDent + "}" // Modify this part!
 		ret = ret + INDENT_1 + inDent + "for " + iIndex +", v := range " + tmp_var + " {"
-		if tmp1 != "" {
+		if tmp1 != "" { // Processing a UDT
 			ret = ret + INDENT_1 + inDent + tmp1;
 			typeDetails := findTypeDetails( debug, mapTypeInGo, parserOutput )
 			dest := PARAMS_RET + "." + fieldName  + "[" +  iIndex + "]"
 			tmpModelType := createTempVar( fieldName )
 			ret = ret + INDENT_1 + inDent + INDENT + tmpModelType + " := " + tmpMapVarType + "{}"
-			ret = ret + converttoModelType( debug, inDent + INDENT , inTable, tmpMapVar, tmpModelType, typeDetails, parserOutput )
+			ret = ret + convertToModelType( debug, inDent + INDENT , inTable, tmpMapVar, tmpModelType, typeDetails, parserOutput )
 			ret = ret + INDENT_1 + inDent + INDENT + dest + " = " + tmpModelType
 			//@TODO
 		} else  {
@@ -723,6 +728,7 @@ func CreateCode( debug bool, generateDir string,  goPathForRepo string,  parserO
 		tmp := setUpStuctArrayFromSwaggerParams( debug, parserOutput )
 		output.WriteString( "\n    " + tmp + "\n")
 	}
+
 	// Write out the static part of the header
 	tmpName := GetFieldName(debug, false, parserOutput.TableDetails.TableName, false)
 	if endPointNameOveride != "" {
