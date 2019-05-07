@@ -128,7 +128,7 @@ func writeField( debug bool, inTable bool, parserOutput parser.ParseOutput, fiel
 
 
 // Function that writes out the variable types for the table & returns the temporary variable created if there is a time field
-func WriteVars(  debug bool, inTable bool, parserOutput parser.ParseOutput, goPathForRepo string, doNeedTimeImports bool, endPointNameOverRide string, output  *os.File )  string {
+func WriteVars(  debug bool, inTable bool, parserOutput parser.ParseOutput, goPathForRepo string, doNeedTimeImports bool, addPost bool, endPointNameOverRide string, output  *os.File )  string {
 	tmpTimeVar := ""
 
 	const UDTTYPE = `
@@ -159,7 +159,9 @@ func WriteVars(  debug bool, inTable bool, parserOutput parser.ParseOutput, goPa
 	}
 
 	// Handle cases where we donn't access any structures in the model direwctory
-	output.WriteString( INDENT_1  + "_ = " + MODELS + swagger.CapitaliseSplitTableName(debug, parserOutput.TableDetails.TableName) + "{}")
+	if addPost {
+		output.WriteString(INDENT_1 + "_ = " + MODELS + swagger.CapitaliseSplitTableName(debug, parserOutput.TableDetails.TableName) + "{}")
+	}
 
 	output.WriteString( "\n" + INDENT_1 + SELECT_OUTPUT + " := map[string]interface{}{}\n")
 
@@ -736,7 +738,7 @@ func CreateCode( debug bool, generateDir string,  goPathForRepo string,  parserO
 	}
 	tmpData := &tableDetails{ generateDir, strings.ToLower(parserOutput.TableSpace), tmpName, tmpName}
 	WriteStringToFileWithTemplates(  "\n" + HEADER, "header", output, &tmpData)
-	tmpTimeVar := WriteVars( debug, true, parserOutput, goPathForRepo, doNeedTimeImports, endPointNameOveride, output )
+	tmpTimeVar := WriteVars( debug, true, parserOutput, goPathForRepo, doNeedTimeImports, addPost, endPointNameOveride, output )
 	tmp := createSelectString( debug , parserOutput, tmpName, tmpTimeVar, cassandraConsistencyRequired, overridePrimaryKeys, allowFiltering, logExtraInfo, output )
 	output.WriteString( INDENT_1 + "if err := " + SESSION_VAR + ".Query(" + "`" + " SELECT " + tmp )
 	tmp = handleSelectReturn( debug, parserOutput, tmpTimeVar )
