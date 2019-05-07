@@ -146,6 +146,46 @@ CREATE TABLE demo.employee1 (
 )
 `
 
+	CSQ_TEST7= `
+CREATE TYPE demo.simple (
+    id int,
+    floter float
+    );
+
+
+CREATE TYPE demo.simple3 (
+    id int,
+    floter float,
+    etype frozen <simple>
+    );
+
+CREATE TYPE demo.simples (
+    id int,
+    dummy text,
+    mediate TIMESTAMP,
+    embedded list<frozen<simple3>>
+    );
+
+CREATE TABLE demo.employee11 (
+   id int PRIMARY KEY,
+   tSimple list<frozen <simples>>
+);
+`
+
+	CSQ_TEST8= `
+CREATE TYPE demo.simple (
+    id int,
+    floter float
+    );
+
+CREATE TABLE demo.maptest1 (
+      id int PRIMARY KEY,
+      mymap map<text, frozen<simple>>
+);
+`
+
+//insert into employee11 ( id, tsimple ) values (1, [{id:1,dummy:'hi',mediate:'018-02-17T13:01:05.000Z',embedded:[ {id:3,floter:2.23,etype:{id:4,floter:8.9} }, {id:10, floter:6.98,etype:{id:5,floter:7.1}}] }] );
+
 // insert into employee1 (id, tsimple ) VALUES (1, {id:2,dummy:'text',mediate:'2017-01-18T13:01:06.000Z',estruct:{{id:4,citycode:'Peef'}}} );
 //curl -X GET "http://127.0.0.1:5000/v1/employee1?id=1"
 /*
@@ -1020,7 +1060,232 @@ func Search(params operations.GetEmployee1Params) middleware.Responder {
     retParams.Tsimple = tmp_TSIMPLE_3
     return operations.NewGetEmployee1OK().WithPayload( payLoad.Payload)
     }`
-	
+
+	EXPECTED_OUTPUT_TEST7 = `// GENERATED FILE so do not edit or will be overwritten upon next generate
+package data
+
+import (
+    "github.com/stevef1uk/test4/models"
+    "github.com/stevef1uk/test4/restapi/operations"
+    middleware "github.com/go-openapi/runtime/middleware"
+    "github.com/gocql/gocql"
+    "os"
+    "log"
+    "time"
+     
+)
+
+func parseTime ( input string) time.Time {
+    var ret time.Time
+    if input == "" {
+        ret = time.Now()
+    } else {
+        ret, _ = time.Parse( time.RFC3339, input )
+    }
+    return ret;
+}
+
+type Simple struct {
+    ID int `+"`"+`cql:"id"`+"`"+`
+    Floter float32 `+"`"+`cql:"floter"`+"`"+`
+}
+
+type Simple3 struct {
+    ID int `+"`"+`cql:"id"`+"`"+`
+    Floter float32 `+"`"+`cql:"floter"`+"`"+`
+    Etype Simple `+"`"+`cql:"etype"`+"`"+`
+}
+
+type Simples struct {
+    ID int `+"`"+`cql:"id"`+"`"+`
+    Dummy string `+"`"+`cql:"dummy"`+"`"+`
+    Mediate time.Time `+"`"+`cql:"mediate"`+"`"+`
+    Embedded models.SimplesEmbedded `+"`"+`cql:"embedded"`+"`"+`
+}
+
+
+var cassuservice_session *gocql.Session
+
+func SetUp() {
+  var err error
+  log.Println("Tring to connect to Cassandra database using ", os.Getenv("CASSANDRA_SERVICE_HOST"))
+  cluster := gocql.NewCluster(os.Getenv("CASSANDRA_SERVICE_HOST"))
+  cluster.Keyspace = "demo"
+  cluster.Consistency = gocql.One
+  cassuservice_session, err = cluster.CreateSession()
+  if ( err != nil ) {
+    log.Fatal("Have you remembered to set the env var $CASSANDRA_SERVICE_HOST as connection to Cannandra failed with error = ", err)
+  } else {
+    log.Println("Yay! Connection to Cannandra established")
+  }
+}
+
+func Stop() {
+    log.Println("Shutting down the service handler")
+  cassuservice_session.Close()
+}
+
+func Search(params operations.GetEmployee11Params) middleware.Responder {
+
+    var ID int64
+    _ = ID
+    var Tsimple models.Tsimple
+    _ = Tsimple
+
+    codeGenRawTableResult := map[string]interface{}{}
+
+    if err := cassuservice_session.Query(`+"`"+` SELECT id, tsimple FROM employee11 WHERE id = ? `+"`"+`,params.ID).Consistency(gocql.One).MapScan(codeGenRawTableResult); err != nil {
+      log.Println("No data? ", err)
+      return operations.NewGetEmployee11BadRequest()
+    }
+    payLoad := operations.NewGetEmployee11OK()
+    payLoad.Payload = make([]*operations.GetEmployee11OKBodyItems0,1)
+    payLoad.Payload[0] = new(operations.GetEmployee11OKBodyItems0)
+    retParams := payLoad.Payload[0]
+    tmp_ID_1 := codeGenRawTableResult["id"].(int)
+    ID = int64(tmp_ID_1)
+    retParams.ID = &ID
+    tmp_Simples_2, ok := codeGenRawTableResult["tsimple"].([]map[string]interface{})
+    if ! ok {
+      log.Fatal("handleReturnedVar() - failed to find entry for tsimple", ok )
+    }
+    retParams.Tsimple = make([]*models.Simples, len(tmp_Simples_2))
+    for i3, v3 := range tmp_Simples_2 {
+    
+      if v3["embedded"] == nil { 
+          continue
+      }
+      tmp_embedded_4:= v3["embedded"].([]map[string]interface{})
+      tmp_embedded_5:= make(models.SimplesEmbedded, len(tmp_embedded_4) )
+      
+          for i4, v4 := range tmp_embedded_4 {
+    
+              tmp_etype_7 := v4["etype"].(map[string]interface{})
+              tmp_etype_8 := &models.Simple{}
+                  
+    
+                  tmp_Simple_9 := Simple{
+    
+                        tmp_etype_7["id"].(int),
+                          tmp_etype_7["floter"].(float32),
+                        }
+                          
+                      tmp_ID_10 := int64(tmp_Simple_9.ID)
+                      tmp_etype_8.ID = tmp_ID_10                      
+                      tmp_Floter_11 := float64(tmp_Simple_9.Floter)
+                      tmp_etype_8.Floter = tmp_Floter_11
+          tmp_Simple3_6 := &Simple3{
+    
+                v4["id"].(int),
+                  v4["floter"].(float32),
+                  tmp_Simple_9,
+                }
+                  
+              tmp_embedded_5[i4] = &models.Simple3{}
+              tmp_ID_12 := int64(tmp_Simple3_6.ID)
+              tmp_embedded_5[i4].ID = tmp_ID_12              
+              tmp_Floter_13 := float64(tmp_Simple3_6.Floter)
+              tmp_embedded_5[i4].Floter = tmp_Floter_13              
+                tmp_embedded_5[i4].Etype = &models.Simple{}
+                tmp_embedded_5[i4].Etype.ID = int64(tmp_Simple3_6.ID)
+                tmp_embedded_5[i4].Etype.Floter = float64(tmp_Simple3_6.Floter)
+              }
+      tmp_Simples_3 := &Simples{
+    
+          v3["id"].(int),
+          v3["dummy"].(string),
+          v3["mediate"].(time.Time),
+          tmp_embedded_5,
+        }
+          
+      retParams.Tsimple[i3] = &models.Simples{}
+      tmp_ID_14 := int64(tmp_Simples_3.ID)
+      retParams.Tsimple[i3].ID = tmp_ID_14      
+      retParams.Tsimple[i3].Dummy = tmp_Simples_3.Dummy      
+      tmp_Mediate_15 := tmp_Simples_3.Mediate.String()
+      retParams.Tsimple[i3].Mediate = tmp_Mediate_15      
+      retParams.Tsimple[i3].Embedded = tmp_Simples_3.Embedded
+      }
+    return operations.NewGetEmployee11OK().WithPayload( payLoad.Payload)
+    }`
+
+	EXPECTED_OUTPUT_TEST8=`// GENERATED FILE so do not edit or will be overwritten upon next generate
+package data
+
+import (
+    "github.com/stevef1uk/test4/models"
+    "github.com/stevef1uk/test4/restapi/operations"
+    middleware "github.com/go-openapi/runtime/middleware"
+    "github.com/gocql/gocql"
+    "os"
+    "log"
+)
+
+type Simple struct {
+    ID int `+"`"+`cql:"id"`+"`"+`
+    Floter float32 `+"`"+`cql:"floter"`+"`"+`
+}
+
+
+var cassuservice_session *gocql.Session
+
+func SetUp() {
+  var err error
+  log.Println("Tring to connect to Cassandra database using ", os.Getenv("CASSANDRA_SERVICE_HOST"))
+  cluster := gocql.NewCluster(os.Getenv("CASSANDRA_SERVICE_HOST"))
+  cluster.Keyspace = "demo"
+  cluster.Consistency = gocql.One
+  cassuservice_session, err = cluster.CreateSession()
+  if ( err != nil ) {
+    log.Fatal("Have you remembered to set the env var $CASSANDRA_SERVICE_HOST as connection to Cannandra failed with error = ", err)
+  } else {
+    log.Println("Yay! Connection to Cannandra established")
+  }
+}
+
+func Stop() {
+    log.Println("Shutting down the service handler")
+  cassuservice_session.Close()
+}
+
+func Search(params operations.GetMaptest1Params) middleware.Responder {
+
+    var ID int64
+    _ = ID
+    var Mymap []string
+    _ = Mymap
+
+    codeGenRawTableResult := map[string]interface{}{}
+
+    if err := cassuservice_session.Query(`+"`"+` SELECT id, mymap FROM maptest1 WHERE id = ? `+"`"+`,params.ID).Consistency(gocql.One).MapScan(codeGenRawTableResult); err != nil {
+      log.Println("No data? ", err)
+      return operations.NewGetMaptest1BadRequest()
+    }
+    payLoad := operations.NewGetMaptest1OK()
+    payLoad.Payload = make([]*operations.GetMaptest1OKBodyItems0,1)
+    payLoad.Payload[0] = new(operations.GetMaptest1OKBodyItems0)
+    retParams := payLoad.Payload[0]
+    tmp_ID_0 := codeGenRawTableResult["id"].(int)
+    ID = int64(tmp_ID_0)
+    retParams.ID = &ID
+    tmp_Mymap_1, ok := codeGenRawTableResult["mymap"].(map[string]map[string]interface{})
+    if ! ok {
+      log.Fatal("handleReturnedVar() - failed to find entry for mymap", ok )
+    }
+    retParams.Mymap = make(map[string]models.Simple,len(tmp_Mymap_1))
+    for i3, v := range tmp_Mymap_1 {
+    
+      tmp_Mymap_2 := Simple{}
+      tmp_Mymap_2.ID = v["id"].(int)
+      tmp_Mymap_2.Floter = v["floter"].(float32)
+      tmp_Mymap_3 := models.Simple{}
+      tmp_Mymap_3.ID = int64(tmp_Mymap_2.ID)
+      tmp_Mymap_3.Floter = float64(tmp_Mymap_2.Floter)
+      retParams.Mymap[i3] = tmp_Mymap_3
+    }
+    return operations.NewGetMaptest1OK().WithPayload( payLoad.Payload)
+    }`
+
 )
 
 func performCreateTest1( debug bool, test string, cql string, expected string , t *testing.T, addPost bool) {
@@ -1133,6 +1398,24 @@ func Test5(t *testing.T) {
 
 func Test6(t *testing.T) {
 	performCreateTest1(true, "Test1", CSQ_TEST6, EXPECTED_OUTPUT_TEST6, t, false )
+	/*
+		path := os.Getenv("GOPATH")  + "/src/github.com/stevef1uk/test4/"
+		ret6 :=  SpiceInHandler( false , path, "Employee1", "" )
+		_ = ret6
+	*/
+}
+
+func Test7(t *testing.T) {
+	performCreateTest1(true, "Test1", CSQ_TEST7, EXPECTED_OUTPUT_TEST7, t, false )
+	/*
+		path := os.Getenv("GOPATH")  + "/src/github.com/stevef1uk/test4/"
+		ret6 :=  SpiceInHandler( false , path, "Employee1", "" )
+		_ = ret6
+	*/
+}
+
+func Test8(t *testing.T) {
+	performCreateTest1(true, "Test1", CSQ_TEST8, EXPECTED_OUTPUT_TEST8, t, false )
 	/*
 		path := os.Getenv("GOPATH")  + "/src/github.com/stevef1uk/test4/"
 		ret6 :=  SpiceInHandler( false , path, "Employee1", "" )
