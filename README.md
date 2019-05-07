@@ -74,7 +74,7 @@ The functonality of this tool to support the Cassandra MAP type is very limited.
 I have used the addionalProperties arroach and hard coded this to a string. For now if maps are used that are not of this trivial form the generated code handler will need to be modified manually.
 Also, whilst the value of the map can not be a UDT as well as simple types, the UDT can't contain other UDTs at present.
 
-I am in the process of supporting UDTs in insert clauses. Currently ony simple UDTs in tables will work and this is still early days.
+I am in the process of supporting UDTs in insert clauses and there are some limitations. I haven't started work on Posts for UDT.
 
 The ability to use the -post flag to support POST operation is limited to the following basic table types + date
 ```
