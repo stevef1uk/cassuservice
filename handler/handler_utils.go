@@ -622,13 +622,13 @@ func applyTypeConversionForGoSwaggerToGocql( debug bool, output string, suffix s
 	fieldName = suffix + fieldName
 	switch strings.ToLower(fieldType) {
 	case "int":
-		ret = ret + INDENT_1 + "int(" + fieldName + "),"
+		ret = ret + INDENT_1 + INDENT2 + "int(" + fieldName + "),"
 	case "timestamp":
-		ret = ret + INDENT_1 + PARSERTIME_FUNC_NAME + "(" + fieldName + "),"
+		ret = ret + INDENT_1 + INDENT2 + PARSERTIME_FUNC_NAME + "(" + fieldName + "),"
 	case "float":
-		ret = ret +  INDENT_1 + "float32(" + fieldName + "),"
+		ret = ret +  INDENT_1 + INDENT2 + "float32(" + fieldName + "),"
 	default:
-		ret = ret + INDENT_1 + fieldName + ","
+		ret = ret + INDENT_1 + INDENT2 + fieldName + ","
 	}
 
 	if debug { fmt.Printf("mapGoSwaggerToGoCSQLFieldType returning %s from field %s type %s\n", ret, fieldName, fieldType ) }
@@ -652,9 +652,6 @@ func copyFromStructToStruc( debug bool, suffix string, dest string, typeDetails 
 			suffix = suffix + CapitaliseSplitFieldName(debug, strings.ToLower(f.DbFieldName), false) + "."
 			ret = ret + copyFromStructToStruc( debug, suffix , dest, nestedTypeDetails, parserOutput )
 			ret = ret + INDENT_1 + INDENT2 + "},"
-			//fieldName := GetFieldName(debug, false, f.OrigFieldName, false)
-			//fieldType := GetFieldName(debug, false, f.DbFieldType, true)
-			// Need to recurse here
 		} else {
 			ret = applyTypeConversionForGoSwaggerToGocql( debug , ret , suffix, CapitaliseSplitFieldName ( debug , strings.ToLower(f.DbFieldName) , false),  f.DbFieldType)
 		}
@@ -663,6 +660,23 @@ func copyFromStructToStruc( debug bool, suffix string, dest string, typeDetails 
 	return ret
 }
 
+
+// Assumes type is a UDT
+func setUpMapField( debug bool, destField string, mapVar string, vVar string, index string, typeName string, parserOutput parser.ParseOutput  ) string {
+	ret := ""
+	fields := ""
+
+	tmpVar := createTempVar( typeName )
+	ret = INDENT_1 + INDENT2 + tmpVar + " := " + typeName + "{"
+	typeDetails := findTypeDetails( debug,typeName, parserOutput)
+	for i := 0 ; i < typeDetails.TypeFields.FieldIndex; i++ {
+		fieldName := GetFieldName(debug, false, typeDetails.TypeFields.DbFieldDetails[i].DbFieldName, false)
+		fields =  applyTypeConversionForGoSwaggerToGocql(debug, fields, vVar + ".", fieldName, typeDetails.TypeFields.DbFieldDetails[i].DbFieldType)
+	}
+	ret = ret + fields + INDENT_1 + INDENT2 + "}"
+	ret = ret +  INDENT_1 + INDENT2 + destField + "[" + index + "] = " + tmpVar
+	return ret
+}
 
 func processPostField(debug bool, fieldName string,  parserOutput parser.ParseOutput, fieldDetails parser.FieldDetails ) string {
     ret := ""
@@ -682,6 +696,22 @@ func processPostField(debug bool, fieldName string,  parserOutput parser.ParseOu
 		ret = ret + INDENT_1 + tmp + `:= fmt.Sprintf("%f",params.Body.` + field + ")"
 		ret = ret + INDENT_1 + tmp1 + `,_ := strconv.ParseFloat(` + tmp + ",32)"
 		ret = ret + INDENT_1 + `m["` + fieldName + `"] = float32(` + tmp1 + ")"
+	case "map":
+		if swagger.IsFieldTypeUDT( parserOutput, fieldDetails.DbFieldMapType  ) {
+			fieldName = GetFieldName(debug, false, fieldName, false)
+			tmpVar := createTempVar(fieldName)
+			theType := GetFieldName(debug, false, fieldDetails.DbFieldMapType, false)
+			ret = ret + INDENT_1 + tmpVar + " := make( map[string]" + theType + ", len(" + "params.Body." + fieldName + ") )"
+			ret = ret + INDENT_1 + `m["` + fieldName + `"] = ` + tmpVar
+			indexVar := "i" + strings.ToLower(fieldName)
+			valVar := "v" + strings.ToLower(fieldName)
+			ret = ret + INDENT_1 + "for " + indexVar + "," + valVar + " := range " + "params.Body." + fieldName + "{"
+			ret = ret + INDENT_1 + setUpMapField( debug , tmpVar, "params.Body.", valVar, indexVar, theType, parserOutput)
+			ret = ret + INDENT_1 + "}"
+		} else {
+			ret = ret + INDENT_1 + `m["` + fieldName + `"] = ` + "params.Body." + GetFieldName(debug, false, fieldName, false)
+		}
+
 	default:
 		if swagger.IsFieldTypeUDT( parserOutput, fieldDetails.DbFieldType) {
 			fieldName := CapitaliseSplitFieldName(debug, strings.ToLower(fieldDetails.DbFieldName),false)
