@@ -614,21 +614,21 @@ func convertToModelType( debug bool, ident string, inTable bool, sourceStruct st
 
 
 // Ensure each field in the GoSQL structure "Pararms.Body.<field> can be passed to the GoSQL structure constructor for the field
-func applyTypeConversionForGoSwaggerToGocql( debug bool, output string, suffix string, fieldName string,  fieldType string ) string {
+func applyTypeConversionForGoSwaggerToGocql( debug bool, output string, indent string, suffix string, fieldName string,  fieldType string ) string {
 
-	ret := output
+	ret := output + INDENT_1 + INDENT2 + indent
 	if debug {fmt.Printf("mapGoSwaggerToGoCSQLFieldType %s %s\n ", fieldName,fieldType )}
 
 	fieldName = suffix + fieldName
 	switch strings.ToLower(fieldType) {
 	case "int":
-		ret = ret + INDENT_1 + INDENT2 + "int(" + fieldName + "),"
+		ret = ret +  "int(" + fieldName + "),"
 	case "timestamp":
-		ret = ret + INDENT_1 + INDENT2 + PARSERTIME_FUNC_NAME + "(" + fieldName + "),"
+		ret = ret + PARSERTIME_FUNC_NAME + "(" + fieldName + "),"
 	case "float":
-		ret = ret +  INDENT_1 + INDENT2 + "float32(" + fieldName + "),"
+		ret = ret + "float32(" + fieldName + "),"
 	default:
-		ret = ret + INDENT_1 + INDENT2 + fieldName + ","
+		ret = ret + fieldName + ","
 	}
 
 	if debug { fmt.Printf("mapGoSwaggerToGoCSQLFieldType returning %s from field %s type %s\n", ret, fieldName, fieldType ) }
@@ -653,7 +653,7 @@ func copyFromStructToStruc( debug bool, suffix string, dest string, typeDetails 
 			ret = ret + copyFromStructToStruc( debug, suffix , dest, nestedTypeDetails, parserOutput )
 			ret = ret + INDENT_1 + INDENT2 + "},"
 		} else {
-			ret = applyTypeConversionForGoSwaggerToGocql( debug , ret , suffix, CapitaliseSplitFieldName ( debug , strings.ToLower(f.DbFieldName) , false),  f.DbFieldType)
+			ret = applyTypeConversionForGoSwaggerToGocql( debug , ret , "", suffix, CapitaliseSplitFieldName ( debug , strings.ToLower(f.DbFieldName) , false),  f.DbFieldType)
 		}
 	}
 
@@ -671,7 +671,7 @@ func setUpMapField( debug bool, destField string, mapVar string, vVar string, in
 	typeDetails := findTypeDetails( debug,typeName, parserOutput)
 	for i := 0 ; i < typeDetails.TypeFields.FieldIndex; i++ {
 		fieldName := GetFieldName(debug, false, typeDetails.TypeFields.DbFieldDetails[i].DbFieldName, false)
-		fields =  applyTypeConversionForGoSwaggerToGocql(debug, fields, vVar + ".", fieldName, typeDetails.TypeFields.DbFieldDetails[i].DbFieldType)
+		fields =  applyTypeConversionForGoSwaggerToGocql(debug, fields, INDENT2 , vVar + ".", fieldName, typeDetails.TypeFields.DbFieldDetails[i].DbFieldType)
 	}
 	ret = ret + fields + INDENT_1 + INDENT2 + "}"
 	ret = ret +  INDENT_1 + INDENT2 + destField + "[" + index + "] = " + tmpVar
@@ -702,7 +702,7 @@ func processPostField(debug bool, fieldName string,  parserOutput parser.ParseOu
 			tmpVar := createTempVar(fieldName)
 			theType := GetFieldName(debug, false, fieldDetails.DbFieldMapType, false)
 			ret = ret + INDENT_1 + tmpVar + " := make( map[string]" + theType + ", len(" + "params.Body." + fieldName + ") )"
-			ret = ret + INDENT_1 + `m["` + fieldName + `"] = ` + tmpVar
+			ret = ret + INDENT_1 + `m["` + strings.ToLower(fieldName) + `"] = ` + tmpVar
 			indexVar := "i" + strings.ToLower(fieldName)
 			valVar := "v" + strings.ToLower(fieldName)
 			ret = ret + INDENT_1 + "for " + indexVar + "," + valVar + " := range " + "params.Body." + fieldName + "{"

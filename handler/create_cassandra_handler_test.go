@@ -183,6 +183,18 @@ CREATE TABLE demo.maptest1 (
       mymap map<text, frozen<simple>>
 );
 `
+	CSQ_TEST9= `
+CREATE TYPE demo.simple (
+    id int,
+    floter float
+);
+
+CREATE TABLE demo.maptest1 (
+    id int PRIMARY KEY,
+    mymap map<text, frozen<simple>>
+);
+`
+//curl -d '{"id": 1, "mymap": {"b": {"id": 3, "floter": 2.2}}}' -H "Content-Type: application/json" -v -X POST http://localhost:5000/v1/maptest1
 
 //insert into employee11 ( id, tsimple ) values (1, [{id:1,dummy:'hi',mediate:'018-02-17T13:01:05.000Z',embedded:[ {id:3,floter:2.23,etype:{id:4,floter:8.9} }, {id:10, floter:6.98,etype:{id:5,floter:7.1}}] }] );
 
@@ -1286,6 +1298,108 @@ func Search(params operations.GetMaptest1Params) middleware.Responder {
     return operations.NewGetMaptest1OK().WithPayload( payLoad.Payload)
     }`
 
+	EXPECTED_OUTPUT_TEST9=`// GENERATED FILE so do not edit or will be overwritten upon next generate
+package data
+
+import (
+    "github.com/stevef1uk/test4/models"
+    "github.com/stevef1uk/test4/restapi/operations"
+    middleware "github.com/go-openapi/runtime/middleware"
+    "github.com/gocql/gocql"
+    "os"
+    "log"
+    "github.com/stevef1uk/test4/restapi/operations/maptest1"
+     
+)
+
+type Simple struct {
+    ID int `+"`"+`cql:"id"`+"`"+`
+    Floter float32 `+"`"+`cql:"floter"`+"`"+`
+}
+
+
+var cassuservice_session *gocql.Session
+
+func SetUp() {
+  var err error
+  log.Println("Tring to connect to Cassandra database using ", os.Getenv("CASSANDRA_SERVICE_HOST"))
+  cluster := gocql.NewCluster(os.Getenv("CASSANDRA_SERVICE_HOST"))
+  cluster.Keyspace = "demo"
+  cluster.Consistency = gocql.One
+  cassuservice_session, err = cluster.CreateSession()
+  if ( err != nil ) {
+    log.Fatal("Have you remembered to set the env var $CASSANDRA_SERVICE_HOST as connection to Cannandra failed with error = ", err)
+  } else {
+    log.Println("Yay! Connection to Cannandra established")
+  }
+}
+
+func Stop() {
+    log.Println("Shutting down the service handler")
+  cassuservice_session.Close()
+}
+
+func Search(params operations.GetMaptest1Params) middleware.Responder {
+
+    var ID int64
+    _ = ID
+    var Mymap []string
+    _ = Mymap
+    _ = models.Maptest1{}
+
+    codeGenRawTableResult := map[string]interface{}{}
+
+    if err := cassuservice_session.Query(`+"`"+` SELECT id, mymap FROM maptest1 WHERE id = ? `+"`"+`,params.ID).Consistency(gocql.One).MapScan(codeGenRawTableResult); err != nil {
+      log.Println("No data? ", err)
+      return operations.NewGetMaptest1BadRequest()
+    }
+    payLoad := operations.NewGetMaptest1OK()
+    payLoad.Payload = make([]*operations.GetMaptest1OKBodyItems0,1)
+    payLoad.Payload[0] = new(operations.GetMaptest1OKBodyItems0)
+    retParams := payLoad.Payload[0]
+    tmp_ID_0 := codeGenRawTableResult["id"].(int)
+    ID = int64(tmp_ID_0)
+    retParams.ID = &ID
+    tmp_Mymap_1, ok := codeGenRawTableResult["mymap"].(map[string]map[string]interface{})
+    if ! ok {
+      log.Fatal("handleReturnedVar() - failed to find entry for mymap", ok )
+    }
+    retParams.Mymap = make(map[string]models.Simple,len(tmp_Mymap_1))
+    for i3, v := range tmp_Mymap_1 {
+    
+      tmp_Mymap_2 := Simple{}
+      tmp_Mymap_2.ID = v["id"].(int)
+      tmp_Mymap_2.Floter = v["floter"].(float32)
+      tmp_Mymap_3 := models.Simple{}
+      tmp_Mymap_3.ID = int64(tmp_Mymap_2.ID)
+      tmp_Mymap_3.Floter = float64(tmp_Mymap_2.Floter)
+      retParams.Mymap[i3] = tmp_Mymap_3
+    }
+    return operations.NewGetMaptest1OK().WithPayload( payLoad.Payload)
+    }
+
+func Insert(params maptest1.AddMaptest1Params) middleware.Responder {
+
+    m := make(map[string]interface{})
+    
+    
+    m["id"] = params.Body.ID
+    tmp_Mymap_4 := make( map[string]Simple, len(params.Body.Mymap) )
+    m["mymap"] = tmp_Mymap_4
+    for imymap,vmymap := range params.Body.Mymap{
+    
+        tmp_Simple_5 := Simple{
+            int(vmymap.ID),
+            float32(vmymap.Floter),
+        }
+        tmp_Mymap_4[imymap] = tmp_Simple_5
+    }
+    if err := cassuservice_session.Query(`+"`"+` INSERT INTO maptest1(id, mymap) VALUES (?,?)`+"`"+`,m["id"],m["mymap"]).Consistency(gocql.One).Exec(); err != nil {
+      return maptest1.NewAddMaptest1MethodNotAllowed()
+    }
+    return maptest1.NewAddMaptest1Created()
+}`
+
 )
 
 func performCreateTest1( debug bool, test string, cql string, expected string , t *testing.T, addPost bool) {
@@ -1422,6 +1536,16 @@ func Test8(t *testing.T) {
 		_ = ret6
 	*/
 }
+
+func Test9(t *testing.T) {
+	performCreateTest1(true, "Test1", CSQ_TEST9, EXPECTED_OUTPUT_TEST9, t, true )
+	/*
+		path := os.Getenv("GOPATH")  + "/src/github.com/stevef1uk/test4/"
+		ret6 :=  SpiceInHandler( false , path, "Employee1", "" )
+		_ = ret6
+	*/
+}
+
 /*
 CSQ_TEST1 = `
 
