@@ -627,6 +627,11 @@ func applyTypeConversionForGoSwaggerToGocql( debug bool, output string, indent s
 		ret = ret + PARSERTIME_FUNC_NAME + "(" + fieldName + "),"
 	case "float":
 		ret = ret + "float32(" + fieldName + "),"
+	case "map": fallthrough
+	case "list": fallthrough
+	case "set":
+		log.Fatalln("applyTypeConversionForGoSwaggerToGocql encountered type which is not supported", fieldType)
+
 	default:
 		ret = ret + fieldName + ","
 	}

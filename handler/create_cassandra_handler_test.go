@@ -173,14 +173,35 @@ CREATE TABLE demo.employee11 (
 `
 
 	CSQ_TEST8= `
-CREATE TYPE demo.simple (
-    id int,
-    floter float
+CREATE TYPE demo.simplely3 (
+       id int,
+       floter float,
+    name text,
+    ascii1 ascii,
+    bint1 bigint,
+    blob1 blob,
+    bool1 boolean,
+    dec1 decimal,
+    double1 double,
+    flt1 float,
+    inet1 inet,
+    int1 int,
+    text1 text,
+    time1 timestamp,
+    time2 timeuuid,
+    mydate1 date,
+    uuid1 uuid,
+    varchar1 varchar,
+    events set<int>,
+    mylist list<float>,
+    myset set<text>,
+    adec list<decimal>,
     );
 
-CREATE TABLE demo.maptest1 (
-      id int PRIMARY KEY,
-      mymap map<text, frozen<simple>>
+CREATE TABLE demo.employee2 (
+    id int PRIMARY KEY,
+    mapy map <text, frozen<simplely3>>
+
 );
 `
 	CSQ_TEST9= `
@@ -1231,11 +1252,46 @@ import (
     "github.com/gocql/gocql"
     "os"
     "log"
+    "time"
+     
+	"gopkg.in/inf.v0"
+	"strconv"
+	
 )
 
-type Simple struct {
+func parseTime ( input string) time.Time {
+    var ret time.Time
+    if input == "" {
+        ret = time.Now()
+    } else {
+        ret, _ = time.Parse( time.RFC3339, input )
+    }
+    return ret;
+}
+
+type Simplely3 struct {
     ID int `+"`"+`cql:"id"`+"`"+`
     Floter float32 `+"`"+`cql:"floter"`+"`"+`
+    Name string `+"`"+`cql:"name"`+"`"+`
+    Ascii1 string `+"`"+`cql:"ascii1"`+"`"+`
+    Bint1 int64 `+"`"+`cql:"bint1"`+"`"+`
+    Blob1 []uint8 `+"`"+`cql:"blob1"`+"`"+`
+    Bool1 bool `+"`"+`cql:"bool1"`+"`"+`
+    Dec1 *inf.Dec `+"`"+`cql:"dec1"`+"`"+`
+    Double1 float64 `+"`"+`cql:"double1"`+"`"+`
+    Flt1 float32 `+"`"+`cql:"flt1"`+"`"+`
+    Inet1 string `+"`"+`cql:"inet1"`+"`"+`
+    Int1 int `+"`"+`cql:"int1"`+"`"+`
+    Text1 string `+"`"+`cql:"text1"`+"`"+`
+    Time1 time.Time `+"`"+`cql:"time1"`+"`"+`
+    Time2 gocql.UUID `+"`"+`cql:"time2"`+"`"+`
+    Mydate1 time.Time `+"`"+`cql:"mydate1"`+"`"+`
+    Uuid1 gocql.UUID `+"`"+`cql:"uuid1"`+"`"+`
+    Varchar1 string `+"`"+`cql:"varchar1"`+"`"+`
+    Events []int `+"`"+`cql:"events"`+"`"+`
+    Mylist []float32 `+"`"+`cql:"mylist"`+"`"+`
+    Myset []string `+"`"+`cql:"myset"`+"`"+`
+    Adec []*inf.Dec `+"`"+`cql:"adec"`+"`"+`
 }
 
 
@@ -1260,42 +1316,95 @@ func Stop() {
   cassuservice_session.Close()
 }
 
-func Search(params operations.GetMaptest1Params) middleware.Responder {
+func Search(params operations.GetEmployee2Params) middleware.Responder {
 
     var ID int64
     _ = ID
-    var Mymap []string
-    _ = Mymap
+    var Mapy []string
+    _ = Mapy
 
     codeGenRawTableResult := map[string]interface{}{}
 
-    if err := cassuservice_session.Query(`+"`"+` SELECT id, mymap FROM maptest1 WHERE id = ? `+"`"+`,params.ID).Consistency(gocql.One).MapScan(codeGenRawTableResult); err != nil {
+    if err := cassuservice_session.Query(`+"`"+` SELECT id, mapy FROM employee2 WHERE id = ? `+"`"+`,params.ID).Consistency(gocql.One).MapScan(codeGenRawTableResult); err != nil {
       log.Println("No data? ", err)
-      return operations.NewGetMaptest1BadRequest()
+      return operations.NewGetEmployee2BadRequest()
     }
-    payLoad := operations.NewGetMaptest1OK()
-    payLoad.Payload = make([]*operations.GetMaptest1OKBodyItems0,1)
-    payLoad.Payload[0] = new(operations.GetMaptest1OKBodyItems0)
+    payLoad := operations.NewGetEmployee2OK()
+    payLoad.Payload = make([]*operations.GetEmployee2OKBodyItems0,1)
+    payLoad.Payload[0] = new(operations.GetEmployee2OKBodyItems0)
     retParams := payLoad.Payload[0]
-    tmp_ID_0 := codeGenRawTableResult["id"].(int)
-    ID = int64(tmp_ID_0)
+    tmp_ID_1 := codeGenRawTableResult["id"].(int)
+    ID = int64(tmp_ID_1)
     retParams.ID = &ID
-    tmp_Mymap_1, ok := codeGenRawTableResult["mymap"].(map[string]map[string]interface{})
+    tmp_Mapy_2, ok := codeGenRawTableResult["mapy"].(map[string]map[string]interface{})
     if ! ok {
-      log.Fatal("handleReturnedVar() - failed to find entry for mymap", ok )
+      log.Fatal("handleReturnedVar() - failed to find entry for mapy", ok )
     }
-    retParams.Mymap = make(map[string]models.Simple,len(tmp_Mymap_1))
-    for i3, v := range tmp_Mymap_1 {
+    retParams.Mapy = make(map[string]models.Simplely3,len(tmp_Mapy_2))
+    for i3, v := range tmp_Mapy_2 {
     
-      tmp_Mymap_2 := Simple{}
-      tmp_Mymap_2.ID = v["id"].(int)
-      tmp_Mymap_2.Floter = v["floter"].(float32)
-      tmp_Mymap_3 := models.Simple{}
-      tmp_Mymap_3.ID = int64(tmp_Mymap_2.ID)
-      tmp_Mymap_3.Floter = float64(tmp_Mymap_2.Floter)
-      retParams.Mymap[i3] = tmp_Mymap_3
+      tmp_Mapy_3 := Simplely3{}
+      tmp_Mapy_3.ID = v["id"].(int)
+      tmp_Mapy_3.Floter = v["floter"].(float32)
+      tmp_Mapy_3.Name = v["name"].(string)
+      tmp_Mapy_3.Ascii1 = v["ascii1"].(string)
+      tmp_Mapy_3.Bint1 = v["bint1"].(int64)
+      tmp_Mapy_3.Blob1 = v["blob1"].([]uint8)
+      tmp_Mapy_3.Bool1 = v["bool1"].(bool)
+      tmp_Mapy_3.Dec1 = v["dec1"].(*inf.Dec)
+      tmp_Mapy_3.Double1 = v["double1"].(float64)
+      tmp_Mapy_3.Flt1 = v["flt1"].(float32)
+      tmp_Mapy_3.Inet1 = v["inet1"].(string)
+      tmp_Mapy_3.Int1 = v["int1"].(int)
+      tmp_Mapy_3.Text1 = v["text1"].(string)
+      tmp_Mapy_3.Time1 = v["time1"].(time.Time)
+      tmp_Mapy_3.Time2 = v["time2"].(gocql.UUID)
+      tmp_Mapy_3.Mydate1 = v["mydate1"].(time.Time)
+      tmp_Mapy_3.Uuid1 = v["uuid1"].(gocql.UUID)
+      tmp_Mapy_3.Varchar1 = v["varchar1"].(string)
+      tmp_Mapy_3.Events = v["events"].([]int)
+      tmp_Mapy_3.Mylist = v["mylist"].([]float32)
+      tmp_Mapy_3.Myset = v["myset"].([]string)
+      tmp_Mapy_3.Adec = v["adec"].([]*inf.Dec)
+      tmp_Mapy_4 := models.Simplely3{}
+      tmp_Mapy_4.ID = int64(tmp_Mapy_3.ID)
+      tmp_Mapy_4.Floter = float64(tmp_Mapy_3.Floter)
+      tmp_Mapy_4.Name = tmp_Mapy_3.Name
+      tmp_Mapy_4.Ascii1 = tmp_Mapy_3.Ascii1
+      tmp_Mapy_4.Bint1 = int64(tmp_Mapy_3.Bint1)
+      tmp_Mapy_4.Blob1 = string(tmp_Mapy_3.Blob1)
+      tmp_Mapy_4.Bool1 = tmp_Mapy_3.Bool1
+      tmp_Mapy_4.Dec1,_ = strconv.ParseFloat(tmp_Mapy_3.Dec1.String(), 64 )
+      tmp_Mapy_4.Double1 = float64(tmp_Mapy_3.Double1)
+      tmp_Mapy_4.Flt1 = float64(tmp_Mapy_3.Flt1)
+      tmp_Mapy_4.Inet1 = tmp_Mapy_3.Inet1
+      tmp_Mapy_4.Int1 = int64(tmp_Mapy_3.Int1)
+      tmp_Mapy_4.Text1 = tmp_Mapy_3.Text1
+      tmp_Mapy_4.Time1 = tmp_Mapy_3.Time1.String()
+      tmp_Mapy_4.Time2 = tmp_Mapy_3.Time2.String()
+      tmp_Mapy_4.Mydate1 = tmp_Mapy_3.Mydate1.String()
+      tmp_Mapy_4.Uuid1 = tmp_Mapy_3.Uuid1.String()
+      tmp_Mapy_4.Varchar1 = tmp_Mapy_3.Varchar1
+      tmp_Mapy_4.Events = make([] int64, len(tmp_Mapy_3.Events) )
+      for j := 0; j < len(tmp_Mapy_3.Events ); j++ { 
+        tmp_Mapy_4.Events[j] = int64(tmp_Mapy_3.Events[j])
+      }
+      tmp_Mapy_4.Mylist = make([] float64, len(tmp_Mapy_3.Mylist) )
+      for j := 0; j < len(tmp_Mapy_3.Mylist ); j++ { 
+        tmp_Mapy_4.Mylist[j] = float64(tmp_Mapy_3.Mylist[j])
+      }
+      tmp_Mapy_4.Myset = make([] string, len(tmp_Mapy_3.Myset) )
+      for j := 0; j < len(tmp_Mapy_3.Myset ); j++ { 
+        tmp_Mapy_4.Myset[j] = tmp_Mapy_3.Myset[j]
+      }
+      tmp_Mapy_4.Adec = make([] float64, len(tmp_Mapy_3.Adec) )
+      for j := 0; j < len(tmp_Mapy_3.Adec ); j++ { 
+        tmp_tmp_Mapy_3_5,_ := strconv.ParseFloat(tmp_Mapy_3.Adec[j].String(), 64 )
+        tmp_Mapy_4.Adec[j] = tmp_tmp_Mapy_3_5
+      }
+      retParams.Mapy[i3] = tmp_Mapy_4
     }
-    return operations.NewGetMaptest1OK().WithPayload( payLoad.Payload)
+    return operations.NewGetEmployee2OK().WithPayload( payLoad.Payload)
     }`
 
 	EXPECTED_OUTPUT_TEST9=`// GENERATED FILE so do not edit or will be overwritten upon next generate
