@@ -591,7 +591,7 @@ func handleReturnedVar( debug bool, recursing bool, timeFound bool, inDent strin
 			tmpMapVarType = MODELS + mapTypeInGo
 			tmp := INDENT_1 + inDent + INDENT + tmpMapVar + " := " + mapTypeInGo + "{}"
 			//ts := findTypeDetails( debug, fieldDetails.DbFieldMapType, parserOutput)
-			mapFieldType, uDTTypeDetails := manageMap(debug, recursing, inDent + INDENT, inTable, tmpMapVar,"v", findTypeDetails( debug, mapTypeInGo, parserOutput ), parserOutput, timeVar )
+			mapFieldType, uDTTypeDetails := manageMap(debug, recursing, inDent + INDENT, inTable, true, tmpMapVar,"v", findTypeDetails( debug, mapTypeInGo, parserOutput ), parserOutput, timeVar )
 			if uDTTypeDetails != nil {
 				log.Fatal( "Sorry currently unable to handle map types that contain UDTs themselves ")
 			}

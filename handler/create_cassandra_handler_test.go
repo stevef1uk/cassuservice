@@ -1496,11 +1496,10 @@ func Insert(params maptest1.AddMaptest1Params) middleware.Responder {
     tmp_Mymap_4 := make( map[string]Simple, len(params.Body.Mymap) )
     m["mymap"] = tmp_Mymap_4
     for imymap,vmymap := range params.Body.Mymap{
-    
-        tmp_Simple_5 := Simple{
-            int(vmymap.ID),
-            float32(vmymap.Floter),
-        }
+        tmp_Simple_5 := Simple{}
+        
+        tmp_Simple_5.ID = int(vmymap.ID)
+        tmp_Simple_5.Floter = float32(vmymap.Floter)
         tmp_Mymap_4[imymap] = tmp_Simple_5
     }
     if err := cassuservice_session.Query(`+"`"+` INSERT INTO maptest1(id, mymap) VALUES (?,?)`+"`"+`,m["id"],m["mymap"]).Consistency(gocql.One).Exec(); err != nil {
