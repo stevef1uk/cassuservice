@@ -195,6 +195,7 @@ func manageMap( debug bool, recursing bool, inDent string,  inTable bool, index 
 				collectionType := GetFieldName(debug, recursing, field.DbFieldCollectionType, false)
 				if swagger.IsFieldTypeUDT(parserOutput, collectionType) {
 					//@TODO!
+					log.Fatalln("Situation not handled in manageMap - list & set contain UDT ")
 				} else {
 					arrayType := mapFieldTypeToGoCSQLType(debug, fieldName, recursing, false, collectionType, fieldName, field, parserOutput, false)
 					ret = ret + tmp + ".([]" + arrayType + ")"
@@ -203,6 +204,7 @@ func manageMap( debug bool, recursing bool, inDent string,  inTable bool, index 
 				if swagger.IsFieldTypeUDT(parserOutput, field.DbFieldType) {
 					// We have found a UDT so recursion required
 					// @TODO
+					log.Fatalln("Situation not handled in manageMap - UDT ")
 					uDTtypeDetails = findTypeDetails(debug, field.DbFieldType, parserOutput)
 				} else {
 					ret = ret + tmp + ".(string)"
@@ -645,7 +647,7 @@ func applyTypeConversionForGoSwaggerToGocql( debug bool, output string, indent s
 		if swagger.IsFieldTypeUDT(parserOutput, field.DbFieldCollectionType) {
 			log.Fatal( "Sorry currently unable to handle map types that contain UDTs in sets or list themselves ")
 		}
-		tmp := CopyArrayElements( debug , false, false , INDENT_1 + indent , suffix + "." + fieldName, "SJFSJF" + "." + fieldName ,  field, parserOutput )
+		tmp := CopyArrayElements( debug , false, false , INDENT_1 + indent , fieldName,  "" ,  field, parserOutput )
 		ret = ret + tmp
 
 	default:

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/stevef1uk/cassuservice/swagger"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -11,8 +12,8 @@ import (
 )
 
 
-const FILETOPROCESS = "restapi/configure_simple.go"  // Name of file to update created by go-swagger during generation
-
+//const FILETOPROCESS = "restapi/configure_simple.go"  // Name of file to update created by go-swagger during generation
+const FILETOPROCESS = "restapi" + string(os.PathSeparator) + "configure_simple.go"
 
 func tempFile() *os.File {
 
@@ -36,11 +37,37 @@ func output(in *os.File)  {
 	}
 }
 
+func copy(src, dst string) (int64, error) {
+	sourceFileStat, err := os.Stat(src)
+	if err != nil {
+		return 0, err
+	}
+
+	if !sourceFileStat.Mode().IsRegular() {
+		return 0, fmt.Errorf("%s is not a regular file", src)
+	}
+
+	source, err := os.Open(src)
+	if err != nil {
+		return 0, err
+	}
+	defer source.Close()
+
+	destination, err := os.Create(dst)
+	if err != nil {
+		return 0, err
+	}
+	defer destination.Close()
+	nBytes, err := io.Copy(destination, source)
+	return nBytes, err
+}
+
+
 // Function to create the temporary file to include updated contents of the generated handler
 func openFile(  debug bool, genDir string ) *os.File {
 
 	// Create the directory if not already there
-	fullfileName := genDir + "/" + FILETOPROCESS
+	fullfileName := genDir +  string(os.PathSeparator) + FILETOPROCESS
 	if debug { fmt.Println("Dir Name = ", fullfileName )}
 	// Create data dir if it doesn't already exist
 	_, err := os.Stat(fullfileName)
@@ -59,14 +86,15 @@ func openFile(  debug bool, genDir string ) *os.File {
 	return myfile
 }
 
-// Create the final file deleting it if it exists by linking the passed temporary file to it and delete temporary file
+// Create the final file deleting it if it exists and delete temporary file
 func createFile( generatedCodePath string, tmpFile string  ) {
-	fullfileName := generatedCodePath + "/" + FILETOPROCESS
+	fullfileName := generatedCodePath + string(os.PathSeparator) + FILETOPROCESS
 	var err = os.Remove(fullfileName)
 	if err != nil {
 		panic(err)
 	}
-	err = os.Link(tmpFile, fullfileName)
+
+	_, err = copy(tmpFile, fullfileName) 
 	if err != nil {
 		panic(err)
 	}
