@@ -29,6 +29,7 @@ func main() {
 	outputPtr := flag.String("dirToGenerateIn", "/tmp", "set dirToGenerateIn to the full path of the directory where the output of swagger is defaults to /tmp")
 	pathNamePtr := flag.String("pathNamePtr", "", "if auto patching of configure_simple.go isn't working set pathNamePtr to the full path of the directory where the output of swagger is")
 	postPtr := flag.Bool("post", false, "set to true to add post method as well")
+	swaggerPtr := flag.String("swaggerPath", "", "set to path of swagger executable if not on Mac/Linux ")
 
     //_ = swaggerPtr
 
@@ -44,7 +45,7 @@ func main() {
 
 	swagger := swagger.CreateSwagger( *debugPtr, parse1, *endPointPtr, *postPtr )
 
-	pathName := os.Getenv("GOPATH")  + "/src/" + *goPackageNamePtr
+	pathName := os.Getenv("GOPATH")  + string(os.PathSeparator)  + "src" + string(os.PathSeparator) + *goPackageNamePtr
 	if *pathNamePtr != "" {
 		pathName = *pathNamePtr
 	}
@@ -57,9 +58,13 @@ func main() {
 
 	handler.CreateCode( *debugPtr, *outputPtr, *goPackageNamePtr, parse1,  *consistencyPtr,  *endPointPtr, *primaryKeysPtr,  *allowFilteringPtr, *logNoDataPtr, *postPtr   )
 
-	os.Setenv("PATH", "/usr/bin:/sbin:/usr/local/bin:/bin")
+	if *swaggerPtr != "" {
+		os.Setenv("PATH", *swaggerPtr )
+	} else {
+		os.Setenv("PATH", "/usr/bin:/sbin:/usr/local/bin:/bin")
+	}
 	command := "swagger"
-	args := []string{"generate", "server", "-f", pathName + "/" + SWAGGER_FILE, "-t", pathName }
+	args := []string{"generate", "server", "-f", pathName + string(os.PathSeparator)+ SWAGGER_FILE, "-t", pathName }
 	if err := exec.Command(command, args...).Run(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

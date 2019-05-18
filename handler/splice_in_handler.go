@@ -94,7 +94,7 @@ func createFile( generatedCodePath string, tmpFile string  ) {
 		panic(err)
 	}
 
-	_, err = copy(tmpFile, fullfileName) 
+	_, err = copy(tmpFile, fullfileName)
 	if err != nil {
 		panic(err)
 	}
