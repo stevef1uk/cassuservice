@@ -34,7 +34,7 @@ As the parser uses regular expressions please don't delete the WITH CLUSTERING s
 
 Step 2:
 
-Execute the main program using the following minimal set of flags:
+Execute in the home directory of this project the main program using the following minimal set of flags:
 ```
 go run main.go -file=/Users/stevef/Source_Code/go/src/github.com/stevef1uk/test4/t.cql \
                -goPackageName=github.com/stevef1uk/test4 \
@@ -56,6 +56,7 @@ go run cmd/simple-server/main.go
 ```
 In order for this command to work the environment variable CASSANDRA_SERVICE_HOST needs to set to the host name(s) of the Cassandra cluster. 
 Setting the PORT environment variable will make it easier to test 
+If the cassandra database has authentication enabled then also set CASSANDRA_USERNAME and CASSANDRA_USERNAME env vars
 
 For the example above the command to test it is:
 ```
@@ -64,6 +65,9 @@ curl -X GET "http://127.0.0.1:5000/v1/employee?id=1"
 Note: To insert test data: 	
 ```
 insert into employee1 (id, tsimple) values ( 1, { id:1,dummy:'steve',mediate:'1999-12-01T23:21:59.123Z'} ) ;
+
+or if you have built using the post flag use curl e.g. 
+curl -d '{"id": 1, "mesdummy": "steve"}' -H "Content-Type: application/json" -v -X POST http://localhost:5000/v1/employee
 ```
 Examples of other test tables & types I have used to test this are shown in the handler folder in file create_cassandra_handler_test.go
 

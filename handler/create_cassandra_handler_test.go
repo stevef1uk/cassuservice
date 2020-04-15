@@ -287,6 +287,17 @@ func SetUp() {
   cluster := gocql.NewCluster(os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster.Keyspace = "demo"
   cluster.Consistency = gocql.One
+  username := os.Getenv("CASSANDRA_USERNAME")
+  password := os.Getenv("CASSANDRA_PASSWORD")
+  if username != "" {
+     log.Println("Using credentials, username = ", username)
+          cluster.Authenticator = gocql.PasswordAuthenticator{
+                Username: username,
+                Password: password,
+    }
+  } else {
+     log.Println("Are you sure you don't need to set $CASSANDRA_USERNAME and $CASSANDRA_PASSWORD")
+  }
   cassuservice_session, err = cluster.CreateSession()
   if ( err != nil ) {
     log.Fatal("Have you remembered to set the env var $CASSANDRA_SERVICE_HOST as connection to Cannandra failed with error = ", err)
@@ -473,6 +484,17 @@ func SetUp() {
   cluster := gocql.NewCluster(os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster.Keyspace = "demo"
   cluster.Consistency = gocql.One
+  username := os.Getenv("CASSANDRA_USERNAME")
+  password := os.Getenv("CASSANDRA_PASSWORD")
+  if username != "" {
+     log.Println("Using credentials, username = ", username)
+          cluster.Authenticator = gocql.PasswordAuthenticator{
+                Username: username,
+                Password: password,
+    }
+  } else {
+     log.Println("Are you sure you don't need to set $CASSANDRA_USERNAME and $CASSANDRA_PASSWORD")
+  }
   cassuservice_session, err = cluster.CreateSession()
   if ( err != nil ) {
     log.Fatal("Have you remembered to set the env var $CASSANDRA_SERVICE_HOST as connection to Cannandra failed with error = ", err)
@@ -648,6 +670,17 @@ func SetUp() {
   cluster := gocql.NewCluster(os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster.Keyspace = "demo"
   cluster.Consistency = gocql.One
+  username := os.Getenv("CASSANDRA_USERNAME")
+  password := os.Getenv("CASSANDRA_PASSWORD")
+  if username != "" {
+     log.Println("Using credentials, username = ", username)
+          cluster.Authenticator = gocql.PasswordAuthenticator{
+                Username: username,
+                Password: password,
+    }
+  } else {
+     log.Println("Are you sure you don't need to set $CASSANDRA_USERNAME and $CASSANDRA_PASSWORD")
+  }
   cassuservice_session, err = cluster.CreateSession()
   if ( err != nil ) {
     log.Fatal("Have you remembered to set the env var $CASSANDRA_SERVICE_HOST as connection to Cannandra failed with error = ", err)
@@ -748,6 +781,17 @@ func SetUp() {
   cluster := gocql.NewCluster(os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster.Keyspace = "demo"
   cluster.Consistency = gocql.One
+  username := os.Getenv("CASSANDRA_USERNAME")
+  password := os.Getenv("CASSANDRA_PASSWORD")
+  if username != "" {
+     log.Println("Using credentials, username = ", username)
+          cluster.Authenticator = gocql.PasswordAuthenticator{
+                Username: username,
+                Password: password,
+    }
+  } else {
+     log.Println("Are you sure you don't need to set $CASSANDRA_USERNAME and $CASSANDRA_PASSWORD")
+  }
   cassuservice_session, err = cluster.CreateSession()
   if ( err != nil ) {
     log.Fatal("Have you remembered to set the env var $CASSANDRA_SERVICE_HOST as connection to Cannandra failed with error = ", err)
@@ -859,6 +903,17 @@ func SetUp() {
   cluster := gocql.NewCluster(os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster.Keyspace = "demo"
   cluster.Consistency = gocql.One
+  username := os.Getenv("CASSANDRA_USERNAME")
+  password := os.Getenv("CASSANDRA_PASSWORD")
+  if username != "" {
+     log.Println("Using credentials, username = ", username)
+          cluster.Authenticator = gocql.PasswordAuthenticator{
+                Username: username,
+                Password: password,
+    }
+  } else {
+     log.Println("Are you sure you don't need to set $CASSANDRA_USERNAME and $CASSANDRA_PASSWORD")
+  }
   cassuservice_session, err = cluster.CreateSession()
   if ( err != nil ) {
     log.Fatal("Have you remembered to set the env var $CASSANDRA_SERVICE_HOST as connection to Cannandra failed with error = ", err)
@@ -1020,6 +1075,17 @@ func SetUp() {
   cluster := gocql.NewCluster(os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster.Keyspace = "demo"
   cluster.Consistency = gocql.One
+  username := os.Getenv("CASSANDRA_USERNAME")
+  password := os.Getenv("CASSANDRA_PASSWORD")
+  if username != "" {
+     log.Println("Using credentials, username = ", username)
+          cluster.Authenticator = gocql.PasswordAuthenticator{
+                Username: username,
+                Password: password,
+    }
+  } else {
+     log.Println("Are you sure you don't need to set $CASSANDRA_USERNAME and $CASSANDRA_PASSWORD")
+  }
   cassuservice_session, err = cluster.CreateSession()
   if ( err != nil ) {
     log.Fatal("Have you remembered to set the env var $CASSANDRA_SERVICE_HOST as connection to Cannandra failed with error = ", err)
@@ -1145,6 +1211,17 @@ func SetUp() {
   cluster := gocql.NewCluster(os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster.Keyspace = "demo"
   cluster.Consistency = gocql.One
+  username := os.Getenv("CASSANDRA_USERNAME")
+  password := os.Getenv("CASSANDRA_PASSWORD")
+  if username != "" {
+     log.Println("Using credentials, username = ", username)
+          cluster.Authenticator = gocql.PasswordAuthenticator{
+                Username: username,
+                Password: password,
+    }
+  } else {
+     log.Println("Are you sure you don't need to set $CASSANDRA_USERNAME and $CASSANDRA_PASSWORD")
+  }
   cassuservice_session, err = cluster.CreateSession()
   if ( err != nil ) {
     log.Fatal("Have you remembered to set the env var $CASSANDRA_SERVICE_HOST as connection to Cannandra failed with error = ", err)
@@ -1303,6 +1380,17 @@ func SetUp() {
   cluster := gocql.NewCluster(os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster.Keyspace = "demo"
   cluster.Consistency = gocql.One
+  username := os.Getenv("CASSANDRA_USERNAME")
+  password := os.Getenv("CASSANDRA_PASSWORD")
+  if username != "" {
+     log.Println("Using credentials, username = ", username)
+          cluster.Authenticator = gocql.PasswordAuthenticator{
+                Username: username,
+                Password: password,
+    }
+  } else {
+     log.Println("Are you sure you don't need to set $CASSANDRA_USERNAME and $CASSANDRA_PASSWORD")
+  }
   cassuservice_session, err = cluster.CreateSession()
   if ( err != nil ) {
     log.Fatal("Have you remembered to set the env var $CASSANDRA_SERVICE_HOST as connection to Cannandra failed with error = ", err)
@@ -1435,6 +1523,17 @@ func SetUp() {
   cluster := gocql.NewCluster(os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster.Keyspace = "demo"
   cluster.Consistency = gocql.One
+  username := os.Getenv("CASSANDRA_USERNAME")
+  password := os.Getenv("CASSANDRA_PASSWORD")
+  if username != "" {
+     log.Println("Using credentials, username = ", username)
+          cluster.Authenticator = gocql.PasswordAuthenticator{
+                Username: username,
+                Password: password,
+    }
+  } else {
+     log.Println("Are you sure you don't need to set $CASSANDRA_USERNAME and $CASSANDRA_PASSWORD")
+  }
   cassuservice_session, err = cluster.CreateSession()
   if ( err != nil ) {
     log.Fatal("Have you remembered to set the env var $CASSANDRA_SERVICE_HOST as connection to Cannandra failed with error = ", err)
