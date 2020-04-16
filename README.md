@@ -53,6 +53,7 @@ export CASSANDRA_SERVICE_HOST=127.0.0.1
 epxort PORT=5000
 
 go run cmd/simple-server/main.go 
+NOTE: the latets verion of swagger generates the entry point as cmd/simple-api-server/main.go
 ```
 In order for this command to work the environment variable CASSANDRA_SERVICE_HOST needs to set to the host name(s) of the Cassandra cluster. 
 Setting the PORT environment variable will make it easier to test 
