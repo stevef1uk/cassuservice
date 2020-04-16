@@ -91,7 +91,7 @@ func createFile( generatedCodePath string, tmpFile string  ) {
 	fullfileName := generatedCodePath + string(os.PathSeparator) + FILETOPROCESS
 	var err = os.Remove(fullfileName)
 	if err != nil {
-		fmt.Print(err) // Windows issue non fatal
+		log.Print(err) // Windows issue non fatal
 //		panic(err)
 	}
 
@@ -102,7 +102,7 @@ func createFile( generatedCodePath string, tmpFile string  ) {
 
 	err = os.Remove(tmpFile)
 	if err != nil {
-		fmt.Print(err) // Windows issue non fatal
+		log.Print(err) // Windows issue non fatal
 //		panic(err)
 	}
 }
