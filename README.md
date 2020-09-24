@@ -58,6 +58,10 @@ NOTE: the latets verion of swagger generates the entry point as cmd/simple-api-s
 In order for this command to work the environment variable CASSANDRA_SERVICE_HOST needs to set to the host name(s) of the Cassandra cluster. 
 Setting the PORT environment variable will make it easier to test 
 If the cassandra database has authentication enabled then also set CASSANDRA_USERNAME and CASSANDRA_PASSWORD env vars
+For DataStax Astra download the credentials from their site, unzip the file and set the following two environment variables:
+ASTRA_SECURE_CONNECT_PATH - to the absolute path of the extracted zip file directory
+ASTRA_PORT - the port contained in the cqlshrc file contained in the directory above
+Astra uses a TLS connection and also requires the ASSANDRA_USERNAME and CASSANDRA_PASSWORD env vars set
 
 For the example above the command to test it is:
 ```

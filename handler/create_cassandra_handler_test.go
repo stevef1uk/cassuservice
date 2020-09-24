@@ -283,7 +283,7 @@ var cassuservice_session *gocql.Session
 
 func SetUp() {
   var err error
-  log.Println("Tring to connect to Cassandra database using ", os.Getenv("CASSANDRA_SERVICE_HOST"))
+  log.Println("Trying to connect to Cassandra database using ", os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster := gocql.NewCluster(os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster.Keyspace = "demo"
   cluster.Consistency = gocql.One
@@ -297,6 +297,30 @@ func SetUp() {
     }
   } else {
      log.Println("Are you sure you don't need to set $CASSANDRA_USERNAME and $CASSANDRA_PASSWORD")
+  }
+  astra := os.Getenv("ASTRA_SECURE_CONNECT_PATH")
+  if ( astra != "" ) {
+    if os.Getenv("ASTRA_PORT") != "" {
+		astra = astra + string(os.PathSeparator)
+		cluster.Hosts = []string{os.Getenv("CASSANDRA_SERVICE_HOST") + ":" + os.Getenv("ASTRA_PORT")}
+		certPath, _ := filepath.Abs(astra + "cert")
+		keyPath, _ := filepath.Abs(astra + "key")
+		caPath, _ := filepath.Abs(astra + "ca.crt")
+		cert, _ := tls.LoadX509KeyPair(certPath, keyPath)
+		caCert, _ := ioutil.ReadFile(caPath)
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+		tlsConfig := &tls.Config{
+			Certificates: []tls.Certificate{cert},
+			RootCAs:      caCertPool,
+		}
+		cluster.SslOpts = &gocql.SslOptions{
+			Config: tlsConfig,
+			EnableHostVerification: false,
+		}
+	} else {
+		log.Fatal("With Datastax Astra you need to set ASTRA_PORT environment variable (in secure connect download file cqlshrc")
+	}
   }
   cassuservice_session, err = cluster.CreateSession()
   if ( err != nil ) {
@@ -480,7 +504,7 @@ var cassuservice_session *gocql.Session
 
 func SetUp() {
   var err error
-  log.Println("Tring to connect to Cassandra database using ", os.Getenv("CASSANDRA_SERVICE_HOST"))
+  log.Println("Trying to connect to Cassandra database using ", os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster := gocql.NewCluster(os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster.Keyspace = "demo"
   cluster.Consistency = gocql.One
@@ -494,6 +518,30 @@ func SetUp() {
     }
   } else {
      log.Println("Are you sure you don't need to set $CASSANDRA_USERNAME and $CASSANDRA_PASSWORD")
+  }
+  astra := os.Getenv("ASTRA_SECURE_CONNECT_PATH")
+  if ( astra != "" ) {
+    if os.Getenv("ASTRA_PORT") != "" {
+		astra = astra + string(os.PathSeparator)
+		cluster.Hosts = []string{os.Getenv("CASSANDRA_SERVICE_HOST") + ":" + os.Getenv("ASTRA_PORT")}
+		certPath, _ := filepath.Abs(astra + "cert")
+		keyPath, _ := filepath.Abs(astra + "key")
+		caPath, _ := filepath.Abs(astra + "ca.crt")
+		cert, _ := tls.LoadX509KeyPair(certPath, keyPath)
+		caCert, _ := ioutil.ReadFile(caPath)
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+		tlsConfig := &tls.Config{
+			Certificates: []tls.Certificate{cert},
+			RootCAs:      caCertPool,
+		}
+		cluster.SslOpts = &gocql.SslOptions{
+			Config: tlsConfig,
+			EnableHostVerification: false,
+		}
+	} else {
+		log.Fatal("With Datastax Astra you need to set ASTRA_PORT environment variable (in secure connect download file cqlshrc")
+	}
   }
   cassuservice_session, err = cluster.CreateSession()
   if ( err != nil ) {
@@ -666,7 +714,7 @@ var cassuservice_session *gocql.Session
 
 func SetUp() {
   var err error
-  log.Println("Tring to connect to Cassandra database using ", os.Getenv("CASSANDRA_SERVICE_HOST"))
+  log.Println("Trying to connect to Cassandra database using ", os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster := gocql.NewCluster(os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster.Keyspace = "demo"
   cluster.Consistency = gocql.One
@@ -680,6 +728,30 @@ func SetUp() {
     }
   } else {
      log.Println("Are you sure you don't need to set $CASSANDRA_USERNAME and $CASSANDRA_PASSWORD")
+  }
+  astra := os.Getenv("ASTRA_SECURE_CONNECT_PATH")
+  if ( astra != "" ) {
+    if os.Getenv("ASTRA_PORT") != "" {
+		astra = astra + string(os.PathSeparator)
+		cluster.Hosts = []string{os.Getenv("CASSANDRA_SERVICE_HOST") + ":" + os.Getenv("ASTRA_PORT")}
+		certPath, _ := filepath.Abs(astra + "cert")
+		keyPath, _ := filepath.Abs(astra + "key")
+		caPath, _ := filepath.Abs(astra + "ca.crt")
+		cert, _ := tls.LoadX509KeyPair(certPath, keyPath)
+		caCert, _ := ioutil.ReadFile(caPath)
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+		tlsConfig := &tls.Config{
+			Certificates: []tls.Certificate{cert},
+			RootCAs:      caCertPool,
+		}
+		cluster.SslOpts = &gocql.SslOptions{
+			Config: tlsConfig,
+			EnableHostVerification: false,
+		}
+	} else {
+		log.Fatal("With Datastax Astra you need to set ASTRA_PORT environment variable (in secure connect download file cqlshrc")
+	}
   }
   cassuservice_session, err = cluster.CreateSession()
   if ( err != nil ) {
@@ -777,7 +849,7 @@ var cassuservice_session *gocql.Session
 
 func SetUp() {
   var err error
-  log.Println("Tring to connect to Cassandra database using ", os.Getenv("CASSANDRA_SERVICE_HOST"))
+  log.Println("Trying to connect to Cassandra database using ", os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster := gocql.NewCluster(os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster.Keyspace = "demo"
   cluster.Consistency = gocql.One
@@ -791,6 +863,30 @@ func SetUp() {
     }
   } else {
      log.Println("Are you sure you don't need to set $CASSANDRA_USERNAME and $CASSANDRA_PASSWORD")
+  }
+  astra := os.Getenv("ASTRA_SECURE_CONNECT_PATH")
+  if ( astra != "" ) {
+    if os.Getenv("ASTRA_PORT") != "" {
+		astra = astra + string(os.PathSeparator)
+		cluster.Hosts = []string{os.Getenv("CASSANDRA_SERVICE_HOST") + ":" + os.Getenv("ASTRA_PORT")}
+		certPath, _ := filepath.Abs(astra + "cert")
+		keyPath, _ := filepath.Abs(astra + "key")
+		caPath, _ := filepath.Abs(astra + "ca.crt")
+		cert, _ := tls.LoadX509KeyPair(certPath, keyPath)
+		caCert, _ := ioutil.ReadFile(caPath)
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+		tlsConfig := &tls.Config{
+			Certificates: []tls.Certificate{cert},
+			RootCAs:      caCertPool,
+		}
+		cluster.SslOpts = &gocql.SslOptions{
+			Config: tlsConfig,
+			EnableHostVerification: false,
+		}
+	} else {
+		log.Fatal("With Datastax Astra you need to set ASTRA_PORT environment variable (in secure connect download file cqlshrc")
+	}
   }
   cassuservice_session, err = cluster.CreateSession()
   if ( err != nil ) {
@@ -899,7 +995,7 @@ var cassuservice_session *gocql.Session
 
 func SetUp() {
   var err error
-  log.Println("Tring to connect to Cassandra database using ", os.Getenv("CASSANDRA_SERVICE_HOST"))
+  log.Println("Trying to connect to Cassandra database using ", os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster := gocql.NewCluster(os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster.Keyspace = "demo"
   cluster.Consistency = gocql.One
@@ -913,6 +1009,30 @@ func SetUp() {
     }
   } else {
      log.Println("Are you sure you don't need to set $CASSANDRA_USERNAME and $CASSANDRA_PASSWORD")
+  }
+  astra := os.Getenv("ASTRA_SECURE_CONNECT_PATH")
+  if ( astra != "" ) {
+    if os.Getenv("ASTRA_PORT") != "" {
+		astra = astra + string(os.PathSeparator)
+		cluster.Hosts = []string{os.Getenv("CASSANDRA_SERVICE_HOST") + ":" + os.Getenv("ASTRA_PORT")}
+		certPath, _ := filepath.Abs(astra + "cert")
+		keyPath, _ := filepath.Abs(astra + "key")
+		caPath, _ := filepath.Abs(astra + "ca.crt")
+		cert, _ := tls.LoadX509KeyPair(certPath, keyPath)
+		caCert, _ := ioutil.ReadFile(caPath)
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+		tlsConfig := &tls.Config{
+			Certificates: []tls.Certificate{cert},
+			RootCAs:      caCertPool,
+		}
+		cluster.SslOpts = &gocql.SslOptions{
+			Config: tlsConfig,
+			EnableHostVerification: false,
+		}
+	} else {
+		log.Fatal("With Datastax Astra you need to set ASTRA_PORT environment variable (in secure connect download file cqlshrc")
+	}
   }
   cassuservice_session, err = cluster.CreateSession()
   if ( err != nil ) {
@@ -1071,7 +1191,7 @@ var cassuservice_session *gocql.Session
 
 func SetUp() {
   var err error
-  log.Println("Tring to connect to Cassandra database using ", os.Getenv("CASSANDRA_SERVICE_HOST"))
+  log.Println("Trying to connect to Cassandra database using ", os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster := gocql.NewCluster(os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster.Keyspace = "demo"
   cluster.Consistency = gocql.One
@@ -1085,6 +1205,30 @@ func SetUp() {
     }
   } else {
      log.Println("Are you sure you don't need to set $CASSANDRA_USERNAME and $CASSANDRA_PASSWORD")
+  }
+  astra := os.Getenv("ASTRA_SECURE_CONNECT_PATH")
+  if ( astra != "" ) {
+    if os.Getenv("ASTRA_PORT") != "" {
+		astra = astra + string(os.PathSeparator)
+		cluster.Hosts = []string{os.Getenv("CASSANDRA_SERVICE_HOST") + ":" + os.Getenv("ASTRA_PORT")}
+		certPath, _ := filepath.Abs(astra + "cert")
+		keyPath, _ := filepath.Abs(astra + "key")
+		caPath, _ := filepath.Abs(astra + "ca.crt")
+		cert, _ := tls.LoadX509KeyPair(certPath, keyPath)
+		caCert, _ := ioutil.ReadFile(caPath)
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+		tlsConfig := &tls.Config{
+			Certificates: []tls.Certificate{cert},
+			RootCAs:      caCertPool,
+		}
+		cluster.SslOpts = &gocql.SslOptions{
+			Config: tlsConfig,
+			EnableHostVerification: false,
+		}
+	} else {
+		log.Fatal("With Datastax Astra you need to set ASTRA_PORT environment variable (in secure connect download file cqlshrc")
+	}
   }
   cassuservice_session, err = cluster.CreateSession()
   if ( err != nil ) {
@@ -1207,7 +1351,7 @@ var cassuservice_session *gocql.Session
 
 func SetUp() {
   var err error
-  log.Println("Tring to connect to Cassandra database using ", os.Getenv("CASSANDRA_SERVICE_HOST"))
+  log.Println("Trying to connect to Cassandra database using ", os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster := gocql.NewCluster(os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster.Keyspace = "demo"
   cluster.Consistency = gocql.One
@@ -1221,6 +1365,30 @@ func SetUp() {
     }
   } else {
      log.Println("Are you sure you don't need to set $CASSANDRA_USERNAME and $CASSANDRA_PASSWORD")
+  }
+  astra := os.Getenv("ASTRA_SECURE_CONNECT_PATH")
+  if ( astra != "" ) {
+    if os.Getenv("ASTRA_PORT") != "" {
+		astra = astra + string(os.PathSeparator)
+		cluster.Hosts = []string{os.Getenv("CASSANDRA_SERVICE_HOST") + ":" + os.Getenv("ASTRA_PORT")}
+		certPath, _ := filepath.Abs(astra + "cert")
+		keyPath, _ := filepath.Abs(astra + "key")
+		caPath, _ := filepath.Abs(astra + "ca.crt")
+		cert, _ := tls.LoadX509KeyPair(certPath, keyPath)
+		caCert, _ := ioutil.ReadFile(caPath)
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+		tlsConfig := &tls.Config{
+			Certificates: []tls.Certificate{cert},
+			RootCAs:      caCertPool,
+		}
+		cluster.SslOpts = &gocql.SslOptions{
+			Config: tlsConfig,
+			EnableHostVerification: false,
+		}
+	} else {
+		log.Fatal("With Datastax Astra you need to set ASTRA_PORT environment variable (in secure connect download file cqlshrc")
+	}
   }
   cassuservice_session, err = cluster.CreateSession()
   if ( err != nil ) {
@@ -1376,7 +1544,7 @@ var cassuservice_session *gocql.Session
 
 func SetUp() {
   var err error
-  log.Println("Tring to connect to Cassandra database using ", os.Getenv("CASSANDRA_SERVICE_HOST"))
+  log.Println("Trying to connect to Cassandra database using ", os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster := gocql.NewCluster(os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster.Keyspace = "demo"
   cluster.Consistency = gocql.One
@@ -1390,6 +1558,30 @@ func SetUp() {
     }
   } else {
      log.Println("Are you sure you don't need to set $CASSANDRA_USERNAME and $CASSANDRA_PASSWORD")
+  }
+  astra := os.Getenv("ASTRA_SECURE_CONNECT_PATH")
+  if ( astra != "" ) {
+    if os.Getenv("ASTRA_PORT") != "" {
+		astra = astra + string(os.PathSeparator)
+		cluster.Hosts = []string{os.Getenv("CASSANDRA_SERVICE_HOST") + ":" + os.Getenv("ASTRA_PORT")}
+		certPath, _ := filepath.Abs(astra + "cert")
+		keyPath, _ := filepath.Abs(astra + "key")
+		caPath, _ := filepath.Abs(astra + "ca.crt")
+		cert, _ := tls.LoadX509KeyPair(certPath, keyPath)
+		caCert, _ := ioutil.ReadFile(caPath)
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+		tlsConfig := &tls.Config{
+			Certificates: []tls.Certificate{cert},
+			RootCAs:      caCertPool,
+		}
+		cluster.SslOpts = &gocql.SslOptions{
+			Config: tlsConfig,
+			EnableHostVerification: false,
+		}
+	} else {
+		log.Fatal("With Datastax Astra you need to set ASTRA_PORT environment variable (in secure connect download file cqlshrc")
+	}
   }
   cassuservice_session, err = cluster.CreateSession()
   if ( err != nil ) {
@@ -1519,7 +1711,7 @@ var cassuservice_session *gocql.Session
 
 func SetUp() {
   var err error
-  log.Println("Tring to connect to Cassandra database using ", os.Getenv("CASSANDRA_SERVICE_HOST"))
+  log.Println("Trying to connect to Cassandra database using ", os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster := gocql.NewCluster(os.Getenv("CASSANDRA_SERVICE_HOST"))
   cluster.Keyspace = "demo"
   cluster.Consistency = gocql.One
@@ -1533,6 +1725,30 @@ func SetUp() {
     }
   } else {
      log.Println("Are you sure you don't need to set $CASSANDRA_USERNAME and $CASSANDRA_PASSWORD")
+  }
+  astra := os.Getenv("ASTRA_SECURE_CONNECT_PATH")
+  if ( astra != "" ) {
+    if os.Getenv("ASTRA_PORT") != "" {
+		astra = astra + string(os.PathSeparator)
+		cluster.Hosts = []string{os.Getenv("CASSANDRA_SERVICE_HOST") + ":" + os.Getenv("ASTRA_PORT")}
+		certPath, _ := filepath.Abs(astra + "cert")
+		keyPath, _ := filepath.Abs(astra + "key")
+		caPath, _ := filepath.Abs(astra + "ca.crt")
+		cert, _ := tls.LoadX509KeyPair(certPath, keyPath)
+		caCert, _ := ioutil.ReadFile(caPath)
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+		tlsConfig := &tls.Config{
+			Certificates: []tls.Certificate{cert},
+			RootCAs:      caCertPool,
+		}
+		cluster.SslOpts = &gocql.SslOptions{
+			Config: tlsConfig,
+			EnableHostVerification: false,
+		}
+	} else {
+		log.Fatal("With Datastax Astra you need to set ASTRA_PORT environment variable (in secure connect download file cqlshrc")
+	}
   }
   cassuservice_session, err = cluster.CreateSession()
   if ( err != nil ) {
