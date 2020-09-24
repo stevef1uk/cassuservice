@@ -57,7 +57,7 @@ NOTE: the latets verion of swagger generates the entry point as cmd/simple-api-s
 ```
 In order for this command to work the environment variable CASSANDRA_SERVICE_HOST needs to set to the host name(s) of the Cassandra cluster. 
 Setting the PORT environment variable will make it easier to test 
-If the cassandra database has authentication enabled then also set CASSANDRA_USERNAME and CASSANDRA_USERNAME env vars
+If the cassandra database has authentication enabled then also set CASSANDRA_USERNAME and CASSANDRA_PASSWORD env vars
 
 For the example above the command to test it is:
 ```
