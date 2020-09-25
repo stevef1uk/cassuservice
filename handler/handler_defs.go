@@ -26,6 +26,10 @@ import (
     "{{.PATH}}/restapi/operations"
     middleware "github.com/go-openapi/runtime/middleware"
     "github.com/gocql/gocql"
+    "crypto/tls"
+	"crypto/x509"
+    "io/ioutil"
+    "path/filepath"
     "os"
     "log"`
 
