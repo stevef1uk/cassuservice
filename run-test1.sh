@@ -1,5 +1,6 @@
 #!/bin/bash
 # Simple script to run on a GitPod terminal to prove the software is working. Important assumption that the following table exists in your Astra Cassandra instance ;-)
+# The environment command below needs to be run first to correctly poulate the environmnet for this to work
 mkdir /workspace/test4
 cd /workspace/test4
 cat > t.cql <<EOF
