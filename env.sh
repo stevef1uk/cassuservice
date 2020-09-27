@@ -5,4 +5,4 @@ export HOST=0.0.0.0
 export CASSANDRA_USERNAME=
 export ASTRA_PORT=
 export CASSANDRA_PASSWORD=''
-export ASTRA_SECURE_CONNECT_PATH=/workspace/cassuservice/secure-connect
+export ASTRA_SECURE_CONNECT_PATH=/workspace/cassuservice/secure_connect
