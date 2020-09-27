@@ -1,5 +1,5 @@
 #!/bin/bash
-# Simple script to run on a GitPod terminal to prove the software is working
+# Simple script to run on a GitPod terminal to prove the software is working. Important assumption that the following table exists in your Astra Cassandra insatnce ;-)
 mkdir /workspace/test4
 cd /workspace/test4
 cat > t.cql <<EOF
