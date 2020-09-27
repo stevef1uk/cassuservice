@@ -1,4 +1,5 @@
 # cassuservice 
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/stevef1uk/cassuservice)
 Repo that contains Golang code that can autogenerate a Golang service from a Cassandra DDL for a table.
 This tool can genenerate a service that can read and insert into a Cassandra table.
 
