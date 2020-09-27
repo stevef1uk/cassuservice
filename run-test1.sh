@@ -5,7 +5,8 @@ cd /workspace/test4
 cat > t.cql <<EOF
 CREATE TABLE demo.verysimple (
     id int PRIMARY KEY,
-    message text
+    message text,
+    WITH CLUSTERING ORDER BY (id ASC)
 );
 EOF
 cd /workspace/cassuservice
