@@ -1,5 +1,8 @@
 # cassuservice 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/stevef1uk/cassuservice)
+If you click the above link go-swagger has been added to the default GitPod docker image so you just need to run the command:
+go get github.com/gocql/gocql
+
 Repo that contains Golang code that can autogenerate a Golang service from a Cassandra DDL for a table.
 This tool can genenerate a service that can read and insert into a Cassandra table.
 
