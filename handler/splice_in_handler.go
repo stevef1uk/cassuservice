@@ -13,7 +13,7 @@ import (
 
 
 //const FILETOPROCESS = "restapi/configure_simple.go"  // Name of file to update created by go-swagger during generation
-const FILETOPROCESS = "restapi" + string(os.PathSeparator) + "configure_simple.go"
+const FILETOPROCESS = "restapi" + string(os.PathSeparator) + "configure_simple_api.go"
 
 func tempFile() *os.File {
 
