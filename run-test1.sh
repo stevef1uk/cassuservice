@@ -15,7 +15,7 @@ go run main.go -file=/workspace/test4/t.cql -goPackageName=github.com/stevef1uk/
 echo "Code generated in /workspace/go/src/github.com/stevef1uk/test4 "
 echo "You will need to donload the Astra secure connect bundle and upload them to this GitPod and set the appropriate values in env.sh before this script will work"
 echo "In another terminal window type: curl -X GET 'http://127.0.0.1:5000/v1/verysimple?id=1'"
-echo 'To store a record use: curl -d ' "'" '{"id": 1, "message": "steve"}' "'"  ' -H "Content-Type: application/json" -v -X POST  "http://127.0.0.1:5000/v1/verysimple?id=1"'
+echo 'To store a record use: curl -d ' "'" '{"id": 1, "message": "steve"}' "'"  ' -H "Content-Type: application/json" -v -X POST  "http://127.0.0.1:5000/v1/verysimple"'
 cd /workspace/go/src/github.com/stevef1uk/test4 
 go mod init github.com/stevef1uk/test4
 . /workspace/cassuservice/env.sh
