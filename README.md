@@ -1,4 +1,7 @@
 # cassuservice 
+
+IMPORTANT: This code no longer works with go-swagger. Since I don't use it and noone else has I am not going to try to fix it!
+
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/stevef1uk/cassuservice)
 If you click the above link go-swagger has been added to the default GitPod docker image. For the impatient take a look at the run-test.sh
 
