@@ -1,0 +1,2 @@
+/home/linuxbrew/.linuxbrew/bin/yq -o=json /workspace/go/src/github.com/stevef1uk/test4/swagger.txt > /tmp/tswagger
+mv /tmp/tswagger /workspace/go/src/github.com/stevef1uk/test4/swagger.txt 
