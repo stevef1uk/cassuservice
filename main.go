@@ -65,17 +65,17 @@ func main() {
 	}
 	// Latest version of swagger only works for json format so convert the generated swagger file from yaml
 	command := "yq"
-	args := []string{"-o=json", "server",  pathName + string(os.PathSeparator)+ SWAGGER_FILE, ">",  pathName + string(os.PathSeparator)+ SWAGGER_FILE}
+	args := []string{"-o=json",  pathName + string(os.PathSeparator)+ SWAGGER_FILE, ">",  pathName + string(os.PathSeparator)+ SWAGGER_FILE}
 	if err := exec.Command(command, args...).Run(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		fmt.Fprintln(os.Stderr, "Swagger conversion from yaml to json failed\n")
+		fmt.Fprintln(os.Stderr, "Swagger conversion from yaml to json failed")
 		os.Exit(1)
 	}
 	command = "swagger"
 	args = []string{"generate", "server", "-f", pathName + string(os.PathSeparator)+ SWAGGER_FILE, "-t", pathName }
 	if err := exec.Command(command, args...).Run(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		fmt.Fprintln(os.Stderr, "Swagger failed\n")
+		fmt.Fprintln(os.Stderr, "Swagger failed")
 		os.Exit(1)
 	}
 
