@@ -12,7 +12,7 @@ import (
 import "fmt"
 
 const (
-	SWAGGER_FILE = "swagger.txt"
+	SWAGGER_FILE = ".//swagger.txt"
 )
 
 
@@ -65,7 +65,7 @@ func main() {
 	}
 	// Latest version of swagger only works for json format so convert the generated swagger file from yaml
 	command := "/usr/bin/bash"
-	args := []string{"doit" )
+	args := []string{"doit" }
 	if err := exec.Command(command, args...).Run(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		fmt.Fprintln(os.Stderr, "Swagger conversion from yaml to json failed")
