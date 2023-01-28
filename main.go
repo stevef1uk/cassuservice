@@ -64,8 +64,8 @@ func main() {
 		os.Setenv("PATH", "/usr/bin:/sbin:/usr/local/bin:/bin")
 	}
 	// Latest version of swagger only works for json format so convert the generated swagger file from yaml
-	command := "yq"
-	args := []string{"-o=json",  "./" + pathName + string(os.PathSeparator)+ SWAGGER_FILE, ">",  "/tmp/tswagger" )
+	command := "/usr/bin/bash"
+	args := []string{"doit" )
 	if err := exec.Command(command, args...).Run(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		fmt.Fprintln(os.Stderr, "Swagger conversion from yaml to json failed")
